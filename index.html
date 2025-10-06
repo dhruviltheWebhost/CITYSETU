@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CitySetu – Your City, Your Services, One Setu</title>
+    <link rel="icon" href="logo.jpg" type="image/jpeg">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* New Color Palette based on your logo */
+        :root {
+            --brand-blue: #1e3a8a; /* Deep blue from logo */
+            --brand-orange: #f97316; /* Vibrant orange from logo */
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f7fafc;
+            color: #1a202c;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main#app-root {
+            flex-grow: 1;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, var(--brand-blue), #2563eb);
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: var(--brand-orange);
+        }
+        .btn-animated {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .btn-animated:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .whatsapp-btn, .floating-whatsapp {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(22, 163, 74, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+        }
+        /* Fade-in animation for sections on scroll */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .fade-in-section.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .progress-bar-inner {
+            transition: width 1s ease-in-out;
+        }
+        .floating-whatsapp {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background-color: #25D366;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 100;
+            transition: transform 0.2s ease;
+        }
+        .floating-whatsapp:hover { transform: scale(1.1); }
+        .step-icon {
+            background-color: #ffedd5;
+            color: var(--brand-orange);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .step-icon:hover {
+            transform: scale(1.1);
+            background-color: #fed7aa;
+        }
+        #mobile-menu {
+            transition: transform 0.3s ease-in-out;
+        }
+        header.header-scrolled {
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            transition: box-shadow 0.3s ease-in-out;
+        }
+        /* Form input focus style */
+        .form-input:focus {
+            border-color: var(--brand-blue);
+            box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.3);
+            outline: none;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header / Navbar -->
+    <header id="main-header" class="bg-white sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-2 flex justify-between items-center">
+            <a href="#" onclick="app.navigateTo('home')" class="flex items-center">
+                 <img src="logo.jpg" alt="CitySetu Logo" class="h-16 w-auto mr-2" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMjAwIDgwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMCAwIEggMjAwIFYgODAgSCAwIFoiIGZpbGw9IiNmN2ZhZmMiLz4KPHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMTgwIiBoZWlnaHQ9IjYwIiByeD0iOCIgZmlsbD0iI2ZmZWJkMyIvPgo8cGF0aCBkPSJNNjAsNjAgQzcwLDIwIDEzMCwyMCAxNDAsNjAiIHN0cm9rZT0iI2Y5NzMxNiIgc3Ryb2tlLXdpZHRoPSI2IiBmaWxsPSJub25lIi8+CjxwYXRoIGQ9Ik04MCw2MCBWIDMwIEw5MCwzMCBWIDYwIE0xMTAsNjAgViAzMCBMMTIwLDMwIFYgNjAiIHN0cm9rZT0iIzFlM2E4YSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJub25lIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iNDUiIGZvbnQtZmFtaWx5PSJQb3BwaW5zIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzFlM2E4YSI+Q2l0eVNldHU8L3RleHQ+Cjwvc3ZnPg=='">
+            </a>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#home" onclick="app.navigateTo('home')" class="text-gray-600 hover:text-blue-800">Home</a>
+                <a href="#services" onclick="app.navigateTo('home', '#services')" class="text-gray-600 hover:text-blue-800">Services</a>
+                <a href="#how-it-works" onclick="app.navigateTo('home', '#how-it-works')" class="text-gray-600 hover:text-blue-800">How It Works</a>
+                <a href="#contact-form" onclick="app.navigateTo('home', '#contact-form')" class="text-gray-600 hover:text-blue-800">Contact</a>
+            </div>
+             <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-gray-600 hover:text-blue-800 focus:outline-none">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                    </svg>
+                </button>
+            </div>
+        </nav>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden bg-white border-t border-gray-200 absolute w-full transform -translate-x-full">
+            <a href="#home" onclick="app.closeMenuAndNavigate('home')" class="block py-2 px-4 text-sm text-gray-600 hover:bg-gray-100">Home</a>
+            <a href="#services" onclick="app.closeMenuAndNavigate('home', '#services')" class="block py-2 px-4 text-sm text-gray-600 hover:bg-gray-100">Services</a>
+            <a href="#how-it-works" onclick="app.closeMenuAndNavigate('home', '#how-it-works')" class="block py-2 px-4 text-sm text-gray-600 hover:bg-gray-100">How It Works</a>
+            <a href="#contact-form" onclick="app.closeMenuAndNavigate('home', '#contact-form')" class="block py-2 px-4 text-sm text-gray-600 hover:bg-gray-100">Contact</a>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main id="app-root">
+        <!-- All content will be rendered here by JavaScript -->
+    </main>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-6 text-center">
+            <h3 class="text-2xl font-bold">CitySetu</h3>
+            <p class="mt-2 mb-4">Your City, Your Services, One Setu.</p>
+            <p class="text-gray-400">For inquiries, contact us at <a href="mailto:support@citysetu.com" class="text-blue-400 hover:underline">support@citysetu.com</a></p>
+        </div>
+    </footer>
+
+    <!-- Floating WhatsApp Button -->
+    <a href="https://wa.me/15558847636?text=Hi%20CitySetu%20%F0%9F%91%8B%0AI%20need%20help%20with%20a%20service." target="_blank" class="floating-whatsapp">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
+    </a>
+
+    <!-- Call Simulation Modal -->
+    <div id="call-modal" class="fixed inset-0 z-50 items-center justify-center hidden" onclick="event.target === this && app.hideCallModal()">
+        <div class="fixed inset-0 bg-black opacity-50"></div>
+        <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md z-10 m-4 text-center">
+            <h3 id="modal-title" class="text-2xl font-bold mb-4">Connecting...</h3>
+            <div id="modal-content">
+                <!-- Content is dynamically inserted here -->
+            </div>
+            <button onclick="app.hideCallModal()" class="mt-6 bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400">Close</button>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="https://unpkg.com/papaparse@5.3.0/papaparse.min.js"></script>
+    <script>
+    
+    const GOOGLE_SHEET_URL = 'YOUR_PUBLIC_GOOGLE_SHEET_URL_HERE';
+
+    const app = {
+        workerData: {},
+        elements: {
+            root: document.getElementById('app-root'),
+            header: document.getElementById('main-header'),
+            modal: document.getElementById('call-modal'),
+            modalTitle: document.getElementById('modal-title'),
+            modalContent: document.getElementById('modal-content'),
+            mobileMenu: document.getElementById('mobile-menu'),
+            mobileMenuButton: document.getElementById('mobile-menu-button'),
+        },
+
+        async init() {
+            this.elements.mobileMenuButton.addEventListener('click', this.toggleMobileMenu.bind(this));
+            window.addEventListener('hashchange', this.router.bind(this));
+            window.addEventListener('scroll', this.handleScroll.bind(this));
+            await this.loadWorkerData();
+            this.router();
+        },
+        
+        handleScroll() {
+            if (window.scrollY > 20) {
+                this.elements.header.classList.add('header-scrolled');
+            } else {
+                this.elements.header.classList.remove('header-scrolled');
+            }
+        },
+
+        setupScrollAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.fade-in-section').forEach(section => {
+                observer.observe(section);
+            });
+        },
+        
+        loadWorkerData() {
+            return new Promise(resolve => {
+                if (!GOOGLE_SHEET_URL || GOOGLE_SHEET_URL === 'YOUR_PUBLIC_GOOGLE_SHEET_URL_HERE') {
+                    console.warn("Google Sheet URL is not set. Using mock data.");
+                    this.workerData = this.getMockData();
+                    resolve();
+                    return;
+                }
+
+                Papa.parse(GOOGLE_SHEET_URL, {
+                    download: true,
+                    header: true,
+                    complete: (results) => {
+                        const groupedData = {};
+                        results.data.forEach(row => {
+                            const service = row.service;
+                            if (!service) return;
+                            if (!groupedData[service]) {
+                                groupedData[service] = [];
+                            }
+                            groupedData[service].push({
+                                name: row.name || 'N/A',
+                                experience: row.experience || 'N/A',
+                                location: row.location || 'N/A',
+                                rating: parseFloat(row.rating) || 0,
+                                status: row.status || 'available',
+                            });
+                        });
+                        this.workerData = groupedData;
+                        console.log("Worker data loaded from Google Sheet:", this.workerData);
+                        resolve();
+                    },
+                    error: (error) => {
+                        console.error("Error fetching data from Google Sheet:", error);
+                        console.warn("Falling back to mock data.");
+                        this.workerData = this.getMockData();
+                        resolve();
+                    }
+                });
+            });
+        },
+        
+        getMockData() {
+             return {
+                'Laptop/Desktop Repair': [
+                    { name: 'Rakesh Patel', experience: '5+ Years', location: 'Maninagar', rating: 4.8, status: 'available' },
+                    { name: 'Jignesh Mehta', experience: '8+ Years', location: 'Satellite', rating: 4.9, status: 'available' },
+                    { name: 'Sunil Varma', experience: '3+ Years', location: 'Bopal', rating: 4.6, status: 'busy' },
+                ],
+                'AC Repair': [
+                    { name: 'Suresh Parmar', experience: '12+ Years', location: 'Chandkheda', rating: 4.9, status: 'available' },
+                    { name: 'Mahesh Solanki', experience: '7+ Years', location: 'Bodakdev', rating: 4.7, status: 'available' },
+                ],
+            };
+        },
+
+        router() {
+            const path = window.location.hash.slice(1) || 'home';
+            const [page, param] = path.split('/');
+
+            if (page === 'service' && param) {
+                const serviceName = decodeURIComponent(param);
+                this.renderServicePage(serviceName);
+            } else {
+                this.renderHomePage();
+                if(param) { 
+                    setTimeout(() => document.querySelector(param)?.scrollIntoView({ behavior: 'smooth' }), 100);
+                }
+            }
+            // Setup animations after content is rendered
+            setTimeout(() => this.setupScrollAnimations(), 100);
+        },
+
+        navigateTo(page, param = '') {
+            window.location.hash = param ? `${page}/${param}` : page;
+        },
+        
+        toggleMobileMenu() {
+            this.elements.mobileMenu.classList.toggle('-translate-x-full');
+        },
+
+        closeMenuAndNavigate(page, param = '') {
+            this.elements.mobileMenu.classList.add('-translate-x-full');
+            this.navigateTo(page, param);
+        },
+
+        renderHomePage() {
+            window.scrollTo(0, 0);
+            this.elements.root.innerHTML = `
+            <div id="home-page">
+                <section id="home" class="hero-gradient text-white py-20 md:py-32">
+                    <div class="container mx-auto px-6 text-center">
+                        <h1 class="text-4xl md:text-6xl font-bold leading-tight mb-4">Find Verified Service Experts in Ahmedabad.</h1>
+                        <p class="text-lg md:text-xl text-blue-200 mb-8 max-w-3xl mx-auto">One click to book Laptop Repair, AC Repair, Electricians & more. No spam calls. No hidden fees.</p>
+                        <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                             <a href="tel:+919999999999" class="btn-animated bg-orange-500 text-white text-lg font-bold py-4 px-8 rounded-full inline-block shadow-lg hover:bg-orange-600">Call Us Directly</a>
+                             <a href="https://wa.me/919999999999?text=Hi%20CitySetu%20%F0%9F%91%8B%0AI%20need%20help%20with%20a%20service.%0APlease%20help%20me%20connect%20with%20a%20verified%20expert%20near%20me." target="_blank" class="whatsapp-btn btn-animated bg-green-500 text-white text-lg font-bold py-4 px-8 rounded-full inline-block shadow-lg hover:bg-green-600">Book on WhatsApp</a>
+                        </div>
+                    </div>
+                </section>
+                <section id="services" class="py-20 bg-gray-50 fade-in-section">
+                    <div class="container mx-auto px-6">
+                        <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold">Our Services</h2><p class="text-gray-600 mt-2">Verified professionals, just a click away.</p></div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+                            <div class="card bg-white rounded-lg shadow-md p-8 text-center cursor-pointer" onclick="app.navigateTo('service', 'AC Repair')"> <div class="text-5xl mb-4">❄️</div> <h3 class="text-xl font-bold mb-2">AC Repair</h3></div>
+                            <div class="card bg-white rounded-lg shadow-md p-8 text-center cursor-pointer" onclick="app.navigateTo('service', 'Laptop/Desktop Repair')"> <div class="text-5xl mb-4">💻</div> <h3 class="text-xl font-bold mb-2">Laptop Repair</h3></div>
+                            <div class="card bg-white rounded-lg shadow-md p-8 text-center cursor-pointer" onclick="app.navigateTo('service', 'Electrician')"> <div class="text-5xl mb-4">💡</div> <h3 class="text-xl font-bold mb-2">Electrician</h3></div>
+                            <div class="card bg-white rounded-lg shadow-md p-8 text-center cursor-pointer" onclick="app.navigateTo('service', 'Home Repair')"> <div class="text-5xl mb-4">🔨</div> <h3 class="text-xl font-bold mb-2">Home Repair</h3></div>
+                            <div class="card bg-white rounded-lg shadow-md p-8 text-center cursor-pointer" onclick="app.navigateTo('service', 'Home Cleaning')"> <div class="text-5xl mb-4">🧹</div> <h3 class="text-xl font-bold mb-2">Home Cleaning</h3></div>
+                        </div>
+                    </div>
+                </section>
+                <section id="how-it-works" class="py-20 fade-in-section">
+                    <div class="container mx-auto px-6">
+                        <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold">How It Works</h2></div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+                            <div class="flex flex-col items-center"><div class="step-icon rounded-full h-20 w-20 flex items-center justify-center text-3xl font-bold mb-4">1</div><h3 class="text-xl font-bold mb-2">Choose Service</h3></div>
+                            <div class="flex flex-col items-center"><div class="step-icon rounded-full h-20 w-20 flex items-center justify-center text-3xl font-bold mb-4">2</div><h3 class="text-xl font-bold mb-2">Connect with Expert</h3></div>
+                            <div class="flex flex-col items-center"><div class="step-icon rounded-full h-20 w-20 flex items-center justify-center text-3xl font-bold mb-4">3</div><h3 class="text-xl font-bold mb-2">Get Your Job Done</h3></div>
+                        </div>
+                    </div>
+                </section>
+                 <section id="contact-form" class="py-20 bg-gray-50 fade-in-section">
+                    <div class="container mx-auto px-6">
+                        <div class="text-center mb-12"><h2 class="text-3xl md:text-4xl font-bold">Contact Us</h2><p class="text-gray-600 mt-2">Fill out the form below and we'll get back to you shortly.</p></div>
+                        <form class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md">
+                            <div class="mb-4"><label for="name" class="block text-gray-700 font-bold mb-2">Full Name</label><input type="text" id="name" class="form-input w-full px-3 py-2 border rounded-lg" placeholder="John Doe" required></div>
+                            <div class="mb-4"><label for="email" class="block text-gray-700 font-bold mb-2">Email</label><input type="email" id="email" class="form-input w-full px-3 py-2 border rounded-lg" placeholder="john.doe@example.com" required></div>
+                            <div class="mb-4"><label for="phone" class="block text-gray-700 font-bold mb-2">Phone Number</label><input type="tel" id="phone" class="form-input w-full px-3 py-2 border rounded-lg" placeholder="+91 99999 99999" required></div>
+                            <div class="mb-4"><label for="service-needed" class="block text-gray-700 font-bold mb-2">Service Needed</label><select id="service-needed" class="form-input w-full px-3 py-2 border rounded-lg"><option>Laptop/Desktop Repair</option><option>AC Repair</option><option>Electrician</option><option>Home Repair</option><option>Home Cleaning</option><option>Other</option></select></div>
+                            <div class="mb-4"><label for="message" class="block text-gray-700 font-bold mb-2">Message</label><textarea id="message" rows="4" class="form-input w-full px-3 py-2 border rounded-lg" placeholder="Describe your issue here..."></textarea></div>
+                            <div class="text-center"><button type="submit" class="btn-animated bg-blue-800 text-white font-bold py-3 px-8 rounded-full hover:bg-blue-900">Submit Request</button></div>
+                        </form>
+                    </div>
+                </section>
+            </div>`;
+        },
+
+        renderServicePage(serviceName) {
+            window.scrollTo(0, 0);
+            const workers = this.workerData[serviceName] || [];
+            const workersHtml = workers.map(worker => `
+                <div class="card bg-white rounded-lg shadow-md p-6 text-left hover:shadow-xl flex flex-col">
+                    <div class="flex-grow">
+                        <h4 class="text-xl font-bold">👨‍🔧 ${worker.name}</h4>
+                        <p class="text-gray-600 my-2"><strong>Experience:</strong> ${worker.experience}</p>
+                        <p class="text-gray-600 mb-2"><strong>📍 Location:</strong> ${worker.location}</p>
+                        <p class="text-gray-600 mb-4"><strong>⭐ Rating:</strong> ${worker.rating} / 5</p>
+                        <p class="text-green-600 font-semibold mb-4">✅ Verified by CitySetu</p>
+                    </div>
+                    <div class="mt-auto pt-4 flex gap-2">
+                        <button onclick="app.showCallModal('${worker.name}', '${worker.status}')" class="w-1/2 btn-animated bg-blue-800 text-white py-2 rounded-lg font-semibold hover:bg-blue-900 text-sm">📞 Call Now</button>
+                        <button onclick="app.bookSpecificWorker('${worker.name}', '${serviceName}')" class="w-1/2 btn-animated bg-green-500 text-white py-2 rounded-lg font-semibold hover:bg-green-600 text-sm">💬 Book Now</button>
+                    </div>
+                </div>
+            `).join('');
+
+            this.elements.root.innerHTML = `
+            <div id="service-page" class="fade-in-section is-visible">
+                <section class="py-12" style="background-color: #dbeafe;">
+                    <div class="container mx-auto px-6 text-center">
+                        <h1 class="text-3xl md:text-4xl font-bold text-blue-900">Find Verified ${serviceName} Experts in Ahmedabad</h1>
+                        <p class="text-lg text-gray-700 mt-2">Choose from trusted professionals verified by CitySetu. One call connects you instantly.</p>
+                        <p class="text-sm mt-6 font-semibold">Showing top verified workers near you 👇</p>
+                    </div>
+                </section>
+                <section class="py-16">
+                    <div class="container mx-auto px-6">
+                        <div class="flex flex-col lg:flex-row gap-12">
+                            <div class="lg:w-2/3">
+                                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    ${workers.length > 0 ? workersHtml : '<p class="col-span-full text-center text-gray-500">No workers available for this service yet. We are expanding quickly!</p>'}
+                                </div>
+                            </div>
+                            <aside class="lg:w-1/3">
+                                <div class="bg-white p-6 rounded-lg shadow-md sticky top-28">
+                                    <h4 class="text-2xl font-bold mb-4 text-blue-900">🛡 Why Choose CitySetu?</h4>
+                                    <ul class="space-y-3 text-gray-700">
+                                        <li><strong>Verified Local Experts:</strong> Manually vetted for quality.</li>
+                                        <li><strong>No Spam Calls:</strong> Your privacy is our priority.</li>
+                                        <li><strong>One-on-One Connection:</strong> Talk directly to the expert.</li>
+                                        <li><strong>Fast & Trusted Service:</strong> Get help when you need it.</li>
+                                    </ul>
+                                    <h4 class="text-2xl font-bold mt-8 mb-4 text-blue-900">🎯 Upcoming Features</h4>
+                                    <ul class="space-y-3 text-gray-700 list-disc list-inside">
+                                        <li>In-app Call System</li>
+                                        <li>Worker Availability Tracking</li>
+                                        <li>Real-Time Lead System</li>
+                                    </ul>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </section>
+                <section class="py-16 bg-gray-100 text-center">
+                    <div class="container mx-auto px-6">
+                        <h2 class="text-3xl font-bold">Still Unsure? Book Instantly.</h2>
+                        <p class="text-lg text-gray-600 my-4">Our team will find the best expert for you right now.</p>
+                        <button onclick="app.bookServiceViaWhatsapp('${serviceName}')" class="btn-animated bg-green-500 text-white text-lg font-bold py-4 px-8 rounded-full shadow-lg hover:bg-green-600">💬 Book on WhatsApp Instead</button>
+                    </div>
+                </section>
+            </div>`;
+        },
+
+        showCallModal(workerName, status) {
+            this.elements.modal.classList.remove('hidden');
+            this.elements.modal.classList.add('flex');
+            
+            if (status === 'busy') {
+                this.elements.modalTitle.textContent = 'Expert is Busy!';
+                const availableWorkers = (this.workerData['Laptop/Desktop Repair'] || []).filter(w => w.status === 'available');
+                const nextWorker = availableWorkers.length > 0 ? availableWorkers[0] : { name: 'another expert' };
+                this.elements.modalContent.innerHTML = `<p class="text-lg">⚡ ${workerName} is currently busy. Connecting you to another nearby verified expert…</p>`;
+                setTimeout(() => {
+                    this.elements.modalTitle.textContent = '✅ Connected!';
+                    this.elements.modalContent.innerHTML = `<p class="text-lg">You are now being connected to <strong>${nextWorker.name}</strong> (Nearest Verified Expert).</p>`;
+                }, 2000);
+            } else {
+                this.elements.modalTitle.textContent = `Connecting...`;
+                this.elements.modalContent.innerHTML = `
+                    <p class="text-lg mb-4">🔗 Connecting you to <strong>${workerName}</strong> via CitySetu bridge…</p>
+                    <div class="w-full bg-gray-200 rounded-full h-4">
+                        <div id="progress-bar" class="bg-blue-800 h-4 rounded-full" style="width: 0%"></div>
+                    </div>`;
+                
+                setTimeout(() => {
+                    document.getElementById('progress-bar').style.width = '100%';
+                }, 100);
+
+                setTimeout(() => {
+                    this.elements.modalTitle.textContent = 'Demo Feature';
+                    this.elements.modalContent.innerHTML = '<p class="text-lg">📞 Call feature coming soon! Our team will connect you manually for now.</p>';
+                }, 1500);
+            }
+        },
+
+        hideCallModal() {
+            this.elements.modal.classList.add('hidden');
+            this.elements.modal.classList.remove('flex');
+        },
+
+        bookSpecificWorker(workerName, serviceName) {
+            const phoneNumber = '919999999999'; // Admin/Chatbot number
+            const message = `Hi CitySetu 👋\nI would like to book expert *${workerName}* for the *${serviceName}* service.\n\nPlease connect me with them.`;
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        },
+
+        bookServiceViaWhatsapp(serviceName) {
+            const phoneNumber = '919999999999';
+            const message = `Hi CitySetu 👋\nI need help with ${serviceName}.\nPlease help me connect with a verified expert near me.`;
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        },
+    };
+
+    document.addEventListener('DOMContentLoaded', () => app.init());
+    </script>
+</body>
+</html>
+
