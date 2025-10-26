@@ -10,357 +10,71 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
     <style>
         :root {
-            /* Your original colors */
-            --brand-blue-original: #1e3a8a;
-            --brand-orange-original: #f97316;
-
-            /* New Theme Colors */
             --brand-navy: #1B2A49;
             --brand-orange: #FF7B00;
             --brand-gold: #ffc400;
             --font-main: 'Poppins', sans-serif;
         }
-
-        body {
-            font-family: var(--font-main);
-            background-color: #f7fafc;
-            color: #1a202c;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
+        body { font-family: var(--font-main); background-color: #f7fafc; color: #1a202c; display: flex; flex-direction: column; min-height: 100vh; }
         main#app-root { flex-grow: 1; }
-
-        /* Trustworthy yet Vibrant UI */
-        .hero-gradient {
-            background: linear-gradient(135deg, var(--brand-navy), #1e40af);
-        }
-        .card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-            border: 2px solid transparent;
-        }
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 10px 20px -3px rgba(27, 42, 73, 0.2);
-            border-color: var(--brand-orange);
-        }
-        .card .verified-badge {
-            transition: all 0.3s ease;
-            opacity: 0.8;
-        }
-        .card:hover .verified-badge {
-            opacity: 1;
-            transform: scale(1.1);
-            text-shadow: 0 0 10px var(--brand-gold);
-            color: var(--brand-gold);
-        }
-        .btn-animated {
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-        .btn-animated:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-        }
-        .btn-orange {
-            background-color: var(--brand-orange);
-            background-image: linear-gradient(to right, var(--brand-orange) 0%, var(--brand-gold) 100%);
-            background-size: 200% auto;
-        }
-        .btn-orange:hover {
-            background-position: right center; /* change the direction of the change here */
-        }
-        .btn-navy {
-            background-color: var(--brand-navy);
-        }
-        .btn-navy:hover {
-            background-color: #2a3b5e;
-        }
-
-        /* Call Simulation Modal */
-        #call-modal {
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-        .glassmorphism-modal {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            color: white;
-            opacity: 0;
-            transform: scale(0.95);
-        }
-
-        /* Pulsating Ring Animation */
-        .phone-icon-wrapper {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            margin: 20px auto;
-        }
-        .phone-icon-wrapper .pulsating-ring {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 80px;
-            height: 80px;
-            border: 4px solid rgba(255, 123, 0, 0.7);
-            border-radius: 50%;
-            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-        }
-        .phone-icon-wrapper .phone-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            background: var(--brand-orange);
-            border-radius: 50%;
-            animation: rotate-phone 2s linear infinite;
-        }
-        @keyframes pulse-ring {
-            0% { transform: scale(0.8); opacity: 0.8; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
-        @keyframes rotate-phone {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Chat Widget Styles */
+        .hero-gradient { background: linear-gradient(135deg, var(--brand-navy), #1e40af); }
+        .card { transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; border: 2px solid transparent; }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 10px 20px -3px rgba(27, 42, 73, 0.2); border-color: var(--brand-orange); }
+        .card .verified-badge { transition: all 0.3s ease; opacity: 0.8; }
+        .card:hover .verified-badge { opacity: 1; transform: scale(1.1); text-shadow: 0 0 10px var(--brand-gold); color: var(--brand-gold); }
+        .btn-animated { transition: all 0.3s ease; position: relative; overflow: hidden; z-index: 1; }
+        .btn-animated:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+        .btn-orange { background-color: var(--brand-orange); background-image: linear-gradient(to right, var(--brand-orange) 0%, var(--brand-gold) 100%); background-size: 200% auto; }
+        .btn-orange:hover { background-position: right center; }
+        .btn-navy { background-color: var(--brand-navy); }
+        .btn-navy:hover { background-color: #2a3b5e; }
+        #call-modal { transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .glassmorphism-modal { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: white; opacity: 0; transform: scale(0.95); }
+        .phone-icon-wrapper { position: relative; width: 80px; height: 80px; margin: 20px auto; }
+        .phone-icon-wrapper .pulsating-ring { position: absolute; left: 0; top: 0; width: 80px; height: 80px; border: 4px solid rgba(255, 123, 0, 0.7); border-radius: 50%; animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite; }
+        .phone-icon-wrapper .phone-icon { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: var(--brand-orange); border-radius: 50%; animation: rotate-phone 2s linear infinite; }
+        @keyframes pulse-ring { 0% { transform: scale(0.8); opacity: 0.8; } 100% { transform: scale(1.5); opacity: 0; } }
+        @keyframes rotate-phone { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         #citysetu-chat-widget { z-index: 1000; }
-        #chat-bubble {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--brand-navy), var(--brand-orange));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            transform: scale(1);
-        }
+        #chat-bubble { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: linear-gradient(135deg, var(--brand-navy), var(--brand-orange)); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; transition: all 0.3s ease; transform: scale(1); }
         #chat-bubble:hover { transform: scale(1.1); }
-        #chat-window {
-            position: fixed;
-            bottom: 100px;
-            right: 25px;
-            width: 350px;
-            max-width: 90vw;
-            height: 500px;
-            max-height: 70vh;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            /* Initial state for GSAP */
-            opacity: 0;
-            transform: translateY(20px) scale(0.95);
-            visibility: hidden;
-        }
-        #chat-header {
-            background: var(--brand-navy);
-            color: white;
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--brand-orange);
-        }
+        #chat-window { position: fixed; bottom: 100px; right: 25px; width: 350px; max-width: 90vw; height: 500px; max-height: 70vh; background: #fff; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden; opacity: 0; transform: translateY(20px) scale(0.95); visibility: hidden; }
+        #chat-header { background: var(--brand-navy); color: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--brand-orange); }
         #chat-header h3 { font-size: 1.1rem; font-weight: 600; }
         #chat-header-close { cursor: pointer; font-size: 1.5rem; line-height: 1; }
-        #chat-messages {
-            flex-grow: 1;
-            padding: 12px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .chat-message {
-            padding: 10px 15px;
-            border-radius: 18px;
-            max-width: 80%;
-            line-height: 1.4;
-            /* Animation state */
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        .chat-message.bot {
-            background: #f1f1f1;
-            color: #333;
-            border-bottom-left-radius: 4px;
-            align-self: flex-start;
-        }
-        .chat-message.user {
-            background: var(--brand-navy);
-            color: white;
-            border-bottom-right-radius: 4px;
-            align-self: flex-end;
-        }
-        .chat-message.typing-indicator {
-            align-self: flex-start;
-            padding: 10px 15px;
-        }
-        .typing-indicator span {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #ccc;
-            margin: 0 2px;
-            animation: typing-dots 1.4s infinite both;
-        }
-        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typing-dots {
-            0% { opacity: 0.2; }
-            20% { opacity: 1; }
-            100% { opacity: 0.2; }
-        }
-        #chat-input-area {
-            border-top: 1px solid #e0e0e0;
-            padding: 12px;
-            background: #f9f9f9;
-        }
+        #chat-messages { flex-grow: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .chat-message { padding: 10px 15px; border-radius: 18px; max-width: 80%; line-height: 1.4; opacity: 0; transform: translateY(10px); }
+        .chat-message.bot { background: #f1f1f1; color: #333; border-bottom-left-radius: 4px; align-self: flex-start; }
+        .chat-message.user { background: var(--brand-navy); color: white; border-bottom-right-radius: 4px; align-self: flex-end; }
+        .chat-message.typing-indicator { align-self: flex-start; padding: 10px 15px; }
+        .typing-indicator span { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ccc; margin: 0 2px; animation: typing-dots 1.4s infinite both; }
+        .typing-indicator span:nth-child(1) { animation-delay: 0s; } .typing-indicator span:nth-child(2) { animation-delay: 0.2s; } .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing-dots { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
+        #chat-input-area { border-top: 1px solid #e0e0e0; padding: 12px; background: #f9f9f9; }
         #chat-input-form { display: flex; gap: 8px; }
-        #chat-input {
-            flex-grow: 1;
-            border: 1px solid #ccc;
-            border-radius: 20px;
-            padding: 10px 15px;
-            font-size: 0.95rem;
-        }
-        #chat-input:focus {
-            outline: none;
-            border-color: var(--brand-navy);
-            box-shadow: 0 0 0 2px rgba(27, 42, 73, 0.2);
-        }
-        #chat-send-btn {
-            background: var(--brand-navy);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 42px;
-            height: 42px;
-            flex-shrink: 0;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
+        #chat-input { flex-grow: 1; border: 1px solid #ccc; border-radius: 20px; padding: 10px 15px; font-size: 0.95rem; }
+        #chat-input:focus { outline: none; border-color: var(--brand-navy); box-shadow: 0 0 0 2px rgba(27, 42, 73, 0.2); }
+        #chat-send-btn { background: var(--brand-navy); color: white; border: none; border-radius: 50%; width: 42px; height: 42px; flex-shrink: 0; cursor: pointer; transition: background-color 0.2s ease; }
         #chat-send-btn:hover { background: #2a3b5e; }
-        #chat-options-area {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 12px;
-            border-top: 1px solid #e0e0e0;
-        }
-        .chat-option-btn {
-            background: #fff;
-            border: 1px solid var(--brand-navy);
-            color: var(--brand-navy);
-            padding: 8px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
-        .chat-option-btn:hover {
-            background: var(--brand-navy);
-            color: white;
-        }
-
-        /* Success Animation */
-        #success-animation {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
-        }
-        .checkmark__circle {
-            stroke-dasharray: 166;
-            stroke-dashoffset: 166;
-            stroke-width: 3;
-            stroke-miterlimit: 10;
-            stroke: var(--brand-orange);
-            fill: none;
-            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
-        }
-        .checkmark {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            display: block;
-            stroke-width: 4;
-            stroke: #fff;
-            stroke-miterlimit: 10;
-            margin: 0 auto;
-            box-shadow: inset 0px 0px 0px var(--brand-orange);
-            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
-        }
-        .checkmark__check {
-            transform-origin: 50% 50%;
-            stroke-dasharray: 48;
-            stroke-dashoffset: 48;
-            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
-        }
-        @keyframes stroke {
-            100% { stroke-dashoffset: 0; }
-        }
-        @keyframes scale {
-            0%, 100% { transform: none; }
-            50% { transform: scale3d(1.1, 1.1, 1); }
-        }
-        @keyframes fill {
-            100% { box-shadow: inset 0px 0px 0px 40px var(--brand-orange); }
-        }
-
-        /* Base styles from original file */
-        body { font-family: 'Poppins', sans-serif; }
-        header.header-scrolled {
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-            transition: box-shadow 0.3s ease-in-out;
-        }
+        #chat-options-area { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; border-top: 1px solid #e0e0e0; }
+        .chat-option-btn { background: #fff; border: 1px solid var(--brand-navy); color: var(--brand-navy); padding: 8px 12px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; transition: all 0.2s ease; }
+        .chat-option-btn:hover { background: var(--brand-navy); color: white; }
+        #success-animation { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        .checkmark__circle { stroke-dasharray: 166; stroke-dashoffset: 166; stroke-width: 3; stroke-miterlimit: 10; stroke: var(--brand-orange); fill: none; animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards; }
+        .checkmark { width: 80px; height: 80px; border-radius: 50%; display: block; stroke-width: 4; stroke: #fff; stroke-miterlimit: 10; margin: 0 auto; box-shadow: inset 0px 0px 0px var(--brand-orange); animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both; }
+        .checkmark__check { transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards; }
+        @keyframes stroke { 100% { stroke-dashoffset: 0; } }
+        @keyframes scale { 0%, 100% { transform: none; } 50% { transform: scale3d(1.1, 1.1, 1); } }
+        @keyframes fill { 100% { box-shadow: inset 0px 0px 0px 40px var(--brand-orange); } }
+        header.header-scrolled { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); transition: box-shadow 0.3s ease-in-out; }
         #mobile-menu { transition: transform 0.3s ease-in-out; }
-        .form-input:focus {
-            border-color: var(--brand-navy);
-            box-shadow: 0 0 0 2px rgba(27, 42, 73, 0.3);
-            outline: none;
-        }
-        .fade-in-section {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-        .fade-in-section.is-visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .step-icon {
-            background-color: #ffedd5;
-            color: var(--brand-orange);
-            transition: transform 0.3s ease, background-color 0.3s ease;
-        }
-        .step-icon:hover {
-            transform: scale(1.1);
-            background-color: #fed7aa;
-        }
-        /* Hide original floating button */
+        .form-input { border: 1px solid #d1d5db; border-radius: 0.375rem; box-shadow: sm; padding: 0.5rem; }
+        .form-input:focus { border-color: var(--brand-navy); box-shadow: 0 0 0 2px rgba(27, 42, 73, 0.3); outline: none; }
+        .fade-in-section { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        .fade-in-section.is-visible { opacity: 1; transform: translateY(0); }
+        .step-icon { background-color: #ffedd5; color: var(--brand-orange); transition: transform 0.3s ease, background-color 0.3s ease; }
+        .step-icon:hover { transform: scale(1.1); background-color: #fed7aa; }
         .floating-whatsapp { display: none; }
-
     </style>
 </head>
 <body class="antialiased">
@@ -368,19 +82,16 @@
     <header id="main-header" class="bg-white sticky top-0 z-50">
         <nav class="container mx-auto px-6 py-2 flex justify-between items-center">
             <a href="#" onclick="app.navigateTo('home')" class="flex items-center">
-                 <img src="logo.jpg" alt="CitySetu Logo" class="h-16 w-auto mr-2" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjgwIiB2aWV3Qm94PSIwIDAgMjAwIDgwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMCAwIEggMjAwIFYgODAgSCAwIFoiIGZpbGw9IiNmN2ZhZmMiLz4KPHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMTgwIiBoZWlnaHQ9IjYwIiByeD0iOCIgZmlsbD0iI2ZmZWJkMyIvPgo8cGF0aCBkPSJNNjAsNjAgQzcwLDIwIDEzMCwyMCAxNDAsNjAiIHN0cm9rZT0iI2Y5NzMxNiIgc3Ryb2tlLXdpZHRoPSI2IiBmaWxsPSJub25lIi8+CjxwYXRoIGQ9Ik04MCw2MCBWIDMwIEw5MCwzMCBWIDYwIE0xMTAsNjAgViAzMCBMMTIwLDMwIFYgNjAiIHN0cm9rZT0iIzFlM2E4YSIgc3Ryb2tlLXdpZHRoPSI4IiBmaWxsPSJub25lIi8+Cjx0ZXh0IHg9IjEwMCIgeT0iNDUiIGZvbnQtZmFtaWx5PSJQb3BwaW5zIiBmb250LXNpemU9IjI0IiBmb250LXdlaWdodD0iYm9sZCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzFlM2E4YSI+Q2l0eVNldHU8L3RleHQ+Cjwvc3ZnPg=='">
-            </a>
+                 <img src="logo.jpg" alt="CitySetu Logo" class="h-16 w-auto mr-2" onerror="this.style.display='none'; this.onerror=null;"> <span class="text-2xl font-bold" style="color: var(--brand-navy);">CitySetu</span> </a>
             <div class="hidden md:flex items-center space-x-8">
                 <a href="#home" onclick="app.navigateTo('home')" class="text-gray-600 hover:text-blue-800">Home</a>
                 <a href="#services" onclick="app.navigateTo('home', '#services')" class="text-gray-600 hover:text-blue-800">Services</a>
                 <a href="#how-it-works" onclick="app.navigateTo('home', '#how-it-works')" class="text-gray-600 hover:text-blue-800">How It Works</a>
-                
+                <a href="#join-us" onclick="app.navigateTo('home', '#join-us')" class="text-gray-600 hover:text-blue-800">Join Us</a>
             </div>
              <div class="md:hidden">
                 <button id="mobile-menu-button" class="text-gray-600 hover:text-blue-800 focus:outline-none">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-                    </svg>
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
                 </button>
             </div>
         </nav>
@@ -388,131 +99,90 @@
             <a href="#home" onclick="app.closeMenuAndNavigate('home')" class="block py-2 px-4 text-sm text-gray-600 hover:bg-gray-100">Home</a>
             <a href="#services" onclick="app.closeMenuAndNavigate('home', '#services')" class="block py-2 px-4 text-sm text-gray-600 hover:bg-gray-100">Services</a>
             <a href="#how-it-works" onclick="app.closeMenuAndNavigate('home', '#how-it-works')" class="block py-2 px-4 text-sm text-gray-600 hover:bg-gray-100">How It Works</a>
-            
+            <a href="#join-us" onclick="app.closeMenuAndNavigate('home', '#join-us')" class="block py-2 px-4 text-sm text-gray-600 hover:bg-gray-100">Join Us</a>
         </div>
     </header>
 
     <main id="app-root">
         </main>
-        <section id="join-us" class="py-20 bg-gray-100 fade-in-section">
-    <div class="container mx-auto px-6">
-        <div class="text-center mb-12">
-            <h2 class="text-3xl md:text-4xl font-bold" style="color: var(--brand-navy);">Join Our Team of Experts</h2>
-            <p class="text-gray-600 mt-2">Are you a skilled professional in Ahmedabad? Get verified leads directly.</p>
+
+    <section id="join-us" class="py-20 bg-gray-100 fade-in-section">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold" style="color: var(--brand-navy);">Join Our Team of Experts</h2>
+                <p class="text-gray-600 mt-2">Are you a skilled professional in Ahmedabad? Get verified leads directly.</p>
+            </div>
+            <form id="worker-signup-form" class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="signup-name" class="block text-gray-700 font-bold mb-1">Full Name*</label>
+                        <input type="text" id="signup-name" class="form-input w-full px-3 py-2" placeholder="Your Name" required>
+                    </div>
+                    <div>
+                        <label for="signup-phone" class="block text-gray-700 font-bold mb-1">Mobile Number*</label>
+                        <input type="tel" id="signup-phone" class="form-input w-full px-3 py-2" placeholder="9999999999" required pattern="[0-9]{10}">
+                    </div>
+                    <div>
+                        <label for="signup-service" class="block text-gray-700 font-bold mb-1">Primary Service*</label>
+                        <input type="text" id="signup-service" class="form-input w-full px-3 py-2" placeholder="e.g., AC Repair, Electrician" required>
+                    </div>
+                    <div>
+                        <label for="signup-location" class="block text-gray-700 font-bold mb-1">Your Area*</label>
+                        <input type="text" id="signup-location" class="form-input w-full px-3 py-2" placeholder="e.g., Gota, Maninagar" required>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <button type="submit" id="signup-submit-btn" class="btn-animated btn-orange text-white font-bold py-3 px-8 rounded-full hover:bg-orange-600 transition-colors">
+                        Request to Join
+                    </button>
+                </div>
+                 <div id="signup-message" class="mt-4 text-center text-sm font-medium hidden"></div>
+            </form>
         </div>
-       
-        <form id="worker-signup-form" class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="signup-name" class="block text-gray-700 font-bold mb-1">Full Name*</label>
-                    <input type="text" id="signup-name" class="form-input w-full px-3 py-2 border rounded-lg focus:border-navy-500 focus:ring focus:ring-navy-200 focus:ring-opacity-50" placeholder="Your Name" required>
-                </div>
-                <div>
-                    <label for="signup-phone" class="block text-gray-700 font-bold mb-1">Mobile Number*</label>
-                    <input type="tel" id="signup-phone" class="form-input w-full px-3 py-2 border rounded-lg focus:border-navy-500 focus:ring focus:ring-navy-200 focus:ring-opacity-50" placeholder="9999999999" required pattern="[0-9]{10}"> 
-                </div>
-                <div>
-                    <label for="signup-service" class="block text-gray-700 font-bold mb-1">Primary Service*</label>
-                    <input type="text" id="signup-service" class="form-input w-full px-3 py-2 border rounded-lg focus:border-navy-500 focus:ring focus:ring-navy-200 focus:ring-opacity-50" placeholder="e.g., AC Repair, Electrician" required>
-                </div>
-                <div>
-                    <label for="signup-location" class="block text-gray-700 font-bold mb-1">Your Area*</label>
-                    <input type="text" id="signup-location" class="form-input w-full px-3 py-2 border rounded-lg focus:border-navy-500 focus:ring focus:ring-navy-200 focus:ring-opacity-50" placeholder="e.g., Gota, Maninagar" required>
-                </div>
-            </div>
-            <div class="text-center">
-                <button type="submit" id="signup-submit-btn" class="btn-animated btn-orange text-white font-bold py-3 px-8 rounded-full hover:bg-orange-600 transition-colors">
-                    Request to Join
-                </button>
-            </div>
-             <div id="signup-message" class="mt-4 text-center text-sm font-medium hidden"></div>
-        </form>
-    </div>
-</section>
+    </section>
 
     <footer id="contact" class="bg-gray-800 text-white py-12">
         <div class="container mx-auto px-6 text-center">
             <h3 class="text-2xl font-bold">CitySetu</h3>
             <p class="mt-2 mb-4">Your City, Your Services, One Setu.</p>
             <p class="text-gray-400">For inquiries, contact us at <a href="mailto:support@citysetu.com" class="text-blue-400 hover:underline">support@citysetu.com</a></p>
+            <p class="text-xs text-gray-500 mt-4">&copy; 2025 CitySetu. All rights reserved.</p>
         </div>
     </footer>
 
     <div id="call-modal" class="fixed inset-0 z-[1001] items-center justify-center hidden" onclick="event.target === this && app.hideCallModal()">
         <div class="fixed inset-0 bg-black opacity-80"></div>
-        <div id="call-modal-content" class="glassmorphism-modal p-8 w-full max-w-md z-10 m-4 text-center">
-            </div>
+        <div id="call-modal-content" class="glassmorphism-modal p-8 w-full max-w-md z-10 m-4 text-center"></div>
     </div>
 
     <div id="citysetu-chat-widget">
         <div id="chat-bubble">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" viewBox="0 0 256 256"><path d="M216,48H40A16,16,0,0,0,24,64V224L64,192H216a16,16,0,0,0,16-16V64A16,16,0,0,0,216,48ZM128,144a12,12,0,1,1,12-12A12,12,0,0,1,128,144Zm-40,0a12,12,0,1,1,12-12A12,12,0,0,1,88,144Zm80,0a12,12,0,1,1,12-12A12,12,0,0,1,168,144Z"></path></svg>
         </div>
-
         <div id="chat-window">
             <div id="chat-header">
-                <div>
-                    <h3 class="font-bold">CitySetu Booking</h3>
-                    <span class="text-xs text-gray-300">Our team replies instantly</span>
-                </div>
+                <div><h3 class="font-bold">CitySetu Booking</h3><span class="text-xs text-gray-300">Our team replies instantly</span></div>
                 <span id="chat-header-close" class="font-bold">&times;</span>
             </div>
-            <div id="chat-messages">
-                </div>
-            <div id="chat-options-area">
-                </div>
+            <div id="chat-messages"></div>
+            <div id="chat-options-area"></div>
             <div id="chat-input-area">
                 <form id="chat-input-form">
                     <input type="text" id="chat-input" placeholder="Type your message..." autocomplete="off">
-                    <button id="chat-send-btn" type="submit">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/></svg>
-                    </button>
+                    <button id="chat-send-btn" type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16"><path d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z"/></svg></button>
                 </form>
             </div>
         </div>
     </div>
 
-    <script type="text/javascript" src="https://unpkg.com/papaparse@5.3.0/papaparse.min.js"></script>
     <script>
+    // ------------------------------------------------------------------
+    // CONFIGURATION
+    // ------------------------------------------------------------------
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWftBGpucpxZuqRN9swsmBfb1qINP1DUt4aw8h2lM20O2vKmeg58ew8_ZJ5BKevfpG/exec'; // Your latest URL
 
     // ------------------------------------------------------------------
-    // 1. CONFIGURATION
-    // ------------------------------------------------------------------
-
-    // ⚠️ PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT URL HERE
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWftBGpucpxZuqRN9swsmBfb1qINP1DUt4aw8h2lM20O2vKmeg58ew8_ZJ5BKevfpG/exec';
-// 🔧 Smart Proxy Function to add worker using CitySetu Apps Script (CORS Safe)
-async function addWorker(workerData) {
-  const payload = {
-    type: "addWorker",
-    name: workerData.name,
-    phone: workerData.phone,
-    service: workerData.service,
-    experience: workerData.experience,
-    location: workerData.location,
-    rating: workerData.rating,
-    status: workerData.status
-  };
-
-  // Encode the payload for proxy GET call
-  const url = `${GOOGLE_SCRIPT_URL}?payload=${encodeURIComponent(JSON.stringify(payload))}`;
-
-  try {
-    const response = await fetch(url);
-    const data = await response.json();
-    console.log("✅ Worker Added:", data);
-    alert(data.message || "Worker added successfully!");
-  } catch (error) {
-    console.error("❌ Error adding worker:", error);
-    alert("Something went wrong while adding worker.");
-  }
-}
-
-    // ⚠️ Set to your original Google Sheet URL for *reading* worker data
-    const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1ORwNxl244SUIcLrSTDGeFt7rqX-d453gEnfF1Id-0PY/edit?usp=sharing';
-
-    // ------------------------------------------------------------------
-    // 2. MAIN APPLICATION LOGIC
+    // MAIN APPLICATION LOGIC
     // ------------------------------------------------------------------
     const app = {
         workerData: {},
@@ -523,54 +193,38 @@ async function addWorker(workerData) {
             modalContent: document.getElementById('call-modal-content'),
             mobileMenu: document.getElementById('mobile-menu'),
             mobileMenuButton: document.getElementById('mobile-menu-button'),
+            signupForm: document.getElementById('worker-signup-form')
         },
 
         async init() {
-        this.elements.mobileMenuButton.addEventListener('click', this.toggleMobileMenu.bind(this));
-        window.addEventListener('hashchange', this.router.bind(this));
-        window.addEventListener('scroll', this.handleScroll.bind(this));
+            this.elements.mobileMenuButton.addEventListener('click', this.toggleMobileMenu.bind(this));
+            window.addEventListener('hashchange', this.router.bind(this));
+            window.addEventListener('scroll', this.handleScroll.bind(this));
+            if (this.elements.signupForm) {
+                 this.elements.signupForm.addEventListener('submit', this.handleWorkerSignup.bind(this));
+            } else {
+                 document.addEventListener('DOMContentLoaded', () => {
+                     const lateSignupForm = document.getElementById('worker-signup-form');
+                     if(lateSignupForm) lateSignupForm.addEventListener('submit', this.handleWorkerSignup.bind(this));
+                 });
+            }
 
-        // --- ADD THIS EVENT LISTENER FOR SIGNUP FORM ---
-        const signupForm = document.getElementById('worker-signup-form');
-        if (signupForm) {
-            signupForm.addEventListener('submit', this.handleWorkerSignup.bind(this));
-        } else {
-            // Fallback if form isn't immediately available (less likely now)
-            document.addEventListener('DOMContentLoaded', () => {
-                 const lateSignupForm = document.getElementById('worker-signup-form');
-                 if(lateSignupForm) lateSignupForm.addEventListener('submit', this.handleWorkerSignup.bind(this));
-            });
-        }
-        // --- END ADD LISTENER ---
+            await this.loadWorkerData();
+            this.router();
+            this.chat.init();
+            this.initAnimations();
+            this.setupScrollAnimations();
+        },
 
-        await this.loadWorkerData(); // Load worker data first
-        this.router(); // Then render the page (including the form)
-        this.chat.init();
-        this.initAnimations();
-    },
-        
         initAnimations() {
-            // Animate hero text on load
-            gsap.fromTo(".hero-title", 
-                { opacity: 0, y: 30 }, 
-                { opacity: 1, y: 0, duration: 0.8, delay: 0.2, ease: "power3.out" }
-            );
-            gsap.fromTo(".hero-subtitle", 
-                { opacity: 0, y: 20 }, 
-                { opacity: 1, y: 0, duration: 0.8, delay: 0.4, ease: "power3.out" }
-            );
-            gsap.fromTo(".hero-buttons > *", 
-                { opacity: 0, scale: 0.9 }, 
-                { opacity: 1, scale: 1, duration: 0.5, delay: 0.6, stagger: 0.2, ease: "back.out(1.7)" }
-            );
+            gsap.fromTo(".hero-title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.2, ease: "power3.out" });
+            gsap.fromTo(".hero-subtitle", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.4, ease: "power3.out" });
+            gsap.fromTo(".hero-buttons > *", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.5, delay: 0.6, stagger: 0.2, ease: "back.out(1.7)" });
         },
 
         handleScroll() {
-            if (window.scrollY > 20) {
-                this.elements.header.classList.add('header-scrolled');
-            } else {
-                this.elements.header.classList.remove('header-scrolled');
-            }
+            if (window.scrollY > 20) this.elements.header.classList.add('header-scrolled');
+            else this.elements.header.classList.remove('header-scrolled');
         },
 
         setupScrollAnimations() {
@@ -578,7 +232,6 @@ async function addWorker(workerData) {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('is-visible');
-                        // Use GSAP for fade-in
                         gsap.to(entry.target, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' });
                         observer.unobserve(entry.target);
                     }
@@ -586,77 +239,41 @@ async function addWorker(workerData) {
             }, { threshold: 0.1 });
 
             document.querySelectorAll('.fade-in-section').forEach(section => {
-                // Set initial state for GSAP
                 gsap.set(section, { opacity: 0, y: 30 });
                 observer.observe(section);
             });
         },
-        
-        loadWorkerData() {
-            return new Promise(resolve => {
-                if (!GOOGLE_SHEET_URL || GOOGLE_SHEET_URL === 'https://docs.google.com/spreadsheets/d/1JmFiszWoxPPJ4AiykLaaH60yj929DwLDhfFSsM5IB8I/edit?usp=sharing') {
-                    console.warn("Google Sheet URL is not set. Using mock data.");
-                    this.workerData = this.getMockData();
-                    resolve();
-                    return;
-                }
 
-                Papa.parse(GOOGLE_SHEET_URL, {
-                    download: true,
-                    header: true,
-                    complete: (results) => {
-                        const groupedData = {};
-                        results.data.forEach(row => {
-                            const service = row.service;
-                            if (!service) return;
-                            if (!groupedData[service]) {
-                                groupedData[service] = [];
-                            }
-                            groupedData[service].push({
-                                name: row.name || 'N/A',
-                                experience: row.experience || 'N/A',
-                                location: row.location || 'N/A',
-                                rating: parseFloat(row.rating) || 0,
-                                status: row.status || 'available',
-                                // Add a worker ID
-                                id: row.id || `w_${Math.random().toString(36).substr(2, 9)}`
-                            });
-                        });
-                        this.workerData = groupedData;
-                        console.log("Worker data loaded from Google Sheet:", this.workerData);
-                        resolve();
-                    },
-                    error: (error) => {
-                        console.error("Error fetching data from Google Sheet:", error);
-                        console.warn("Falling back to mock data.");
-                        this.workerData = this.getMockData();
-                        resolve();
-                    }
+        async loadWorkerData() {
+             if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('PASTE_YOUR_NEW')) {
+                this.workerData = {};
+                return;
+             }
+             try {
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                if (!response.ok) throw new Error(`Network error: ${response.statusText}`);
+                const data = await response.json();
+                if (data.status === 'error') throw new Error(`API Error: ${data.message}`);
+                if (!data.workers) throw new Error('Workers data not found.');
+
+                const groupedData = {};
+                data.workers.forEach(worker => {
+                    const service = worker.service;
+                    if (!service) return;
+                    const serviceKey = String(service).trim();
+                    if (!groupedData[serviceKey]) groupedData[serviceKey] = [];
+                    groupedData[serviceKey].push({
+                        id: worker.id || `w_${Math.random().toString(36).substr(2, 9)}`,
+                        name: worker.name || 'N/A', experience: worker.experience || 'N/A',
+                        location: worker.location || 'N/A', rating: parseFloat(worker.rating) || 0,
+                        status: worker.status || 'available', phone: worker.phone || 'N/A'
+                    });
                 });
-            });
-        },
-        
-        getMockData() {
-             return {
-                'Laptop Repair': [
-                    { id: 'w_123', name: 'Rakesh Patel', experience: '5+ Years', location: 'Maninagar', rating: 4.8, status: 'available' },
-                    { id: 'w_124', name: 'Jignesh Mehta', experience: '8+ Years', location: 'Satellite', rating: 4.9, status: 'available' },
-                    { id: 'w_125', name: 'Sunil Varma', experience: '3+ Years', location: 'Bopal', rating: 4.6, status: 'busy' },
-                ],
-                'AC Repair': [
-                    { id: 'w_126', name: 'Suresh Parmar', experience: '12+ Years', location: 'Chandkheda', rating: 4.9, status: 'available' },
-                    { id: 'w_127', name: 'Mahesh Solanki', experience: '7+ Years', location: 'Bodakdev', rating: 4.7, status: 'available' },
-                ],
-                'Electrician': [
-                    { id: 'w_128', name: 'Anil Vyas', experience: '10+ Years', location: 'Gota', rating: 4.8, status: 'available' },
-                ],
-                'Home Repair': [
-                    { id: 'w_129', name: 'Prakash Mistry', experience: '15+ Years', location: 'Vastrapur', rating: 4.9, status: 'available' },
-                ],
-                'Cleaning': [
-                    { id: 'w_130', name: 'Deep Clean Team', experience: '4+ Years', location: 'Full Ahmedabad', rating: 4.7, status: 'available' },
-                ]
-            };
+                this.workerData = groupedData;
+             } catch (error) {
+                 console.error("Error loading worker data:", error); // Keep critical error log
+                 this.workerData = {};
+             }
         },
 
         router() {
@@ -664,29 +281,33 @@ async function addWorker(workerData) {
             const [page, param] = path.split('/');
 
             if (page === 'service' && param) {
-                const serviceName = decodeURIComponent(param);
-                this.renderServicePage(serviceName);
+                this.renderServicePage(decodeURIComponent(param));
             } else {
                 this.renderHomePage();
-                if(param) { 
-                    setTimeout(() => document.querySelector(param)?.scrollIntoView({ behavior: 'smooth' }), 100);
+                if(window.location.hash && !param) {
+                    const targetId = window.location.hash;
+                    setTimeout(() => document.querySelector(targetId)?.scrollIntoView({ behavior: 'smooth' }), 100);
+                } else if (param) {
+                     setTimeout(() => document.querySelector(param)?.scrollIntoView({ behavior: 'smooth' }), 100);
                 }
             }
-            setTimeout(() => this.setupScrollAnimations(), 100);
+            setTimeout(() => this.setupScrollAnimations(), 50);
         },
 
         navigateTo(page, param = '') {
-            window.location.hash = param ? `${page}/${param}` : page;
-        },
-        
-        toggleMobileMenu() {
-            this.elements.mobileMenu.classList.toggle('-translate-x-full');
+            const newHash = param ? `${page}/${param}` : page;
+             if (page === 'home' && param) {
+                 window.location.hash = param;
+                 if (window.location.hash === `#${param.substring(1)}`) {
+                      setTimeout(() => document.querySelector(param)?.scrollIntoView({ behavior: 'smooth' }), 100);
+                 }
+             } else {
+                 window.location.hash = newHash;
+             }
         },
 
-        closeMenuAndNavigate(page, param = '') {
-            this.elements.mobileMenu.classList.add('-translate-x-full');
-            this.navigateTo(page, param);
-        },
+        toggleMobileMenu() { this.elements.mobileMenu.classList.toggle('-translate-x-full'); },
+        closeMenuAndNavigate(page, param = '') { this.elements.mobileMenu.classList.add('-translate-x-full'); this.navigateTo(page, param); },
 
         renderHomePage() {
             window.scrollTo(0, 0);
@@ -697,13 +318,8 @@ async function addWorker(workerData) {
                         <h1 class="hero-title text-4xl md:text-6xl font-bold leading-tight mb-4">Your City, Your Services, One Setu.</h1>
                         <p class="hero-subtitle text-lg md:text-xl text-blue-200 mb-8 max-w-3xl mx-auto">Find verified experts in Ahmedabad. Instantly book via Chat, Call, or WhatsApp.</p>
                         <div class="hero-buttons flex flex-col sm:flex-row justify-center items-center gap-4">
-                             <button onclick="app.chat.open()" class="btn-animated btn-orange text-white text-lg font-bold py-4 px-8 rounded-full inline-block shadow-lg">
-                                💬 Book via Chat
-                             </button>
-                             <button onclick="app.bookServiceViaWhatsapp('General Inquiry')" class="btn-animated bg-green-500 text-white text-lg font-bold py-4 px-8 rounded-full inline-block shadow-lg hover:bg-green-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="inline-block mr-2 -mt-1" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
-                                Book on WhatsApp
-                             </button>
+                             <button onclick="app.chat.open()" class="btn-animated btn-orange text-white text-lg font-bold py-4 px-8 rounded-full inline-block shadow-lg">💬 Book via Chat</button>
+                             <button onclick="app.bookServiceViaWhatsapp('General Inquiry')" class="btn-animated bg-green-500 text-white text-lg font-bold py-4 px-8 rounded-full inline-block shadow-lg hover:bg-green-600"> <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="inline-block mr-2 -mt-1" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg> Book on WhatsApp </button>
                         </div>
                     </div>
                 </section>
@@ -729,10 +345,7 @@ async function addWorker(workerData) {
                         </div>
                     </div>
                 </section>
-                <section id="contact-form" class="py-20 bg-gray-50 fade-in-section">
-                    </section>
             </div>`;
-            // Re-trigger hero animations
             this.initAnimations();
         },
 
@@ -752,14 +365,12 @@ async function addWorker(workerData) {
                     </div>
                     <div class="mt-auto pt-4 flex gap-2">
                         <button onclick="app.startCallSimulation('${worker.name}', '${serviceName}', '${worker.status}')" class="w-1/2 btn-animated btn-navy text-white py-2 rounded-lg font-semibold text-sm">📞 Call Now</button>
-                        
                         <button onclick="app.chat.openWithService('${serviceName}', '${worker.name}')" class="w-1/2 btn-animated btn-orange text-white py-2 rounded-lg font-semibold text-sm">💬 Book Now</button>
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('');
 
             this.elements.root.innerHTML = `
-            <div id="service-page" class="fade-in-section is-visible">
+            <div id="service-page">
                 <section class="py-12" style="background-color: #dbeafe;">
                     <div class="container mx-auto px-6 text-center">
                         <h1 class="text-3xl md:text-4xl font-bold" style="color: ${this.getBrandColor('navy')}">Find Verified ${serviceName} Experts</h1>
@@ -768,8 +379,8 @@ async function addWorker(workerData) {
                 </section>
                 <section class="py-16">
                     <div class="container mx-auto px-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            ${workers.length > 0 ? workersHtml : '<p class="col-span-full text-center text-gray-500">No workers available for this service yet. We are expanding quickly!</p>'}
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${workers.length > 0 ? workersHtml : '<p class="col-span-full text-center text-gray-500 py-10">No workers currently listed for this service. We are expanding quickly!</p>'}
                         </div>
                     </div>
                 </section>
@@ -783,495 +394,85 @@ async function addWorker(workerData) {
             </div>`;
         },
 
-        // ------------------------------------------------------------------
-        // 3. NEW CALL SIMULATION & LOGGING
-        // ------------------------------------------------------------------
-
         startCallSimulation(workerName, serviceName, status) {
-            // Show the modal
-            this.elements.modal.classList.remove('hidden');
-            this.elements.modal.classList.add('flex');
+            this.elements.modal.classList.remove('hidden'); this.elements.modal.classList.add('flex');
             gsap.to(this.elements.modal, { opacity: 1, duration: 0.3 });
-            
-            // Timeline for animations
             const tl = gsap.timeline();
-            
-            // 1. Initial "Connecting" state
-            this.elements.modalContent.innerHTML = `
-                <h3 class="text-2xl font-bold mb-4">Connecting...</h3>
-                <div class="phone-icon-wrapper">
-                    <div class="pulsating-ring"></div>
-                    <div class="phone-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" viewBox="0 0 16 16"><path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.363-1.03-.038-2.137.703-2.877L1.885.511z"/></svg>
-                    </div>
-                </div>
-                <p class="text-lg mt-4">Connecting you securely to <strong>${workerName}</strong>...</p>
-                <p class="text-sm text-gray-300">via CitySetu bridge</p>
-            `;
-            
-            // Animate the modal content in
+            this.elements.modalContent.innerHTML = ` <h3 class="text-2xl font-bold mb-4">Connecting...</h3> <div class="phone-icon-wrapper"> <div class="pulsating-ring"></div> <div class="phone-icon"> <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" viewBox="0 0 16 16"><path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.568 17.568 0 0 0 4.168 6.608 17.569 17.569 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.678.678 0 0 0-.58-.122l-2.19.547a1.745 1.745 0 0 1-1.657-.459L5.482 8.062a1.745 1.745 0 0 1-.46-1.657l.548-2.19a.678.678 0 0 0-.122-.58L3.654 1.328zM1.884.511a1.745 1.745 0 0 1 2.612.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.363-1.03-.038-2.137.703-2.877L1.885.511z"/></svg> </div> </div> <p class="text-lg mt-4">Connecting you securely to <strong>${workerName}</strong>...</p> <p class="text-sm text-gray-300">via CitySetu bridge</p> `;
             tl.fromTo("#call-modal-content", { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.4, ease: "power3.out" });
-
-            // 2. Wait 3 seconds, then show "Connected"
-            tl.to("#call-modal-content", {
-                delay: 3,
-                opacity: 0,
-                duration: 0.3,
-                onComplete: () => {
-                    this.elements.modalContent.innerHTML = `
-                        <h3 class="text-2xl font-bold mb-4 text-green-400">📞 Connected!</h3>
-                        <p class="text-lg">Connecting to proxy number:</p>
-                        <p class="text-3xl font-bold my-2">+91-99999-99999</p>
-                        <p class="text-sm text-gray-300 font-bold mt-4 bg-red-800/50 px-3 py-1 rounded-full inline-block">
-                           <span class="inline-block w-2 h-2 bg-red-500 rounded-full mr-1 animate-pulse"></span>
-                           Call recording active for safety
-                        </p>
-                        <p class="text-xs text-gray-400 mt-4">(This is a demo. In a real app, your phone would ring now)</p>
-                        <button onclick="app.hideCallModal()" class="mt-6 bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300 font-semibold">End Call</button>
-                    `;
-                    // Animate new content in
-                    gsap.to("#call-modal-content", { opacity: 1, duration: 0.3 });
-                }
-            });
-
-            // 3. Log this call to Google Sheet
-            // COMMENT: This logs the call *request*
-            this.logToSheet('call', {
-                workerName: workerName,
-                service: serviceName
-            });
-            
-            // COMMENT: Here you would integrate your call API
-            // e.g., twilio.makeCall(userNumber, workerVirtualNumber);
+            tl.to("#call-modal-content", { delay: 3, opacity: 0, duration: 0.3, onComplete: () => {
+                 this.elements.modalContent.innerHTML = ` <h3 class="text-2xl font-bold mb-4 text-green-400">📞 Connected!</h3> <p class="text-lg">Connecting to proxy number:</p> <p class="text-3xl font-bold my-2">+91-99999-99999</p> <p class="text-sm text-gray-300 font-bold mt-4 bg-red-800/50 px-3 py-1 rounded-full inline-block"> <span class="inline-block w-2 h-2 bg-red-500 rounded-full mr-1 animate-pulse"></span> Call recording active for safety </p> <p class="text-xs text-gray-400 mt-4">(This is a demo. In a real app, your phone would ring now)</p> <button onclick="app.hideCallModal()" class="mt-6 bg-gray-200 text-gray-800 px-5 py-2 rounded-lg hover:bg-gray-300 font-semibold">End Call</button> `;
+                gsap.to("#call-modal-content", { opacity: 1, duration: 0.3 });
+            }});
+            this.logToSheet('call', { workerName: workerName, service: serviceName });
         },
 
         hideCallModal() {
-            gsap.to(this.elements.modal, { 
-                opacity: 0, 
-                duration: 0.3,
-                onComplete: () => {
-                    this.elements.modal.classList.add('hidden');
-                    this.elements.modal.classList.remove('flex');
-                    // Clear content for next time
-                    this.elements.modalContent.innerHTML = '';
-                }
-            });
+             gsap.to(this.elements.modal, { opacity: 0, duration: 0.3, onComplete: () => {
+                 this.elements.modal.classList.add('hidden'); this.elements.modal.classList.remove('flex');
+                 this.elements.modalContent.innerHTML = '';
+             }});
         },
 
-        // ------------------------------------------------------------------
-        // 4. NEW CHAT WIDGET LOGIC
-        // ------------------------------------------------------------------
         chat: {
-            isOpen: false,
-            // UPDATED STATE FLOW
-            state: 'initial', // initial, awaiting_service, awaiting_name, awaiting_phone, awaiting_location, awaiting_time, awaiting_confirmation
-            bookingDetails: {
-                name: "",
-                phone: "",
-                service: "",
-                location: "",
-                time: ""
-            },
-            elements: {
-                bubble: document.getElementById('chat-bubble'),
-                window: document.getElementById('chat-window'),
-                headerClose: document.getElementById('chat-header-close'),
-                messages: document.getElementById('chat-messages'),
-                inputArea: document.getElementById('chat-input-area'),
-                inputForm: document.getElementById('chat-input-form'),
-                input: document.getElementById('chat-input'),
-                optionsArea: document.getElementById('chat-options-area'),
-            },
-
-            init() {
-                this.elements.bubble.addEventListener('click', () => this.open());
-                this.elements.headerClose.addEventListener('click', () => this.close());
-                this.elements.inputForm.addEventListener('submit', (e) => this.handleSubmit(e));
-                this.startChat();
-            },
-
-            open() {
-                if (this.isOpen) return;
-                this.isOpen = true;
-                gsap.to(this.elements.bubble, { opacity: 0, scale: 0.5, duration: 0.2, ease: 'power3.in' });
-                this.elements.window.style.visibility = 'visible';
-                gsap.to(this.elements.window, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'power3.out' });
-            },
-
-            close() {
-                if (!this.isOpen) return;
-                this.isOpen = false;
-                gsap.to(this.elements.window, { opacity: 0, y: 20, scale: 0.95, duration: 0.3, ease: 'power3.in', onComplete: () => {
-                    this.elements.window.style.visibility = 'hidden';
-                }});
-                gsap.to(this.elements.bubble, { opacity: 1, scale: 1, duration: 0.3, delay: 0.2, ease: 'back.out(1.7)' });
-            },
-            
-            openWithService(serviceName, workerName = null) {
-                this.startChat(); // Reset chat
-                this.bookingDetails.service = serviceName;
-                
-                let introMessage = `I need the <strong>${serviceName}</strong> service.`;
-                if (workerName) {
-                    introMessage = `Hi! I'd like to book <strong>${workerName}</strong> for <strong>${serviceName}</strong>.`;
-                }
-                
-                this.addMessage(introMessage, 'user');
-                
-                // NEW: Skip to asking for name
-                this.state = 'awaiting_name';
-                this.showTypingAndReply("Great! What is your full name?", 1500, () => {
-                    this.elements.input.disabled = false;
-                    this.elements.input.placeholder = "Type your name...";
-                    this.elements.input.focus();
-                });
-                this.open();
-            },
-
-            startChat() {
-                // Reset state
-                this.state = 'initial';
-                this.bookingDetails = { name: "", phone: "", service: "", location: "", time: "" };
-                this.elements.messages.innerHTML = '';
-                this.elements.input.placeholder = "Type your message...";
-                this.elements.input.disabled = true;
-                this.elements.optionsArea.innerHTML = '';
-                
-                // Start flow
-                this.showTypingAndReply("👋 Hi! Welcome to CitySetu.", 500, () => {
-                    this.showTypingAndReply("What service do you need?", 1200, () => {
-                        this.showServiceOptions();
-                        this.state = 'awaiting_service';
-                    });
-                });
-            },
-
-            handleSubmit(e) {
-                e.preventDefault();
-                const userInput = this.elements.input.value.trim();
-                if (!userInput) return;
-
-                this.addMessage(userInput, 'user');
-                this.elements.input.value = '';
-                this.handleReply(userInput, userInput); // Pass both value and text
-            },
-
-            handleOptionClick(value, text) {
-                this.addMessage(text, 'user');
-                this.elements.optionsArea.innerHTML = ''; // Clear options
-                this.handleReply(value, text); // Pass both value and text
-            },
-
-            handleReply(value, text) {
-                this.elements.input.disabled = true;
-                this.elements.input.placeholder = "Please wait...";
-                
-                switch(this.state) {
-                    case 'awaiting_service':
-                        this.bookingDetails.service = text; // Use the text "Laptop Repair"
-                        this.state = 'awaiting_name';
-                        this.showTypingAndReply("Got it! What is your full name?", 1500, () => {
-                            this.elements.input.disabled = false;
-                            this.elements.input.placeholder = "Type your name...";
-                            this.elements.input.focus();
-                        });
-                        break;
-                    
-                    case 'awaiting_name':
-                        this.bookingDetails.name = value;
-                        this.state = 'awaiting_phone';
-                        this.showTypingAndReply(`Thanks, ${value}. What's your mobile number?`, 1500, () => {
-                            this.elements.input.disabled = false;
-                            this.elements.input.placeholder = "Type your 10-digit number...";
-                            this.elements.input.focus();
-                        });
-                        break;
-
-                    // --- THIS CASE WAS MISSING ---
-                    case 'awaiting_phone':
-                        this.bookingDetails.phone = value; // Save the phone number
-                        this.state = 'awaiting_location';
-                        this.showTypingAndReply("Please share your location (e.g., Gota, Vastrapur).", 1500, () => {
-                            this.elements.input.disabled = false;
-                            this.elements.input.placeholder = "Type your location...";
-                            this.elements.input.focus();
-                        });
-                        break;
-                    // --- END OF MISSING CASE ---
-
-                    case 'awaiting_location':
-                        this.bookingDetails.location = value;
-                        this.state = 'awaiting_time';
-                        this.showTypingAndReply("When do you need the service? (e.g., 'Today ASAP', 'Tomorrow 4 PM')", 1500, () => {
-                            this.elements.input.disabled = false;
-                            this.elements.input.placeholder = "Type your preferred time...";
-                            this.elements.input.focus();
-                        });
-                        break;
-
-                    case 'awaiting_time':
-                        this.bookingDetails.time = value;
-                        this.state = 'awaiting_confirmation';
-                        this.showTypingAndReply(`Great! Here's your booking summary:
-                            <br><strong>Name:</strong> ${this.bookingDetails.name}
-                            <br><strong>Phone:</strong> ${this.bookingDetails.phone}
-                            <br><strong>Service:</strong> ${this.bookingDetails.service}
-                            <br><strong>Location:</strong> ${this.bookingDetails.location}
-                            <br><strong>Time:</strong> ${this.bookingDetails.time}
-                            <br><br>Do you want to confirm this booking?`, 2000, () => {
-                            this.showConfirmationOptions();
-                        });
-                        break;
-                        
-                    case 'awaiting_confirmation':
-                        if (value === 'yes') {
-                            this.confirmBooking();
-                        } else {
-                            this.showTypingAndReply("No problem! Let's start over.", 1000, () => {
-                                this.startChat();
-                            });
-                        }
-                        break;
-                    
-                    default:
-                        this.showTypingAndReply("I'm sorry, I'm just a simple bot and can't answer that. I can only help with booking.", 1500, () => {
-                            this.reAskCurrentQuestion();
-                        });
-                        break;
-                }
-            },        
-              
-            
-            reAskCurrentQuestion() {
-                // This function puts the bot back on track
-                this.elements.input.disabled = true;
-                this.elements.input.placeholder = "Please wait...";
-
-                if (this.state === 'awaiting_service') {
-                    this.showTypingAndReply("What service do you need?", 1000, () => this.showServiceOptions());
-                } else if (this.state === 'awaiting_name') {
-                    this.showTypingAndReply("What is your full name?", 1000, () => {
-                        this.elements.input.disabled = false;
-                        this.elements.input.placeholder = "Type your name...";
-                    });
-                }
-                // ... (add other states as needed) ...
-            },
-
-            // Functions copied from original script
-            addMessage(text, sender = 'bot', onComplete = null) {
-                const msgEl = document.createElement('div');
-                msgEl.classList.add('chat-message', sender);
-                msgEl.innerHTML = text;
-                this.elements.messages.appendChild(msgEl);
-                
-                // Animate message in
-                gsap.to(msgEl, { 
-                    opacity: 1, 
-                    y: 0, 
-                    duration: 0.4, 
-                    ease: 'power3.out',
-                    onComplete: () => {
-                        this.elements.messages.scrollTop = this.elements.messages.scrollHeight;
-                        if(onComplete) onComplete();
-                    }
-                });
-            },
-
-            showTypingAndReply(replyText, delay, onComplete) {
-                const typingEl = document.createElement('div');
-                typingEl.classList.add('chat-message', 'typing-indicator');
-                typingEl.innerHTML = '<span></span><span></span><span></span>';
-                this.elements.messages.appendChild(typingEl);
-                this.elements.messages.scrollTop = this.elements.messages.scrollHeight;
-
-                setTimeout(() => {
-                    typingEl.remove();
-                    this.addMessage(replyText, 'bot', onComplete);
-                }, delay);
-            },
-
-            showServiceOptions() {
-                this.elements.input.disabled = true;
-                this.elements.input.placeholder = "Please select an option above";
-                this.elements.optionsArea.innerHTML = `
-                    <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Laptop Repair', 'Laptop Repair')">💻 Laptop Repair</button>
-                    <button class="chat-option-btn" onclick="app.chat.handleOptionClick('AC Repair', 'AC Repair')">❄️ AC Repair</button>
-                    <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Electrician', 'Electrician')">💡 Electrician</button>
-                    <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Home Repair', 'Home Repair')">🔨 Home Repair</button>
-                    <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Cleaning', 'Cleaning')">🧹 Cleaning</button>
-                `;
-            },
-            
-            showConfirmationOptions() {
-                this.elements.input.disabled = true;
-                this.elements.input.placeholder = "Please confirm above";
-                this.elements.optionsArea.innerHTML = `
-                    <button class="chat-option-btn" onclick="app.chat.handleOptionClick('yes', 'Yes, confirm booking')">✅ Yes, Confirm</button>
-                    <button class="chat-option-btn" onclick="app.chat.handleOptionClick('no', 'No, cancel')">❌ No, Cancel</button>
-                `;
-            },
-
-            confirmBooking() {
-                // Show success animation in chat
-                this.elements.inputArea.style.display = 'none';
-                this.elements.optionsArea.style.display = 'none';
-                this.elements.messages.innerHTML += `
-                    <div id="success-animation">
-                        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                        </svg>
-                        <p class="font-semibold text-lg mt-4" style="color: ${app.getBrandColor('navy')}">Booking Received!</p>
-                        <p class="text-gray-600">Our verified team will confirm shortly.</p>
-                    </div>
-                `;
-
-                // Log to Google Sheet
-                app.logToSheet('chat', this.bookingDetails); // This will now send all 5 details
-
-                // COMMENT: Here you would also send a notification to the admin
-                // e.g., sendAdminNotification(this.bookingDetails);
-
-                // Reset chat after a delay
-                setTimeout(() => {
-                    this.elements.inputArea.style.display = 'flex';
-                    this.elements.optionsArea.style.display = 'block';
-                    this.startChat();
-                }, 5000);
-            }
+             isOpen: false, state: 'initial', bookingDetails: { name: "", phone: "", service: "", location: "", time: "" },
+             elements: { bubble: document.getElementById('chat-bubble'), window: document.getElementById('chat-window'), headerClose: document.getElementById('chat-header-close'), messages: document.getElementById('chat-messages'), inputArea: document.getElementById('chat-input-area'), inputForm: document.getElementById('chat-input-form'), input: document.getElementById('chat-input'), optionsArea: document.getElementById('chat-options-area'), },
+             init() { this.elements.bubble.addEventListener('click', () => this.open()); this.elements.headerClose.addEventListener('click', () => this.close()); this.elements.inputForm.addEventListener('submit', (e) => this.handleSubmit(e)); this.startChat(); },
+             open() { if (this.isOpen) return; this.isOpen = true; gsap.to(this.elements.bubble, { opacity: 0, scale: 0.5, duration: 0.2, ease: 'power3.in' }); this.elements.window.style.visibility = 'visible'; gsap.to(this.elements.window, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'power3.out' }); },
+             close() { if (!this.isOpen) return; this.isOpen = false; gsap.to(this.elements.window, { opacity: 0, y: 20, scale: 0.95, duration: 0.3, ease: 'power3.in', onComplete: () => { this.elements.window.style.visibility = 'hidden'; }}); gsap.to(this.elements.bubble, { opacity: 1, scale: 1, duration: 0.3, delay: 0.2, ease: 'back.out(1.7)' }); },
+             openWithService(serviceName, workerName = null) { this.startChat(); this.bookingDetails.service = serviceName; let introMessage = `I need the <strong>${serviceName}</strong> service.`; if (workerName) { introMessage = `Hi! I'd like to book <strong>${workerName}</strong> for <strong>${serviceName}</strong>.`; } this.addMessage(introMessage, 'user'); this.state = 'awaiting_name'; this.showTypingAndReply("Great! What is your full name?", 1500, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your name..."; this.elements.input.focus(); }); this.open(); },
+             startChat() { this.state = 'initial'; this.bookingDetails = { name: "", phone: "", service: "", location: "", time: "" }; this.elements.messages.innerHTML = ''; this.elements.input.placeholder = "Type your message..."; this.elements.input.disabled = true; this.elements.optionsArea.innerHTML = ''; this.showTypingAndReply("👋 Hi! Welcome to CitySetu.", 500, () => { this.showTypingAndReply("What service do you need?", 1200, () => { this.showServiceOptions(); this.state = 'awaiting_service'; }); }); },
+             handleSubmit(e) { e.preventDefault(); const userInput = this.elements.input.value.trim(); if (!userInput) return; this.addMessage(userInput, 'user'); this.elements.input.value = ''; this.handleReply(userInput, userInput); },
+             handleOptionClick(value, text) { this.addMessage(text, 'user'); this.elements.optionsArea.innerHTML = ''; this.handleReply(value, text); },
+             handleReply(value, text) { this.elements.input.disabled = true; this.elements.input.placeholder = "Please wait..."; switch(this.state) { case 'awaiting_service': this.bookingDetails.service = text; this.state = 'awaiting_name'; this.showTypingAndReply("Got it! What is your full name?", 1500, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your name..."; this.elements.input.focus(); }); break; case 'awaiting_name': this.bookingDetails.name = value; this.state = 'awaiting_phone'; this.showTypingAndReply(`Thanks, ${value}. What's your mobile number?`, 1500, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your 10-digit number..."; this.elements.input.focus(); }); break; case 'awaiting_phone': this.bookingDetails.phone = value; this.state = 'awaiting_location'; this.showTypingAndReply("Please share your location (e.g., Gota, Vastrapur).", 1500, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your location..."; this.elements.input.focus(); }); break; case 'awaiting_location': this.bookingDetails.location = value; this.state = 'awaiting_time'; this.showTypingAndReply("When do you need the service? (e.g., 'Today ASAP', 'Tomorrow 4 PM')", 1500, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your preferred time..."; this.elements.input.focus(); }); break; case 'awaiting_time': this.bookingDetails.time = value; this.state = 'awaiting_confirmation'; this.showTypingAndReply(`Great! Here's your booking summary:<br><strong>Name:</strong> ${this.bookingDetails.name}<br><strong>Phone:</strong> ${this.bookingDetails.phone}<br><strong>Service:</strong> ${this.bookingDetails.service}<br><strong>Location:</strong> ${this.bookingDetails.location}<br><strong>Time:</strong> ${this.bookingDetails.time}<br><br>Do you want to confirm this booking?`, 2000, () => { this.showConfirmationOptions(); }); break; case 'awaiting_confirmation': if (value === 'yes') { this.confirmBooking(); } else { this.showTypingAndReply("No problem! Let's start over.", 1000, () => { this.startChat(); }); } break; default: this.showTypingAndReply("I'm sorry, I'm just a simple bot. I can only help with booking.", 1500, () => { this.reAskCurrentQuestion(); }); break; } },
+             reAskCurrentQuestion() { this.elements.input.disabled = true; this.elements.input.placeholder = "Please wait..."; if (this.state === 'awaiting_service') { this.showTypingAndReply("What service do you need?", 1000, () => this.showServiceOptions()); } else if (this.state === 'awaiting_name') { this.showTypingAndReply("What is your full name?", 1000, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your name..."; }); } },
+             addMessage(text, sender = 'bot', onComplete = null) { const msgEl = document.createElement('div'); msgEl.classList.add('chat-message', sender); msgEl.innerHTML = text; this.elements.messages.appendChild(msgEl); gsap.to(msgEl, { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out', onComplete: () => { this.elements.messages.scrollTop = this.elements.messages.scrollHeight; if(onComplete) onComplete(); } }); },
+             showTypingAndReply(replyText, delay, onComplete) { const typingEl = document.createElement('div'); typingEl.classList.add('chat-message', 'typing-indicator'); typingEl.innerHTML = '<span></span><span></span><span></span>'; this.elements.messages.appendChild(typingEl); this.elements.messages.scrollTop = this.elements.messages.scrollHeight; setTimeout(() => { typingEl.remove(); this.addMessage(replyText, 'bot', onComplete); }, delay); },
+             showServiceOptions() { this.elements.input.disabled = true; this.elements.input.placeholder = "Please select an option above"; this.elements.optionsArea.innerHTML = `<button class="chat-option-btn" onclick="app.chat.handleOptionClick('Laptop Repair', 'Laptop Repair')">💻 Laptop Repair</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('AC Repair', 'AC Repair')">❄️ AC Repair</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Electrician', 'Electrician')">💡 Electrician</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Home Repair', 'Home Repair')">🔨 Home Repair</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Cleaning', 'Cleaning')">🧹 Cleaning</button>`; },
+             showConfirmationOptions() { this.elements.input.disabled = true; this.elements.input.placeholder = "Please confirm above"; this.elements.optionsArea.innerHTML = `<button class="chat-option-btn" onclick="app.chat.handleOptionClick('yes', 'Yes, confirm booking')">✅ Yes, Confirm</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('no', 'No, cancel')">❌ No, Cancel</button>`; },
+             confirmBooking() { this.elements.inputArea.style.display = 'none'; this.elements.optionsArea.style.display = 'none'; this.elements.messages.innerHTML += `<div id="success-animation"> <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"> <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/> <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/> </svg> <p class="font-semibold text-lg mt-4" style="color: ${app.getBrandColor('navy')}">Booking Received!</p> <p class="text-gray-600">Our verified team will confirm shortly.</p> </div>`; app.logToSheet('chat', this.bookingDetails); setTimeout(() => { this.elements.inputArea.style.display = 'flex'; this.elements.optionsArea.style.display = 'block'; this.startChat(); }, 5000); }
         },
-
-        // ------------------------------------------------------------------
-        // 5. DATA LOGGING & UTILITIES
-        // ------------------------------------------------------------------
 
         logToSheet(type, data) {
-            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === 'https://docs.google.com/spreadsheets/d/1ORwNxl244SUIcLrSTDGeFt7rqX-d453gEnfF1Id-0PY/edit?usp=sharing') {
-                console.warn('Google Script URL not set. Logging to console instead.');
-                console.log('Log Data:', { type, ...data });
-                return;
-            }
-
-            // Add the type to the data object
+            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('PASTE_YOUR_NEW')) { return; }
             const payload = { type, ...data };
-
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors', // Use 'no-cors' for simple logging to Apps Script
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => {
-                console.log('Log successful:', payload);
-            })
-            .catch(error => {
-                console.error('Error logging to Google Sheet:', error);
-            });
-            // NOTE: With 'no-cors', we can't read the response, but the POST request
-            // will go through and the Apps Script will execute. This is expected.
+            fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify(payload) })
+            .catch(error => { console.error('Error logging to Google Sheet:', error); });
         },
-        
+
         bookServiceViaWhatsapp(serviceName) {
-            const phoneNumber = '916351541231'; // YOUR WhatsApp number
-            let message;
-            if (serviceName === 'General Inquiry') {
-                message = `Hi CitySetu 👋\nI need help with a service.\nPlease help me connect with a verified expert near me.`;
-            } else {
-                message = `Hi CitySetu 👋\nI need help with *${serviceName}*.\nPlease help me connect with a verified expert near me.`;
-            }
-            const whatsappUrl = `https://api.whatsapp.com/send/?phone=${phoneNumber}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank');
+             const phoneNumber = '916351541231';
+             let message = `Hi CitySetu 👋\nI need help with a service.\nPlease help me connect with a verified expert near me.`;
+             if (serviceName !== 'General Inquiry') { message = `Hi CitySetu 👋\nI need help with *${serviceName}*.\nPlease help me connect with a verified expert near me.`; }
+             const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+             window.open(whatsappUrl, '_blank');
         },
-        
-        getBrandColor(colorName) {
-            // Helper to get CSS variables in JS
-            return getComputedStyle(document.documentElement).getPropertyValue(`--brand-${colorName}`).trim();
-        },
+
+        getBrandColor(colorName) { return getComputedStyle(document.documentElement).getPropertyValue(`--brand-${colorName}`).trim(); },
+
         handleWorkerSignup(event) {
-        event.preventDefault(); // Stop the form from reloading the page
-        const submitBtn = document.getElementById('signup-submit-btn');
-        const messageDiv = document.getElementById('signup-message');
+            event.preventDefault();
+            const submitBtn = document.getElementById('signup-submit-btn');
+            const messageDiv = document.getElementById('signup-message');
+            submitBtn.disabled = true; submitBtn.textContent = 'Submitting...';
+            messageDiv.classList.add('hidden'); messageDiv.textContent = '';
 
-        // Disable button and clear old messages
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Submitting...';
-        messageDiv.classList.add('hidden');
-        messageDiv.textContent = ''; // Clear text
+            const signupData = { type: 'workerSignup', name: document.getElementById('signup-name').value.trim(), phone: document.getElementById('signup-phone').value.trim(), service: document.getElementById('signup-service').value.trim(), location: document.getElementById('signup-location').value.trim() };
 
-        // Get data from the form
-        const signupData = {
-            type: 'workerSignup', // This tells Code.gs what action to perform
-            name: document.getElementById('signup-name').value.trim(),
-            phone: document.getElementById('signup-phone').value.trim(),
-            service: document.getElementById('signup-service').value.trim(),
-            location: document.getElementById('signup-location').value.trim()
-        };
+            if (!signupData.name || !signupData.phone || !signupData.service || !signupData.location) { this.showSignupMessage('Please fill in all required (*) fields.', 'red'); submitBtn.disabled = false; submitBtn.textContent = 'Request to Join'; return; }
+            if (!/^\d{10}$/.test(signupData.phone)) { this.showSignupMessage('Please enter a valid 10-digit mobile number.', 'red'); submitBtn.disabled = false; submitBtn.textContent = 'Request to Join'; return; }
 
-        // Basic validation
-        if (!signupData.name || !signupData.phone || !signupData.service || !signupData.location) {
-            this.showSignupMessage('Please fill in all required (*) fields.', 'red');
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Request to Join';
-            return;
-        }
-         // Simple phone validation (10 digits)
-         if (!/^\d{10}$/.test(signupData.phone)) {
-             this.showSignupMessage('Please enter a valid 10-digit mobile number.', 'red');
-             submitBtn.disabled = false;
-             submitBtn.textContent = 'Request to Join';
-             return;
-         }
-
-
-        // Use fetch to send data to the Google Script
-        // Use 'cors' mode to read the success/error message back
-         fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'cors', // Use CORS to read the response
-            headers: {
-                'Content-Type': 'application/json',
-                // 'Accept': 'application/json' // Optional: Usually not needed for Apps Script
-             },
-            body: JSON.stringify(signupData)
-        })
-        .then(response => {
-            if (!response.ok) { // Check for HTTP errors (like 4xx, 5xx)
-                throw new Error(`Network response was not ok (${response.status})`);
-            }
-            return response.json(); // Parse the JSON response from Code.gs
-        })
-        .then(result => {
-            console.log("Signup Response:", result); // Log the response for debugging
-            if (result.status === 'success') {
-                this.showSignupMessage(result.message || 'Request sent successfully! We will contact you soon.', 'green');
-                document.getElementById('worker-signup-form').reset(); // Clear form on success
-            } else {
-                // Handle errors reported by the script itself
-                throw new Error(result.message || 'An unknown error occurred during signup.');
-            }
-        })
-        .catch(error => {
-            console.error('Error submitting worker signup:', error);
-            this.showSignupMessage(`Error: ${error.message}`, 'red');
-        })
-        .finally(() => {
-            // Re-enable button whether success or fail
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Request to Join';
-        });
-    },
-
-    // --- NEW HELPER FOR SIGNUP FORM MESSAGES ---
-    showSignupMessage(message, color = 'green') {
-         const messageDiv = document.getElementById('signup-message');
-         messageDiv.textContent = message;
-         messageDiv.style.color = color === 'red' ? '#dc2626' : '#16a34a'; // Use Tailwind red/green colors
-         messageDiv.classList.remove('hidden');
-    },
-    };
+             fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify(signupData) })
+            .then(response => { if (!response.ok) { throw new Error(`Network error (${response.status})`); } return response.json(); })
+            .then(result => { if (result.status === 'success') { this.showSignupMessage(result.message || 'Request sent!', 'green'); document.getElementById('worker-signup-form').reset(); } else { throw new Error(result.message || 'Unknown error'); } })
+            .catch(error => { console.error('Error submitting signup:', error); this.showSignupMessage(`Error: ${error.message}`, 'red'); }) // Keep error logs for signup
+            .finally(() => { submitBtn.disabled = false; submitBtn.textContent = 'Request to Join'; });
+        },
+        showSignupMessage(message, color = 'green') {
+             const messageDiv = document.getElementById('signup-message'); messageDiv.textContent = message;
+             messageDiv.style.color = color === 'red' ? '#dc2626' : '#16a34a'; messageDiv.classList.remove('hidden');
+        },
+    }; // End of app object
 
     document.addEventListener('DOMContentLoaded', () => app.init());
     </script>
