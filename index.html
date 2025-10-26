@@ -259,7 +259,7 @@
             transition: background-color 0.2s ease;
         }
         #chat-send-btn:hover { background: #2a3b5e; }
-        #chat-options {
+        #chat-options-area {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
@@ -445,7 +445,7 @@
     // ------------------------------------------------------------------
 
     // ⚠️ PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT URL HERE
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxraskVyLPrdMrP30VVUiT_tESpeBsWIbmRB91Mc5G-tgVGBQC8wfyQTuieSZYO4ei_/exec';
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzweE5hjxVqABDNDI9VEaTENqqHokHXfLh2KvF48yQdci-W8kwYxuH4rSLg12giKN_SsA/exec';
 
     // ⚠️ Set to your original Google Sheet URL for *reading* worker data
     const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1ORwNxl244SUIcLrSTDGeFt7rqX-d453gEnfF1Id-0PY/edit?usp=sharing';
@@ -519,7 +519,7 @@
         
         loadWorkerData() {
             return new Promise(resolve => {
-                if (!GOOGLE_SHEET_URL || GOOGLE_SHEET_URL === 'YOUR_PUBLIC_GOOGLE_SHEET_URL_HERE') {
+                if (!GOOGLE_SHEET_URL || GOOGLE_SHEET_URL === 'https://docs.google.com/spreadsheets/d/1JmFiszWoxPPJ4AiykLaaH60yj929DwLDhfFSsM5IB8I/edit?usp=sharing') {
                     console.warn("Google Sheet URL is not set. Using mock data.");
                     this.workerData = this.getMockData();
                     resolve();
@@ -788,9 +788,11 @@
         // ------------------------------------------------------------------
         chat: {
             isOpen: false,
-            state: 'initial', // initial, awaiting_service, awaiting_location, awaiting_time, awaiting_confirmation
+            // UPDATED STATE FLOW
+            state: 'initial', // initial, awaiting_service, awaiting_name, awaiting_phone, awaiting_location, awaiting_time, awaiting_confirmation
             bookingDetails: {
-                name: "Customer", // Can ask for name later
+                name: "",
+                phone: "",
                 service: "",
                 location: "",
                 time: ""
@@ -832,22 +834,29 @@
             
             openWithService(serviceName, workerName = null) {
                 this.startChat(); // Reset chat
-                if (workerName) {
-                    this.bookingDetails.name = `Booking for ${workerName}`;
-                    this.addMessage(`Hi! I'd like to book <strong>${workerName}</strong> for <strong>${serviceName}</strong>.`, 'user');
-                } else {
-                    this.addMessage(`I need the <strong>${serviceName}</strong> service.`, 'user');
-                }
                 this.bookingDetails.service = serviceName;
-                this.state = 'awaiting_location';
-                this.showTypingAndReply("Got it! What is your location or area in Ahmedabad?", 1500);
+                
+                let introMessage = `I need the <strong>${serviceName}</strong> service.`;
+                if (workerName) {
+                    introMessage = `Hi! I'd like to book <strong>${workerName}</strong> for <strong>${serviceName}</strong>.`;
+                }
+                
+                this.addMessage(introMessage, 'user');
+                
+                // NEW: Skip to asking for name
+                this.state = 'awaiting_name';
+                this.showTypingAndReply("Great! What is your full name?", 1500, () => {
+                    this.elements.input.disabled = false;
+                    this.elements.input.placeholder = "Type your name...";
+                    this.elements.input.focus();
+                });
                 this.open();
             },
 
             startChat() {
                 // Reset state
                 this.state = 'initial';
-                this.bookingDetails = { name: "Customer", service: "", location: "", time: "" };
+                this.bookingDetails = { name: "", phone: "", service: "", location: "", time: "" };
                 this.elements.messages.innerHTML = '';
                 this.elements.input.placeholder = "Type your message...";
                 this.elements.input.disabled = true;
@@ -869,22 +878,43 @@
 
                 this.addMessage(userInput, 'user');
                 this.elements.input.value = '';
-                this.handleReply(userInput);
+                this.handleReply(userInput, userInput); // Pass both value and text
             },
 
             handleOptionClick(value, text) {
                 this.addMessage(text, 'user');
                 this.elements.optionsArea.innerHTML = ''; // Clear options
-                this.handleReply(value);
+                this.handleReply(value, text); // Pass both value and text
             },
 
-            handleReply(value) {
+            handleReply(value, text) {
                 this.elements.input.disabled = true;
                 this.elements.input.placeholder = "Please wait...";
                 
                 switch(this.state) {
                     case 'awaiting_service':
-                        this.bookingDetails.service = value;
+                        this.bookingDetails.service = text; // Use the text "Laptop Repair"
+                        this.state = 'awaiting_name';
+                        this.showTypingAndReply("Got it! What is your full name?", 1500, () => {
+                            this.elements.input.disabled = false;
+                            this.elements.input.placeholder = "Type your name...";
+                            this.elements.input.focus();
+                        });
+                        break;
+                    
+                    case 'awaiting_name':
+                        this.bookingDetails.name = value;
+                        this.state = 'awaiting_phone';
+                        this.showTypingAndReply(`Thanks, ${value}. What's your mobile number?`, 1500, () => {
+                            this.elements.input.disabled = false;
+                            this.elements.input.placeholder = "Type your 10-digit number...";
+                            this.elements.input.focus();
+                        });
+                        break;
+
+                    // --- THIS CASE WAS MISSING ---
+                    case 'awaiting_phone':
+                        this.bookingDetails.phone = value; // Save the phone number
                         this.state = 'awaiting_location';
                         this.showTypingAndReply("Please share your location (e.g., Gota, Vastrapur).", 1500, () => {
                             this.elements.input.disabled = false;
@@ -892,6 +922,8 @@
                             this.elements.input.focus();
                         });
                         break;
+                    // --- END OF MISSING CASE ---
+
                     case 'awaiting_location':
                         this.bookingDetails.location = value;
                         this.state = 'awaiting_time';
@@ -901,10 +933,13 @@
                             this.elements.input.focus();
                         });
                         break;
+
                     case 'awaiting_time':
                         this.bookingDetails.time = value;
                         this.state = 'awaiting_confirmation';
                         this.showTypingAndReply(`Great! Here's your booking summary:
+                            <br><strong>Name:</strong> ${this.bookingDetails.name}
+                            <br><strong>Phone:</strong> ${this.bookingDetails.phone}
                             <br><strong>Service:</strong> ${this.bookingDetails.service}
                             <br><strong>Location:</strong> ${this.bookingDetails.location}
                             <br><strong>Time:</strong> ${this.bookingDetails.time}
@@ -912,6 +947,7 @@
                             this.showConfirmationOptions();
                         });
                         break;
+                        
                     case 'awaiting_confirmation':
                         if (value === 'yes') {
                             this.confirmBooking();
@@ -921,9 +957,33 @@
                             });
                         }
                         break;
+                    
+                    default:
+                        this.showTypingAndReply("I'm sorry, I'm just a simple bot and can't answer that. I can only help with booking.", 1500, () => {
+                            this.reAskCurrentQuestion();
+                        });
+                        break;
                 }
+            },        
+              
+            
+            reAskCurrentQuestion() {
+                // This function puts the bot back on track
+                this.elements.input.disabled = true;
+                this.elements.input.placeholder = "Please wait...";
+
+                if (this.state === 'awaiting_service') {
+                    this.showTypingAndReply("What service do you need?", 1000, () => this.showServiceOptions());
+                } else if (this.state === 'awaiting_name') {
+                    this.showTypingAndReply("What is your full name?", 1000, () => {
+                        this.elements.input.disabled = false;
+                        this.elements.input.placeholder = "Type your name...";
+                    });
+                }
+                // ... (add other states as needed) ...
             },
 
+            // Functions copied from original script
             addMessage(text, sender = 'bot', onComplete = null) {
                 const msgEl = document.createElement('div');
                 msgEl.classList.add('chat-message', sender);
@@ -993,7 +1053,7 @@
                 `;
 
                 // Log to Google Sheet
-                app.logToSheet('chat', this.bookingDetails);
+                app.logToSheet('chat', this.bookingDetails); // This will now send all 5 details
 
                 // COMMENT: Here you would also send a notification to the admin
                 // e.g., sendAdminNotification(this.bookingDetails);
@@ -1012,7 +1072,7 @@
         // ------------------------------------------------------------------
 
         logToSheet(type, data) {
-            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === 'YOUR_WEB_APP_URL_FROM_STEP_4') {
+            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL === 'https://docs.google.com/spreadsheets/d/1ORwNxl244SUIcLrSTDGeFt7rqX-d453gEnfF1Id-0PY/edit?usp=sharing') {
                 console.warn('Google Script URL not set. Logging to console instead.');
                 console.log('Log Data:', { type, ...data });
                 return;
@@ -1040,14 +1100,14 @@
         },
         
         bookServiceViaWhatsapp(serviceName) {
-            const phoneNumber = '919999999999'; // YOUR WhatsApp number
+            const phoneNumber = '916351541231'; // YOUR WhatsApp number
             let message;
             if (serviceName === 'General Inquiry') {
                 message = `Hi CitySetu 👋\nI need help with a service.\nPlease help me connect with a verified expert near me.`;
             } else {
                 message = `Hi CitySetu 👋\nI need help with *${serviceName}*.\nPlease help me connect with a verified expert near me.`;
             }
-            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            const whatsappUrl = `https.wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
         },
         
