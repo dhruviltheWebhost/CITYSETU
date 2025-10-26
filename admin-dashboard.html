@@ -145,14 +145,11 @@
         </div>
     </main>
 
-    <script>
+   <script>
         // ------------------------------------------------------------------
         // CONFIGURATION
         // ------------------------------------------------------------------
-
-        // ⚠️ PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT URL HERE
-        // (Must be the same URL as in index.html)
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxraskVyLPrdMrP30VVUiT_tESpeBsWIbmRB91Mc5G-tgVGBQC8wfyQTuieSZYO4ei_/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzweE5hjxVqABDNDI9VEaTENqqHokHXfLh2KvF48yQdci-W8kwYxuH4rSLg12giKN_SsA/exec';
 
         // ------------------------------------------------------------------
         // ADMIN DASHBOARD LOGIC
@@ -177,6 +174,7 @@
             },
 
             showTab(tabName) {
+                // ... (this function is correct, no changes needed) ...
                 if (tabName === 'chats') {
                     this.elements.chatTab.classList.add('active');
                     this.elements.callTab.classList.remove('active');
@@ -191,6 +189,7 @@
             },
 
             async fetchData() {
+                // ... (this function is correct, no changes needed) ...
                 this.elements.refreshBtn.disabled = true;
                 this.elements.refreshBtn.textContent = 'Refreshing...';
                 this.elements.chatLoading.textContent = 'Loading data...';
@@ -221,29 +220,31 @@
             },
 
             renderChatTable(chats) {
-                this.elements.chatTableBody.innerHTML = ''; // Clear table
+                this.elements.chatTableBody.innerHTML = ''; 
                 this.elements.chatCount.textContent = chats.length;
 
                 if (chats.length === 0) {
+                    // ... (no changes needed) ...
                     this.elements.chatTableBody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-gray-500">No chat bookings found.</td></tr>';
                     return;
                 }
 
-                // Reverse to show newest first
                 chats.reverse().forEach(chat => {
                     const tr = document.createElement('tr');
-                    tr.setAttribute('data-id', chat.id);
+                    
+                    // IMPORTANT: Use the ID from our new helper function
+                    tr.setAttribute('data-id', chat.id); 
 
-                    // Format timestamp
                     const timestamp = new Date(chat.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
                     
-                    // Status badge
                     let statusClass = 'status-pending';
                     if (chat.status === 'Confirmed') statusClass = 'status-confirmed';
                     if (chat.status === 'Rejected') statusClass = 'status-rejected';
 
                     tr.innerHTML = `
                         <td>${timestamp}</td>
+                        <td class="font-medium text-gray-900">${chat.name}</td>
+                        <td>${chat.phone}</td>
                         <td class="font-medium text-gray-900">${chat.service}</td>
                         <td>${chat.location}</td>
                         <td>${chat.time}</td>
@@ -259,9 +260,22 @@
                     `;
                     this.elements.chatTableBody.appendChild(tr);
                 });
+                
+                // Re-render table headers to include new columns
+                this.elements.chatTable.querySelector('thead tr').innerHTML = `
+                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Timestamp</th>
+                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Phone</th>
+                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Service</th>
+                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
+                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Time</th>
+                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                `;
             },
             
             renderCallTable(calls) {
+                // ... (this function is correct, no changes needed) ...
                 this.elements.callTableBody.innerHTML = '';
                 this.elements.callCount.textContent = calls.length;
 
@@ -283,11 +297,12 @@
                 });
             },
 
-            updateStatus(id, newStatus) {
-                // DEMO: This just updates the UI.
-                // In a real app, you'd send this update to your backend.
-                console.log(`Updating status for ID ${id} to ${newStatus}`);
+            // --- NEW FUNCTION ---
+            // This function now sends the update to Google Sheets
+            async updateStatus(id, newStatus) {
+                console.log(`Updating row ${id} to ${newStatus}`);
                 
+                // 1. Update the UI instantly
                 const statusBadge = document.getElementById(`status-${id}`);
                 if (statusBadge) {
                     statusBadge.textContent = newStatus;
@@ -296,16 +311,41 @@
                         statusBadge.classList.add('status-confirmed');
                     } else if (newStatus === 'Rejected') {
                         statusBadge.classList.add('status-rejected');
-                    } else {
-                        statusBadge.classList.add('status-pending');
                     }
                 }
-                
-                // COMMENT: Add your backend update logic here.
-                // fetch(GOOGLE_SCRIPT_URL, { 
-                //    method: 'POST', 
-                //    body: JSON.stringify({ type: 'updateStatus', id: id, status: newStatus }) 
-                // });
+
+                // 2. Send the update to the Google Script
+                try {
+                    const response = await fetch(GOOGLE_SCRIPT_URL, { 
+                       method: 'POST', 
+                       mode: 'cors', // Use cors, since our script now allows it
+                       headers: {
+                           "Content-Type": "application/json",
+                       },
+                       body: JSON.stringify({ 
+                           type: 'updateStatus', 
+                           id: id, // This is the row ID (1, 2, 3...)
+                           newStatus: newStatus 
+                       }) 
+                    });
+                    
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        console.log('Status updated successfully in Google Sheets');
+                    } else {
+                        console.error('Failed to update sheet:', result.message);
+                        // Revert UI on failure
+                        statusBadge.textContent = 'Pending';
+                        statusBadge.className = 'status-badge status-pending';
+                        alert('Error: Could not update status in Google Sheet. ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Fetch error:', error);
+                    // Revert UI on failure
+                    statusBadge.textContent = 'Pending';
+                    statusBadge.className = 'status-badge status-pending';
+                    alert('Error: Could not connect to Google Script. ' + error.message);
+                }
             }
         };
 
