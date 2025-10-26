@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - CitySetu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --brand-navy: #1B2A49; --brand-orange: #FF7B00; }
+        body { font-family: 'Poppins', sans-serif; }
+        .form-input:focus { border-color: var(--brand-navy); box-shadow: 0 0 0 2px rgba(27, 42, 73, 0.3); outline: none; }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
+        <h1 class="text-2xl font-bold text-center mb-6" style="color: var(--brand-navy);">CitySetu Admin Login</h1>
+        <form id="login-form">
+            <div class="mb-4">
+                <label for="password" class="block text-gray-700 font-bold mb-2">Password</label>
+                <input type="password" id="password" class="form-input w-full px-3 py-2 border rounded-lg" required>
+            </div>
+            <div id="error-message" class="text-red-500 text-sm mb-4 hidden">Incorrect password.</div>
+            <button type="submit" class="w-full bg-blue-800 text-white font-bold py-3 px-4 rounded-full hover:bg-blue-900 transition-colors">Login</button>
+        </form>
+    </div>
+
+    <script>
+        // --- SET YOUR ADMIN PASSWORD HERE ---
+        const ADMIN_PASSWORD = "Dhruvil@6108"; // Change this!
+
+        const form = document.getElementById('login-form');
+        const passwordInput = document.getElementById('password');
+        const errorMessage = document.getElementById('error-message');
+
+        // Redirect if already logged in (session check)
+        if (sessionStorage.getItem('citysetu_admin_auth') === 'true') {
+            window.location.href = 'admin-dashboard.html';
+        }
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const enteredPassword = passwordInput.value;
+
+            if (enteredPassword === ADMIN_PASSWORD) {
+                // Store auth confirmation in sessionStorage (clears when browser tab closes)
+                sessionStorage.setItem('citysetu_admin_auth', 'true');
+                errorMessage.classList.add('hidden');
+                // Redirect to dashboard
+                window.location.href = 'admin-dashboard.html';
+            } else {
+                errorMessage.classList.remove('hidden');
+                passwordInput.focus();
+            }
+        });
+    </script>
+</body>
+</html>
