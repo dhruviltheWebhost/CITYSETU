@@ -394,6 +394,41 @@
 
     <main id="app-root">
         </main>
+        <section id="join-us" class="py-20 bg-gray-100 fade-in-section">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold" style="color: var(--brand-navy);">Join Our Team of Experts</h2>
+            <p class="text-gray-600 mt-2">Are you a skilled professional in Ahmedabad? Get verified leads directly.</p>
+        </div>
+       
+        <form id="worker-signup-form" class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="signup-name" class="block text-gray-700 font-bold mb-1">Full Name*</label>
+                    <input type="text" id="signup-name" class="form-input w-full px-3 py-2 border rounded-lg focus:border-navy-500 focus:ring focus:ring-navy-200 focus:ring-opacity-50" placeholder="Your Name" required>
+                </div>
+                <div>
+                    <label for="signup-phone" class="block text-gray-700 font-bold mb-1">Mobile Number*</label>
+                    <input type="tel" id="signup-phone" class="form-input w-full px-3 py-2 border rounded-lg focus:border-navy-500 focus:ring focus:ring-navy-200 focus:ring-opacity-50" placeholder="9999999999" required pattern="[0-9]{10}"> 
+                </div>
+                <div>
+                    <label for="signup-service" class="block text-gray-700 font-bold mb-1">Primary Service*</label>
+                    <input type="text" id="signup-service" class="form-input w-full px-3 py-2 border rounded-lg focus:border-navy-500 focus:ring focus:ring-navy-200 focus:ring-opacity-50" placeholder="e.g., AC Repair, Electrician" required>
+                </div>
+                <div>
+                    <label for="signup-location" class="block text-gray-700 font-bold mb-1">Your Area*</label>
+                    <input type="text" id="signup-location" class="form-input w-full px-3 py-2 border rounded-lg focus:border-navy-500 focus:ring focus:ring-navy-200 focus:ring-opacity-50" placeholder="e.g., Gota, Maninagar" required>
+                </div>
+            </div>
+            <div class="text-center">
+                <button type="submit" id="signup-submit-btn" class="btn-animated btn-orange text-white font-bold py-3 px-8 rounded-full hover:bg-orange-600 transition-colors">
+                    Request to Join
+                </button>
+            </div>
+             <div id="signup-message" class="mt-4 text-center text-sm font-medium hidden"></div>
+        </form>
+    </div>
+</section>
 
     <footer id="contact" class="bg-gray-800 text-white py-12">
         <div class="container mx-auto px-6 text-center">
@@ -445,7 +480,33 @@
     // ------------------------------------------------------------------
 
     // ⚠️ PASTE YOUR DEPLOYED GOOGLE APPS SCRIPT URL HERE
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzweE5hjxVqABDNDI9VEaTENqqHokHXfLh2KvF48yQdci-W8kwYxuH4rSLg12giKN_SsA/exec';
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWftBGpucpxZuqRN9swsmBfb1qINP1DUt4aw8h2lM20O2vKmeg58ew8_ZJ5BKevfpG/exec';
+// 🔧 Smart Proxy Function to add worker using CitySetu Apps Script (CORS Safe)
+async function addWorker(workerData) {
+  const payload = {
+    type: "addWorker",
+    name: workerData.name,
+    phone: workerData.phone,
+    service: workerData.service,
+    experience: workerData.experience,
+    location: workerData.location,
+    rating: workerData.rating,
+    status: workerData.status
+  };
+
+  // Encode the payload for proxy GET call
+  const url = `${GOOGLE_SCRIPT_URL}?payload=${encodeURIComponent(JSON.stringify(payload))}`;
+
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    console.log("✅ Worker Added:", data);
+    alert(data.message || "Worker added successfully!");
+  } catch (error) {
+    console.error("❌ Error adding worker:", error);
+    alert("Something went wrong while adding worker.");
+  }
+}
 
     // ⚠️ Set to your original Google Sheet URL for *reading* worker data
     const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/1ORwNxl244SUIcLrSTDGeFt7rqX-d453gEnfF1Id-0PY/edit?usp=sharing';
@@ -465,14 +526,28 @@
         },
 
         async init() {
-            this.elements.mobileMenuButton.addEventListener('click', this.toggleMobileMenu.bind(this));
-            window.addEventListener('hashchange', this.router.bind(this));
-            window.addEventListener('scroll', this.handleScroll.bind(this));
-            await this.loadWorkerData();
-            this.router();
-            this.chat.init(); // Initialize the chat widget
-            this.initAnimations(); // Initialize GSAP animations
-        },
+        this.elements.mobileMenuButton.addEventListener('click', this.toggleMobileMenu.bind(this));
+        window.addEventListener('hashchange', this.router.bind(this));
+        window.addEventListener('scroll', this.handleScroll.bind(this));
+
+        // --- ADD THIS EVENT LISTENER FOR SIGNUP FORM ---
+        const signupForm = document.getElementById('worker-signup-form');
+        if (signupForm) {
+            signupForm.addEventListener('submit', this.handleWorkerSignup.bind(this));
+        } else {
+            // Fallback if form isn't immediately available (less likely now)
+            document.addEventListener('DOMContentLoaded', () => {
+                 const lateSignupForm = document.getElementById('worker-signup-form');
+                 if(lateSignupForm) lateSignupForm.addEventListener('submit', this.handleWorkerSignup.bind(this));
+            });
+        }
+        // --- END ADD LISTENER ---
+
+        await this.loadWorkerData(); // Load worker data first
+        this.router(); // Then render the page (including the form)
+        this.chat.init();
+        this.initAnimations();
+    },
         
         initAnimations() {
             // Animate hero text on load
@@ -1107,14 +1182,95 @@
             } else {
                 message = `Hi CitySetu 👋\nI need help with *${serviceName}*.\nPlease help me connect with a verified expert near me.`;
             }
-            const whatsappUrl = `https.wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+            const whatsappUrl = `https://api.whatsapp.com/send/?phone=${phoneNumber}?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
         },
         
         getBrandColor(colorName) {
             // Helper to get CSS variables in JS
             return getComputedStyle(document.documentElement).getPropertyValue(`--brand-${colorName}`).trim();
+        },
+        handleWorkerSignup(event) {
+        event.preventDefault(); // Stop the form from reloading the page
+        const submitBtn = document.getElementById('signup-submit-btn');
+        const messageDiv = document.getElementById('signup-message');
+
+        // Disable button and clear old messages
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting...';
+        messageDiv.classList.add('hidden');
+        messageDiv.textContent = ''; // Clear text
+
+        // Get data from the form
+        const signupData = {
+            type: 'workerSignup', // This tells Code.gs what action to perform
+            name: document.getElementById('signup-name').value.trim(),
+            phone: document.getElementById('signup-phone').value.trim(),
+            service: document.getElementById('signup-service').value.trim(),
+            location: document.getElementById('signup-location').value.trim()
+        };
+
+        // Basic validation
+        if (!signupData.name || !signupData.phone || !signupData.service || !signupData.location) {
+            this.showSignupMessage('Please fill in all required (*) fields.', 'red');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Request to Join';
+            return;
         }
+         // Simple phone validation (10 digits)
+         if (!/^\d{10}$/.test(signupData.phone)) {
+             this.showSignupMessage('Please enter a valid 10-digit mobile number.', 'red');
+             submitBtn.disabled = false;
+             submitBtn.textContent = 'Request to Join';
+             return;
+         }
+
+
+        // Use fetch to send data to the Google Script
+        // Use 'cors' mode to read the success/error message back
+         fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'cors', // Use CORS to read the response
+            headers: {
+                'Content-Type': 'application/json',
+                // 'Accept': 'application/json' // Optional: Usually not needed for Apps Script
+             },
+            body: JSON.stringify(signupData)
+        })
+        .then(response => {
+            if (!response.ok) { // Check for HTTP errors (like 4xx, 5xx)
+                throw new Error(`Network response was not ok (${response.status})`);
+            }
+            return response.json(); // Parse the JSON response from Code.gs
+        })
+        .then(result => {
+            console.log("Signup Response:", result); // Log the response for debugging
+            if (result.status === 'success') {
+                this.showSignupMessage(result.message || 'Request sent successfully! We will contact you soon.', 'green');
+                document.getElementById('worker-signup-form').reset(); // Clear form on success
+            } else {
+                // Handle errors reported by the script itself
+                throw new Error(result.message || 'An unknown error occurred during signup.');
+            }
+        })
+        .catch(error => {
+            console.error('Error submitting worker signup:', error);
+            this.showSignupMessage(`Error: ${error.message}`, 'red');
+        })
+        .finally(() => {
+            // Re-enable button whether success or fail
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Request to Join';
+        });
+    },
+
+    // --- NEW HELPER FOR SIGNUP FORM MESSAGES ---
+    showSignupMessage(message, color = 'green') {
+         const messageDiv = document.getElementById('signup-message');
+         messageDiv.textContent = message;
+         messageDiv.style.color = color === 'red' ? '#dc2626' : '#16a34a'; // Use Tailwind red/green colors
+         messageDiv.classList.remove('hidden');
+    },
     };
 
     document.addEventListener('DOMContentLoaded', () => app.init());
