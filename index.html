@@ -509,7 +509,7 @@
     </header>
 
     <main id="app-root">
-    </main>
+        </main>
 
     <section id="join-us" class="py-20 bg-gray-100 fade-in-section">
         <div class="container mx-auto px-6">
@@ -604,18 +604,16 @@
         // ------------------------------------------------------------------
         // 1. CONFIGURATION
         // ------------------------------------------------------------------
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWftBGpucpxZuqRN9swsmBfb1qINP1DUt4aw8h2lM20O2vKmeg58ew8_ZJ5BKevfpG/exec'; // Your latest URL
+        
+        // --- UPDATED: Pointing to your new Render API ---
+        const API_BASE_URL = 'https://citysetu-api.onrender.com';
 
         // ------------------------------------------------------------------
         // 2. MAIN APPLICATION LOGIC
         // ------------------------------------------------------------------
         const app = {
             workerData: {},
-            isWorkerDataLoading: true, // <<<--- ADD THIS LINE
-            elements: {
-                // ... your existing elements ...
-            },
-            // ... rest of your app object ...
+            isWorkerDataLoading: true, 
             elements: {
                 root: document.getElementById('app-root'),
                 header: document.getElementById('main-header'),
@@ -623,7 +621,6 @@
                 modalContent: document.getElementById('call-modal-content'),
                 mobileMenu: document.getElementById('mobile-menu'),
                 mobileMenuButton: document.getElementById('mobile-menu-button'),
-                // Signup form elements (needed for init listener)
                 signupForm: document.getElementById('worker-signup-form')
             },
 
@@ -632,16 +629,12 @@
                 this.elements.mobileMenuButton.addEventListener('click', this.toggleMobileMenu.bind(this));
                 window.addEventListener('hashchange', this.router.bind(this));
                 window.addEventListener('scroll', this.handleScroll.bind(this));
-                if (this.elements.signupForm) { // Check if form exists before adding listener
+                
+                // Add listener to the signup form (it exists on the page from the start)
+                if (this.elements.signupForm) {
                     this.elements.signupForm.addEventListener('submit', this.handleWorkerSignup.bind(this));
                 } else {
-                    console.error("Signup form not found on initial load.");
-                    // Attempt to add listener after DOM is fully ready
-                    document.addEventListener('DOMContentLoaded', () => {
-                        const lateSignupForm = document.getElementById('worker-signup-form');
-                        if (lateSignupForm) lateSignupForm.addEventListener('submit', this.handleWorkerSignup.bind(this));
-                        else console.error("Signup form STILL not found after DOMContentLoaded.");
-                    });
+                    console.error("Signup form not found.");
                 }
 
                 // Load data in background, do not block rendering
@@ -656,9 +649,13 @@
 
             initAnimations() {
                 // GSAP Intro Animations
-                gsap.fromTo(".hero-title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.2, ease: "power3.out" });
-                gsap.fromTo(".hero-subtitle", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.4, ease: "power3.out" });
-                gsap.fromTo(".hero-buttons > *", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.5, delay: 0.6, stagger: 0.2, ease: "back.out(1.7)" });
+                // These might target elements not yet rendered, so we check
+                const heroTitle = document.querySelector(".hero-title");
+                if (heroTitle) {
+                     gsap.fromTo(heroTitle, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.2, ease: "power3.out" });
+                     gsap.fromTo(".hero-subtitle", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.4, ease: "power3.out" });
+                     gsap.fromTo(".hero-buttons > *", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.5, delay: 0.6, stagger: 0.2, ease: "back.out(1.7)" });
+                }
             },
 
             handleScroll() {
@@ -685,43 +682,44 @@
                 });
             },
 
+            // --- UPDATED: To use new API_BASE_URL and endpoint ---
             async loadWorkerData() {
-                this.isWorkerDataLoading = true; // Log start
-                if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('PASTE_YOUR_NEW')) {
-                    console.warn("Google Script URL is not set correctly. Using mock data."); // Kept warn
-                    this.workerData = {}; // Use empty object if no URL
+                this.isWorkerDataLoading = true;
+                if (!API_BASE_URL) {
+                    console.warn("API_BASE_URL is not set correctly. Using mock data.");
+                    this.workerData = {};
                     this.isWorkerDataLoading = false;
                     return;
                 }
                 try {
-                    // Fetch data from the main script URL (GET request)
-                    const response = await fetch(GOOGLE_SCRIPT_URL);
-                    console.log("Fetch response status:", response.status); // Log status
+                    // Fetch data from the new Render API endpoint (GET request)
+                    const response = await fetch(`${API_BASE_URL}/api/workers`);
+                    console.log("Fetch response status:", response.status); 
 
                     if (!response.ok) {
                         const errorText = await response.text();
-                        console.error("Network response was not ok:", response.statusText, errorText); // Kept error
+                        console.error("Network response was not ok:", response.statusText, errorText);
                         throw new Error(`Network error: ${response.statusText}`);
                     }
 
                     const data = await response.json();
-                    console.log("Data received from script:", data); // Log the full received data
+                    console.log("Data received from API:", data); 
 
                     if (data.status === 'error') {
-                        console.error("API Error reported by script:", data.message); // Kept error
+                        console.error("API Error reported by server:", data.message);
                         throw new Error(`API Error: ${data.message}`);
                     }
                     if (!data.workers) {
-                        console.error("Worker data array not found in response:", data); // Kept error
+                        console.error("Worker data array not found in response:", data);
                         throw new Error('Workers data array not found in the response.');
                     }
 
-                    // Group workers by service
+                    // Group workers by service (Logic from your original file)
                     const groupedData = {};
                     data.workers.forEach(worker => {
                         const service = worker.service;
                         if (!service) {
-                            console.warn("Worker found with no service:", worker); // Kept warn
+                            console.warn("Worker found with no service:", worker);
                             return;
                         }
                         const serviceKey = String(service).trim();
@@ -734,11 +732,11 @@
                         });
                     });
                     this.workerData = groupedData;
-                    console.log("Worker data successfully processed and grouped:", this.workerData); // Log success
+                    console.log("Worker data successfully processed and grouped:", this.workerData);
 
                 } catch (error) {
-                    console.error("!!! Critical Error loading worker data from Google Script:", error); // Keep critical error log
-                    console.warn("Falling back due to error."); // Kept warn
+                    console.error("!!! Critical Error loading worker data from Render API:", error);
+                    console.warn("Falling back due to error.");
                     this.workerData = {}; // Use empty object on error
                 }
                 this.isWorkerDataLoading = false;
@@ -757,7 +755,9 @@
                     if (window.location.hash && !param) {
                         const targetId = window.location.hash;
                         setTimeout(() => document.querySelector(targetId)?.scrollIntoView({ behavior: 'smooth' }), 100);
-                    } else if (param) {
+                    } else if (param) { 
+                        // This handles the old 'home/#services' case, now it's just '#services'
+                        // param will be '#services'
                         setTimeout(() => document.querySelector(param)?.scrollIntoView({ behavior: 'smooth' }), 100);
                     }
                 }
@@ -767,15 +767,20 @@
 
             navigateTo(page, param = '') {
                 // Updates hash and triggers router
-                const newHash = param ? `${page}/${param}` : page;
-                if (page === 'home' && param) { // Special case for scrolling on homepage
+                if (page === 'home' && param.startsWith('#')) { 
+                    // Special case for scrolling on homepage
                     window.location.hash = param; // Just set hash to #services etc.
-                    // Manually call scrollIntoView if router doesn't re-trigger
-                    if (window.location.hash === `#${param.substring(1)}`) {
-                        setTimeout(() => document.querySelector(param)?.scrollIntoView({ behavior: 'smooth' }), 100);
-                    }
+                    // Manually call scrollIntoView 
+                     setTimeout(() => {
+                        const targetElement = document.querySelector(param);
+                        if (targetElement) {
+                             targetElement.scrollIntoView({ behavior: 'smooth' });
+                        }
+                     }, 100);
+                } else if (page === 'service') {
+                     window.location.hash = `${page}/${param}`;
                 } else {
-                    window.location.hash = newHash;
+                     window.location.hash = page;
                 }
             },
 
@@ -820,67 +825,67 @@
                     </div>
                 </section>
             </div>`;
+                // Re-run animations for new content
                 this.initAnimations();
             },
 
             renderServicePage(serviceName) {
-        window.scrollTo(0, 0);
+                window.scrollTo(0, 0);
 
-        let workersHtmlContent; // Variable to hold the content for the worker grid
+                let workersHtmlContent; // Variable to hold the content for the worker grid
 
-        // --- ADD LOADING CHECK ---
-        if (this.isWorkerDataLoading) {
-            workersHtmlContent = '<p class="col-span-full text-center text-gray-500 py-10">Loading workers...</p>';
-        } else {
-            const workers = this.workerData[serviceName] || [];
-            if (workers.length > 0) {
-                 workersHtmlContent = workers.map(worker => `
-                    <div class="card bg-white rounded-lg shadow-md p-6 text-left hover:shadow-xl flex flex-col">
-                         <div class="flex-grow">
-                             <div class="flex justify-between items-start">
-                                 <h4 class="text-xl font-bold">👨‍🔧 ${worker.name}</h4>
-                                 <span class="verified-badge text-green-600 font-semibold text-sm">✅ Verified</span>
-                             </div>
-                             <p class="text-gray-600 my-2"><strong>Experience:</strong> ${worker.experience}</p>
-                             <p class="text-gray-600 mb-2"><strong>📍 Location:</strong> ${worker.location}</p>
-                             <p class="text-gray-600 mb-4"><strong>⭐ Rating:</strong> ${worker.rating} / 5</p>
-                         </div>
-                         <div class="mt-auto pt-4 flex gap-2">
-                             <button onclick="app.startCallSimulation('${worker.name}', '${serviceName}', '${worker.status}')" class="w-1/2 btn-animated btn-navy text-white py-2 rounded-lg font-semibold text-sm">📞 Call Now</button>
-                             <button onclick="app.chat.openWithService('${serviceName}', '${worker.name}')" class="w-1/2 btn-animated btn-orange text-white py-2 rounded-lg font-semibold text-sm">💬 Book Now</button>
-                         </div>
-                    </div>`).join('');
-            } else {
-                workersHtmlContent = '<p class="col-span-full text-center text-gray-500 py-10">No workers currently listed for this service. We are expanding quickly!</p>';
-            }
-        }
-        // --- END LOADING CHECK ---
+                // --- ADD LOADING CHECK ---
+                if (this.isWorkerDataLoading) {
+                    workersHtmlContent = '<p class="col-span-full text-center text-gray-500 py-10">Loading workers...</p>';
+                } else {
+                    const workers = this.workerData[serviceName] || [];
+                    if (workers.length > 0) {
+                        workersHtmlContent = workers.map(worker => `
+                        <div class="card bg-white rounded-lg shadow-md p-6 text-left hover:shadow-xl flex flex-col">
+                                <div class="flex-grow">
+                                    <div class="flex justify-between items-start">
+                                        <h4 class="text-xl font-bold">👨‍🔧 ${worker.name}</h4>
+                                        <span class="verified-badge text-green-600 font-semibold text-sm">✅ Verified</span>
+                                    </div>
+                                    <p class="text-gray-600 my-2"><strong>Experience:</strong> ${worker.experience}</p>
+                                    <p class="text-gray-600 mb-2"><strong>📍 Location:</strong> ${worker.location}</p>
+                                    <p class="text-gray-600 mb-4"><strong>⭐ Rating:</strong> ${worker.rating} / 5</p>
+                                </div>
+                                <div class="mt-auto pt-4 flex gap-2">
+                                    <button onclick="app.startCallSimulation('${worker.name}', '${serviceName}', '${worker.status}')" class="w-1/2 btn-animated btn-navy text-white py-2 rounded-lg font-semibold text-sm">📞 Call Now</button>
+                                    <button onclick="app.chat.openWithService('${serviceName}', '${worker.name}')" class="w-1/2 btn-animated btn-orange text-white py-2 rounded-lg font-semibold text-sm">💬 Book Now</button>
+                                </div>
+                        </div>`).join('');
+                    } else {
+                        workersHtmlContent = '<p class="col-span-full text-center text-gray-500 py-10">No workers currently listed for this service. We are expanding quickly!</p>';
+                    }
+                }
+                // --- END LOADING CHECK ---
 
-
-        this.elements.root.innerHTML = `
-        <div id="service-page">
-            <section class="py-12" style="background-color: #dbeafe;">
-                <div class="container mx-auto px-6 text-center">
-                    <h1 class="text-3xl md:text-4xl font-bold" style="color: ${this.getBrandColor('navy')}">Find Verified ${serviceName} Experts</h1>
-                    <p class="text-lg text-gray-700 mt-2">Choose from trusted professionals verified by CitySetu.</p>
-                </div>
-            </section>
-            <section class="py-16">
-                <div class="container mx-auto px-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        ${workersHtmlContent}
+                this.elements.root.innerHTML = `
+            <div id="service-page">
+                <section class="py-12" style="background-color: #dbeafe;">
+                    <div class="container mx-auto px-6 text-center">
+                        <h1 class="text-3xl md:text-4xl font-bold" style="color: ${this.getBrandColor('navy')}">Find Verified ${serviceName} Experts</h1>
+                        <p class="text-lg text-gray-700 mt-2">Choose from trusted professionals verified by CitySetu.</p>
                     </div>
-                </div>
-            </section>
-            <section class="py-16 bg-gray-100 text-center">
-                <div class="container mx-auto px-6">
-                    <h2 class="text-3xl font-bold">Don't Want to Choose?</h2>
-                    <p class="text-lg text-gray-600 my-4">Let us find the best expert for you right now.</p>
-                    <button onclick="app.chat.openWithService('${serviceName}')" class="btn-animated btn-orange text-white text-lg font-bold py-4 px-8 rounded-full shadow-lg">💬 Book via Chat</button>
-                </div>
-            </section>
-        </div>`;
-    }, // <-- Make sure this comma is present if renderServicePage is not the last function in app object
+                </section>
+                <section class="py-16">
+                    <div class="container mx-auto px-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${workersHtmlContent}
+                        </div>
+                    </div>
+                </section>
+                <section class="py-16 bg-gray-100 text-center">
+                    <div class="container mx-auto px-6">
+                        <h2 class="text-3xl font-bold">Don't Want to Choose?</h2>
+                        <p class="text-lg text-gray-600 my-4">Let us find the best expert for you right now.</p>
+                        <button onclick="app.chat.openWithService('${serviceName}')" class="btn-animated btn-orange text-white text-lg font-bold py-4 px-8 rounded-full shadow-lg">💬 Book via Chat</button>
+                    </div>
+                </section>
+            </div>`;
+            }, 
 
             startCallSimulation(workerName, serviceName, status) {
                 this.elements.modal.classList.remove('hidden'); this.elements.modal.classList.add('flex');
@@ -925,15 +930,48 @@
                 confirmBooking() { this.elements.inputArea.style.display = 'none'; this.elements.optionsArea.style.display = 'none'; this.elements.messages.innerHTML += `<div id="success-animation"> <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"> <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/> <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/> </svg> <p class="font-semibold text-lg mt-4" style="color: ${app.getBrandColor('navy')}">Booking Received!</p> <p class="text-gray-600">Our verified team will confirm shortly.</p> </div>`; app.logToSheet('chat', this.bookingDetails); setTimeout(() => { this.elements.inputArea.style.display = 'flex'; this.elements.optionsArea.style.display = 'block'; this.startChat(); }, 5000); }
             },
 
+            // --- UPDATED: To use new API_BASE_URL and dynamic endpoints ---
             logToSheet(type, data) {
-                if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes('PASTE_YOUR_NEW')) { return; }
-                const payload = { type, ...data };
-                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify(payload) })
-                    .catch(error => { console.error('Error logging to Google Sheet:', error); });
+                if (!API_BASE_URL) { 
+                    console.warn("API_BASE_URL not set. Skipping log.");
+                    return; 
+                }
+                
+                // New API structure: /api/log/call, /api/log/chat, etc.
+                const logEndpoint = `${API_BASE_URL}/api/log/${type}`;
+                
+                // The payload for the new API is just the data, 'type' is in the URL.
+                const payload = data; 
+
+                fetch(logEndpoint, {
+                    method: 'POST',
+                    mode: 'cors', // Use 'cors' for a standard API
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(response => { 
+                    if (!response.ok) {
+                         // Try to get error message from server
+                        return response.json().then(err => {
+                             throw new Error(err.message || `Logging failed (${response.status})`);
+                        }).catch(() => {
+                             throw new Error(`Logging failed (${response.status})`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(result => {
+                    console.log(`Log successful (${type}):`, result.message || result);
+                })
+                .catch(error => {
+                    console.error(`Error logging (${type}) to Render API:`, error);
+                });
             },
 
             bookServiceViaWhatsapp(serviceName) {
-                const phoneNumber = '916351541231';
+                const phoneNumber = '916351541231'; // Make sure this is the correct number
                 let message = `Hi CitySetu 👋\nI need help with a service.\nPlease help me connect with a verified expert near me.`;
                 if (serviceName !== 'General Inquiry') { message = `Hi CitySetu 👋\nI need help with *${serviceName}*.\nPlease help me connect with a verified expert near me.`; }
                 const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
@@ -942,6 +980,7 @@
 
             getBrandColor(colorName) { return getComputedStyle(document.documentElement).getPropertyValue(`--brand-${colorName}`).trim(); },
 
+            // --- UPDATED: To use new API_BASE_URL and endpoint ---
             handleWorkerSignup(event) {
                 event.preventDefault();
                 const submitBtn = document.getElementById('signup-submit-btn');
@@ -949,17 +988,58 @@
                 submitBtn.disabled = true; submitBtn.textContent = 'Submitting...';
                 messageDiv.classList.add('hidden'); messageDiv.textContent = '';
 
-                const signupData = { type: 'workerSignup', name: document.getElementById('signup-name').value.trim(), phone: document.getElementById('signup-phone').value.trim(), service: document.getElementById('signup-service').value.trim(), location: document.getElementById('signup-location').value.trim() };
+                // Payload for the new API endpoint (doesn't need 'type')
+                const signupData = {
+                    name: document.getElementById('signup-name').value.trim(),
+                    phone: document.getElementById('signup-phone').value.trim(),
+                    service: document.getElementById('signup-service').value.trim(),
+                    location: document.getElementById('signup-location').value.trim()
+                };
 
                 if (!signupData.name || !signupData.phone || !signupData.service || !signupData.location) { this.showSignupMessage('Please fill in all required (*) fields.', 'red'); submitBtn.disabled = false; submitBtn.textContent = 'Request to Join'; return; }
                 if (!/^\d{10}$/.test(signupData.phone)) { this.showSignupMessage('Please enter a valid 10-digit mobile number.', 'red'); submitBtn.disabled = false; submitBtn.textContent = 'Request to Join'; return; }
 
-                fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify(signupData) })
-                    .then(response => { if (!response.ok) { throw new Error(`Network error (${response.status})`); } return response.json(); })
-                    .then(result => { if (result.status === 'success') { this.showSignupMessage(result.message || 'Request sent!', 'green'); document.getElementById('worker-signup-form').reset(); } else { throw new Error(result.message || 'Unknown error'); } })
-                    .catch(error => { console.error('Error submitting signup:', error); this.showSignupMessage(`Error: ${error.message}`, 'red'); })
-                    .finally(() => { submitBtn.disabled = false; submitBtn.textContent = 'Request to Join'; });
+                // New API endpoint for worker signup
+                const signupEndpoint = `${API_BASE_URL}/api/workers/signup`;
+
+                fetch(signupEndpoint, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json', },
+                    body: JSON.stringify(signupData)
+                })
+                .then(response => {
+                    // We need to check response.ok and then parse JSON
+                    if (!response.ok) {
+                         // Try to parse the error body from the server
+                         return response.json().then(errData => {
+                             throw new Error(errData.message || `Network error (${response.status})`);
+                         }).catch(() => {
+                             // Fallback if error body isn't JSON
+                             throw new Error(`Network error (${response.status})`);
+                         });
+                    }
+                    return response.json(); 
+                })
+                .then(result => {
+                    if (result.status === 'success') {
+                        this.showSignupMessage(result.message || 'Request sent! We will contact you soon.', 'green');
+                        document.getElementById('worker-signup-form').reset();
+                    } else {
+                        // Handle cases where server returns 200 OK but { status: 'error' }
+                        throw new Error(result.message || 'Unknown error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error submitting signup:', error);
+                    this.showSignupMessage(`Error: ${error.message}`, 'red');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Request to Join';
+                });
             },
+            
             showSignupMessage(message, color = 'green') {
                 const messageDiv = document.getElementById('signup-message'); messageDiv.textContent = message;
                 messageDiv.style.color = color === 'red' ? '#dc2626' : '#16a34a'; messageDiv.classList.remove('hidden');
@@ -968,10 +1048,6 @@
 
         document.addEventListener('DOMContentLoaded', () => app.init());
     </script>
-</body>
+    </body>
 
 </html>
-</body>
-
-</html>
-
