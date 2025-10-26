@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,10 +12,12 @@
             --brand-navy: #1B2A49;
             --brand-orange: #FF7B00;
         }
+
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #f4f7f6;
         }
+
         .tab-btn {
             padding: 1rem 1.5rem;
             font-weight: 600;
@@ -22,12 +25,22 @@
             border-bottom: 3px solid transparent;
             transition: all 0.3s ease;
         }
+
         .tab-btn.active {
             color: var(--brand-navy);
             border-bottom-color: var(--brand-orange);
         }
-        .table-wrapper { display: none; }
-        .table-wrapper.active { display: block; }
+
+        .table-wrapper,
+        .section-wrapper {
+            display: none;
+        }
+
+        /* Use section-wrapper for worker section */
+        .table-wrapper.active,
+        .section-wrapper.active {
+            display: block;
+        }
 
         /* Status Badges */
         .status-badge {
@@ -37,14 +50,17 @@
             font-weight: 600;
             text-transform: uppercase;
         }
+
         .status-pending {
             background-color: #fffbeb;
             color: #d97706;
         }
+
         .status-confirmed {
             background-color: #f0fdf4;
             color: #16a34a;
         }
+
         .status-rejected {
             background-color: #fef2f2;
             color: #dc2626;
@@ -58,30 +74,60 @@
             border-radius: 6px;
             transition: all 0.2s ease;
         }
+
         .btn-approve {
             background-color: #16a34a;
             color: white;
         }
-        .btn-approve:hover { background-color: #15803d; }
+
+        .btn-approve:hover {
+            background-color: #15803d;
+        }
+
         .btn-reject {
             background-color: #dc2626;
             color: white;
         }
-        .btn-reject:hover { background-color: #b91c1c; }
+
+        .btn-reject:hover {
+            background-color: #b91c1c;
+        }
 
         /* Table Style */
         tbody tr {
             transition: background-color 0.2s ease;
         }
+
         tbody tr:hover {
             background-color: #ffffff;
         }
-        tbody td {
+
+        tbody td,
+        thead th {
             padding: 1rem 1.5rem;
             border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        /* Ensure left align */
+        .form-input {
+            margin-top: 0.25rem;
+            display: block;
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            box-shadow: sm;
+            padding: 0.5rem;
+        }
+
+        .form-input:focus {
+            border-color: var(--brand-navy);
+            box-shadow: 0 0 0 2px rgba(27, 42, 73, 0.3);
+            outline: none;
         }
     </style>
 </head>
+
 <body class="bg-gray-100">
 
     <header class="bg-white shadow-md">
@@ -89,7 +135,8 @@
             <h1 class="text-3xl font-bold" style="color: var(--brand-navy);">
                 CitySetu <span class="font-light">Admin Dashboard</span>
             </h1>
-            <button onclick="admin.fetchData()" id="refresh-btn" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all">
+            <button onclick="admin.fetchData()" id="refresh-btn"
+                class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all">
                 🔄 Refresh Data
             </button>
         </div>
@@ -104,24 +151,21 @@
                 <button id="tab-calls" class="tab-btn" onclick="admin.showTab('calls')">
                     Call Logs (<span id="call-count">0</span>)
                 </button>
+                <button id="tab-workers" class="tab-btn" onclick="admin.showTab('workers')">
+                    Manage Workers (<span id="worker-count">0</span>)
+                </button>
             </nav>
         </div>
 
         <div id="table-chats" class="table-wrapper active mt-6 bg-white rounded-lg shadow-md overflow-hidden">
             <table class="w-full">
                 <thead class="bg-gray-50">
-                    <tr>
-                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Timestamp</th>
-                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Service</th>
-                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
-                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Time</th>
-                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
-                    </tr>
+
+                    <tr></tr>
                 </thead>
                 <tbody id="chats-table-body" class="divide-y divide-gray-200">
                     <tr>
-                        <td colspan="6" class="p-6 text-center text-gray-500" id="chats-loading">Loading data...</td>
+                        <td colspan="8" class="p-6 text-center text-gray-500" id="chats-loading">Loading data...</td>
                     </tr>
                 </tbody>
             </table>
@@ -131,9 +175,12 @@
             <table class="w-full">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Timestamp</th>
-                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Worker Name</th>
-                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Service</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Timestamp
+                        </th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Worker
+                            Name</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Service
+                        </th>
                     </tr>
                 </thead>
                 <tbody id="calls-table-body" class="divide-y divide-gray-200">
@@ -143,19 +190,104 @@
                 </tbody>
             </table>
         </div>
+
+
+        <div id="section-workers" class="section-wrapper mt-6 space-y-6">
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--brand-navy);">Add New Worker</h2>
+                <form id="add-worker-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="worker-name" class="block text-sm font-medium text-gray-700">Name*</label>
+                        <input type="text" id="worker-name" required class="form-input">
+                    </div>
+                    <div>
+                        <label for="worker-service" class="block text-sm font-medium text-gray-700">Service*</label>
+                        <input type="text" id="worker-service" required placeholder="e.g., AC Repair"
+                            class="form-input">
+                    </div>
+                    <div>
+                        <label for="worker-experience"
+                            class="block text-sm font-medium text-gray-700">Experience</label>
+                        <input type="text" id="worker-experience" placeholder="e.g., 5+ Years" class="form-input">
+                    </div>
+                    <div>
+                        <label for="worker-location" class="block text-sm font-medium text-gray-700">Location</label>
+                        <input type="text" id="worker-location" placeholder="e.g., Gota, Ahmedabad" class="form-input">
+                    </div>
+                    <div>
+                        <label for="worker-rating" class="block text-sm font-medium text-gray-700">Rating (0-5)</label>
+                        <input type="number" id="worker-rating" step="0.1" min="0" max="5" placeholder="e.g., 4.5"
+                            class="form-input">
+                    </div>
+                    <div>
+                        <label for="worker-status" class="block text-sm font-medium text-gray-700">Status</label>
+                        <select id="worker-status" class="form-input">
+                            <option value="available" selected>Available</option>
+                            <option value="busy">Busy</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-3 text-right">
+                        <button type="submit" id="add-worker-btn"
+                            class="bg-green-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                            + Add Worker
+                        </button>
+                    </div>
+                </form>
+                <div id="worker-form-message" class="mt-4 text-sm font-medium hidden"></div>
+            </div>
+
+
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <h2 class="text-xl font-semibold p-6 border-b" style="color: var(--brand-navy);">Existing Workers</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-max">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    ID</th>
+                                <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Name</th>
+                                <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Service</th>
+                                <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Location</th>
+                                <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="workers-table-body" class="divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="5" class="p-6 text-center text-gray-500" id="workers-loading">Loading
+                                    workers...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </main>
 
-   <script>
+    <script>
+        // --- Password Protection Check ---
+        if (sessionStorage.getItem('citysetu_admin_auth') !== 'true') {
+            window.location.href = 'admin-login.html';
+        }
+        // --- End Protection Check ---
+
+        // --- Only ONE Definition of URL and admin object ---
         // ------------------------------------------------------------------
         // CONFIGURATION
         // ------------------------------------------------------------------
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzweE5hjxVqABDNDI9VEaTENqqHokHXfLh2KvF48yQdci-W8kwYxuH4rSLg12giKN_SsA/exec';
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_QGQGLZKCsXc1prgGG74aQmYjsPSEOy0cGuSUH9MG6etSO3R76LmoZcv1nSYhT262yw/exec'; // Your Correct URL
 
         // ------------------------------------------------------------------
-        // ADMIN DASHBOARD LOGIC
+        // ADMIN DASHBOARD LOGIC (Complete Version)
         // ------------------------------------------------------------------
         const admin = {
             elements: {
+                // Chat and Call elements
                 chatTab: document.getElementById('tab-chats'),
                 callTab: document.getElementById('tab-calls'),
                 chatTable: document.getElementById('table-chats'),
@@ -166,53 +298,77 @@
                 callLoading: document.getElementById('calls-loading'),
                 chatCount: document.getElementById('chat-count'),
                 callCount: document.getElementById('call-count'),
-                refreshBtn: document.getElementById('refresh-btn')
+                refreshBtn: document.getElementById('refresh-btn'),
+
+                // Worker elements added
+                workerTab: document.getElementById('tab-workers'),
+                workerSection: document.getElementById('section-workers'),
+                workerTableBody: document.getElementById('workers-table-body'),
+                workerLoading: document.getElementById('workers-loading'),
+                workerCount: document.getElementById('worker-count'),
+                addWorkerForm: document.getElementById('add-worker-form'),
+                addWorkerBtn: document.getElementById('add-worker-btn'),
+                workerFormMessage: document.getElementById('worker-form-message')
             },
 
             init() {
+                // Added event listener
+                this.elements.addWorkerForm.addEventListener('submit', this.handleAddWorker.bind(this));
                 this.fetchData();
             },
 
             showTab(tabName) {
-                // ... (this function is correct, no changes needed) ...
+                // Updated to handle 3 tabs/sections
+                [this.elements.chatTab, this.elements.callTab, this.elements.workerTab].forEach(tab => tab.classList.remove('active'));
+                [this.elements.chatTable, this.elements.callTable, this.elements.workerSection].forEach(sec => {
+                    sec.classList.remove('active');
+                    sec.classList.add('hidden'); // Use hidden to ensure only one is visible
+                });
+
                 if (tabName === 'chats') {
                     this.elements.chatTab.classList.add('active');
-                    this.elements.callTab.classList.remove('active');
                     this.elements.chatTable.classList.add('active');
-                    this.elements.callTable.classList.remove('active');
-                } else {
-                    this.elements.chatTab.classList.remove('active');
+                    this.elements.chatTable.classList.remove('hidden');
+                } else if (tabName === 'calls') {
                     this.elements.callTab.classList.add('active');
-                    this.elements.chatTable.classList.remove('active');
                     this.elements.callTable.classList.add('active');
+                    this.elements.callTable.classList.remove('hidden');
+                } else if (tabName === 'workers') {
+                    this.elements.workerTab.classList.add('active');
+                    this.elements.workerSection.classList.add('active');
+                    this.elements.workerSection.classList.remove('hidden');
                 }
             },
 
             async fetchData() {
-                // ... (this function is correct, no changes needed) ...
+                // Updated loading messages
                 this.elements.refreshBtn.disabled = true;
                 this.elements.refreshBtn.textContent = 'Refreshing...';
+                // Ensure loading messages are visible
+                this.elements.chatLoading.parentElement.style.display = 'table-row';
+                this.elements.callLoading.parentElement.style.display = 'table-row';
+                this.elements.workerLoading.parentElement.style.display = 'table-row';
                 this.elements.chatLoading.textContent = 'Loading data...';
                 this.elements.callLoading.textContent = 'Loading data...';
-                
+                this.elements.workerLoading.textContent = 'Loading workers...';
+
                 try {
                     const response = await fetch(GOOGLE_SCRIPT_URL);
-                    if (!response.ok) {
-                        throw new Error(`Network response was not ok: ${response.statusText}`);
-                    }
+                    if (!response.ok) throw new Error(`Network error: ${response.statusText}`);
                     const data = await response.json();
-                    
-                    if (data.status === 'error') {
-                         throw new Error(`API Error: ${data.message}`);
-                    }
+                    if (data.status === 'error') throw new Error(`API Error: ${data.message}`);
 
+                    // Render all tables
                     this.renderChatTable(data.chats || []);
                     this.renderCallTable(data.calls || []);
+                    this.renderWorkerTable(data.workers || []);
 
                 } catch (error) {
                     console.error('Failed to fetch data:', error);
-                    this.elements.chatLoading.textContent = `Error loading data: ${error.message}`;
-                    this.elements.callLoading.textContent = `Error loading data: ${error.message}`;
+                    // Update all loading messages on error
+                    this.elements.chatLoading.textContent = `Error: ${error.message}`;
+                    this.elements.callLoading.textContent = `Error: ${error.message}`;
+                    this.elements.workerLoading.textContent = `Error: ${error.message}`;
                 } finally {
                     this.elements.refreshBtn.disabled = false;
                     this.elements.refreshBtn.textContent = '🔄 Refresh Data';
@@ -220,62 +376,52 @@
             },
 
             renderChatTable(chats) {
-                this.elements.chatTableBody.innerHTML = ''; 
+                this.elements.chatTableBody.innerHTML = ''; // Clear only body
                 this.elements.chatCount.textContent = chats.length;
 
+                // Set table headers (do this once)
+                this.elements.chatTable.querySelector('thead tr').innerHTML = `
+                     <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Timestamp</th>
+                     <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+                     <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Phone</th>
+                     <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Service</th>
+                     <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
+                     <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Time</th>
+                     <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                     <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                 `;
+
                 if (chats.length === 0) {
-                    // ... (no changes needed) ...
-                    this.elements.chatTableBody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-gray-500">No chat bookings found.</td></tr>';
+                    this.elements.chatTableBody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-gray-500">No chat bookings found.</td></tr>';
                     return;
                 }
 
                 chats.reverse().forEach(chat => {
                     const tr = document.createElement('tr');
-                    
-                    // IMPORTANT: Use the ID from our new helper function
-                    tr.setAttribute('data-id', chat.id); 
-
+                    tr.setAttribute('data-id', chat.id);
                     const timestamp = new Date(chat.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
-                    
                     let statusClass = 'status-pending';
                     if (chat.status === 'Confirmed') statusClass = 'status-confirmed';
                     if (chat.status === 'Rejected') statusClass = 'status-rejected';
 
                     tr.innerHTML = `
-                        <td>${timestamp}</td>
-                        <td class="font-medium text-gray-900">${chat.name}</td>
-                        <td>${chat.phone}</td>
-                        <td class="font-medium text-gray-900">${chat.service}</td>
-                        <td>${chat.location}</td>
-                        <td>${chat.time}</td>
-                        <td>
-                            <span class="status-badge ${statusClass}" id="status-${chat.id}">
-                                ${chat.status}
-                            </span>
-                        </td>
-                        <td class="space-x-2">
-                            <button class="btn-action btn-approve" onclick="admin.updateStatus(${chat.id}, 'Confirmed')">Approve</button>
-                            <button class="btn-action btn-reject" onclick="admin.updateStatus(${chat.id}, 'Rejected')">Reject</button>
-                        </td>
-                    `;
+                         <td>${timestamp}</td>
+                         <td>${chat.name}</td>
+                         <td>${chat.phone}</td>
+                         <td class="font-medium text-gray-900">${chat.service}</td>
+                         <td>${chat.location}</td>
+                         <td>${chat.time}</td>
+                         <td><span class="status-badge ${statusClass}" id="status-${chat.id}">${chat.status}</span></td>
+                         <td class="space-x-2">
+                             <button class="btn-action btn-approve" onclick="admin.updateStatus(${chat.id}, 'Confirmed')">Approve</button>
+                             <button class="btn-action btn-reject" onclick="admin.updateStatus(${chat.id}, 'Rejected')">Reject</button>
+                         </td>
+                     `;
                     this.elements.chatTableBody.appendChild(tr);
                 });
-                
-                // Re-render table headers to include new columns
-                this.elements.chatTable.querySelector('thead tr').innerHTML = `
-                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Timestamp</th>
-                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
-                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Phone</th>
-                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Service</th>
-                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
-                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Time</th>
-                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
-                `;
             },
-            
+
             renderCallTable(calls) {
-                // ... (this function is correct, no changes needed) ...
                 this.elements.callTableBody.innerHTML = '';
                 this.elements.callCount.textContent = calls.length;
 
@@ -289,62 +435,122 @@
                     const timestamp = new Date(call.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
 
                     tr.innerHTML = `
-                        <td>${timestamp}</td>
-                        <td class="font-medium text-gray-900">${call.workername}</td>
-                        <td>${call.service}</td>
-                    `;
+                         <td>${timestamp}</td>
+                         <td class="font-medium text-gray-900">${call.workername}</td> {/* Check header name in sheet */}
+                         <td>${call.service}</td>
+                     `;
                     this.elements.callTableBody.appendChild(tr);
                 });
             },
 
-            // --- NEW FUNCTION ---
-            // This function now sends the update to Google Sheets
+            // --- FUNCTION TO RENDER WORKER TABLE ADDED ---
+            renderWorkerTable(workers) {
+                this.elements.workerTableBody.innerHTML = ''; // Clear table
+                this.elements.workerCount.textContent = workers.length;
+
+                if (workers.length === 0) {
+                    this.elements.workerTableBody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500">No workers added yet.</td></tr>';
+                    return;
+                }
+
+                workers.forEach(worker => {
+                    const tr = document.createElement('tr');
+                    // Use worker.id from the sheet if available
+                    tr.innerHTML = `
+                         <td>${worker.id || 'N/A'}</td>
+                         <td class="font-medium text-gray-900">${worker.name}</td>
+                         <td>${worker.service}</td>
+                         <td>${worker.location}</td>
+                         <td>${worker.status}</td>
+                     `;
+                    this.elements.workerTableBody.appendChild(tr);
+                });
+            },
+
+            // --- FUNCTION TO HANDLE ADD WORKER FORM ADDED ---
+            async handleAddWorker(event) {
+                event.preventDefault();
+                this.elements.addWorkerBtn.disabled = true;
+                this.elements.addWorkerBtn.textContent = 'Adding...';
+                this.elements.workerFormMessage.classList.add('hidden');
+
+                const workerData = {
+                    type: 'addWorker',
+                    name: document.getElementById('worker-name').value.trim(),
+                    service: document.getElementById('worker-service').value.trim(),
+                    experience: document.getElementById('worker-experience').value.trim(),
+                    location: document.getElementById('worker-location').value.trim(),
+                    rating: document.getElementById('worker-rating').value,
+                    status: document.getElementById('worker-status').value
+                };
+
+                if (!workerData.name || !workerData.service) {
+                    this.showWorkerFormMessage('Name and Service are required.', 'red');
+                    this.elements.addWorkerBtn.disabled = false;
+                    this.elements.addWorkerBtn.textContent = '+ Add Worker';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST', mode: 'cors',
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(workerData)
+                    });
+                    const result = await response.json();
+
+                    if (result.status === 'success') {
+                        this.showWorkerFormMessage(result.message || 'Worker added!', 'green');
+                        this.elements.addWorkerForm.reset();
+                        this.fetchData(); // Refresh list
+                    } else {
+                        throw new Error(result.message || 'Unknown error adding worker.');
+                    }
+                } catch (error) {
+                    console.error('Error adding worker:', error);
+                    this.showWorkerFormMessage(`Error: ${error.message}`, 'red');
+                } finally {
+                    this.elements.addWorkerBtn.disabled = false;
+                    this.elements.addWorkerBtn.textContent = '+ Add Worker';
+                }
+            },
+
+            // --- HELPER FOR FORM MESSAGES ADDED ---
+            showWorkerFormMessage(message, color = 'green') {
+                this.elements.workerFormMessage.textContent = message;
+                this.elements.workerFormMessage.style.color = color;
+                this.elements.workerFormMessage.classList.remove('hidden');
+            },
+
             async updateStatus(id, newStatus) {
+                // --- THIS FUNCTION IS CORRECT, NO CHANGES NEEDED ---
                 console.log(`Updating row ${id} to ${newStatus}`);
-                
-                // 1. Update the UI instantly
                 const statusBadge = document.getElementById(`status-${id}`);
                 if (statusBadge) {
                     statusBadge.textContent = newStatus;
-                    statusBadge.className = 'status-badge'; // Clear old classes
-                    if (newStatus === 'Confirmed') {
-                        statusBadge.classList.add('status-confirmed');
-                    } else if (newStatus === 'Rejected') {
-                        statusBadge.classList.add('status-rejected');
-                    }
+                    statusBadge.className = 'status-badge';
+                    if (newStatus === 'Confirmed') statusBadge.classList.add('status-confirmed');
+                    else if (newStatus === 'Rejected') statusBadge.classList.add('status-rejected');
+                    else statusBadge.classList.add('status-pending'); // Fallback
                 }
 
-                // 2. Send the update to the Google Script
                 try {
-                    const response = await fetch(GOOGLE_SCRIPT_URL, { 
-                       method: 'POST', 
-                       mode: 'cors', // Use cors, since our script now allows it
-                       headers: {
-                           "Content-Type": "application/json",
-                       },
-                       body: JSON.stringify({ 
-                           type: 'updateStatus', 
-                           id: id, // This is the row ID (1, 2, 3...)
-                           newStatus: newStatus 
-                       }) 
+                    const response = await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST', mode: 'cors',
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ type: 'updateStatus', id: id, newStatus: newStatus })
                     });
-                    
                     const result = await response.json();
-                    if (result.status === 'success') {
-                        console.log('Status updated successfully in Google Sheets');
-                    } else {
-                        console.error('Failed to update sheet:', result.message);
-                        // Revert UI on failure
-                        statusBadge.textContent = 'Pending';
-                        statusBadge.className = 'status-badge status-pending';
-                        alert('Error: Could not update status in Google Sheet. ' + result.message);
-                    }
+                    if (result.status === 'success') { console.log('Status updated in Sheet'); }
+                    else { throw new Error(result.message); }
                 } catch (error) {
-                    console.error('Fetch error:', error);
-                    // Revert UI on failure
-                    statusBadge.textContent = 'Pending';
-                    statusBadge.className = 'status-badge status-pending';
-                    alert('Error: Could not connect to Google Script. ' + error.message);
+                    console.error('Failed to update status in Sheet:', error);
+                    // Revert UI
+                    if (statusBadge) {
+                        statusBadge.textContent = 'Pending'; // Or fetch original status
+                        statusBadge.className = 'status-badge status-pending';
+                    }
+                    alert('Error updating status: ' + error.message);
                 }
             }
         };
@@ -352,4 +558,5 @@
         document.addEventListener('DOMContentLoaded', () => admin.init());
     </script>
 </body>
+
 </html>
