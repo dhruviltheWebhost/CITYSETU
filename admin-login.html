@@ -17,41 +17,37 @@
         <h1 class="text-2xl font-bold text-center mb-6" style="color: var(--brand-navy);">CitySetu Admin Login</h1>
         <form id="login-form">
             <div class="mb-4">
-                <label for="password" class="block text-gray-700 font-bold mb-2">Password</label>
-                <input type="password" id="password" class="form-input w-full px-3 py-2 border rounded-lg" required>
+                <label for="admin-token" class="block text-gray-700 font-bold mb-2">Admin Token</label>
+                <input type="password" id="admin-token" class="form-input w-full px-3 py-2 border rounded-lg" required>
             </div>
-            <div id="error-message" class="text-red-500 text-sm mb-4 hidden">Incorrect password.</div>
             <button type="submit" class="w-full bg-blue-800 text-white font-bold py-3 px-4 rounded-full hover:bg-blue-900 transition-colors">Login</button>
         </form>
     </div>
 
     <script>
-        // --- SET YOUR ADMIN PASSWORD HERE ---
-        const ADMIN_PASSWORD = "Dhruvil@6108"; // Change this!
+        // --- This is the new, compatible login script ---
 
         const form = document.getElementById('login-form');
-        const passwordInput = document.getElementById('password');
-        const errorMessage = document.getElementById('error-message');
+        const tokenInput = document.getElementById('admin-token'); // Updated ID
 
-        // Redirect if already logged in (session check)
-        if (sessionStorage.getItem('citysetu_admin_auth') === 'true') {
+        // Redirect if a token is already saved in sessionStorage
+        if (sessionStorage.getItem('citysetu_admin_token')) {
             window.location.href = 'admin-dashboard.html';
         }
 
         form.addEventListener('submit', (e) => {
             e.preventDefault();
-            const enteredPassword = passwordInput.value;
+            const token = tokenInput.value;
 
-            if (enteredPassword === ADMIN_PASSWORD) {
-                // Store auth confirmation in sessionStorage (clears when browser tab closes)
-                sessionStorage.setItem('citysetu_admin_auth', 'true');
-                errorMessage.classList.add('hidden');
-                // Redirect to dashboard
-                window.location.href = 'admin-dashboard.html';
-            } else {
-                errorMessage.classList.remove('hidden');
-                passwordInput.focus();
-            }
+            // This token MUST be the same as the ADMIN_TOKEN
+            // environment variable you set on Render.
+            
+            // We don't check the token here. We just save it.
+            // The dashboard will use it, and the API server will validate it.
+            sessionStorage.setItem('citysetu_admin_token', token);
+            
+            // Redirect to dashboard
+            window.location.href = 'admin-dashboard.html';
         });
     </script>
 </body>
