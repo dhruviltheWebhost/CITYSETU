@@ -245,8 +245,15 @@
                     </div>
                     <div>
                         <label for="worker-service" class="block text-sm font-medium text-gray-700">Service*</label>
-                        <input type="text" id="worker-service" required placeholder="e.g., AC Repair"
-                            class="form-input">
+                        <select id="worker-service" class="form-input" required>
+    <option value="" disabled selected>Select a Service</option>
+    <option value="AC Repair">❄️ AC Repair</option>
+    <option value="Laptop Repair">💻 Laptop Repair</option>
+    <option value="Electrician">💡 Electrician</option>
+    <option value="Home Repair">🔨 Home Repair</option>
+    <option value="Cleaning">🧹 Home Cleaning</option>
+    <option value="Plumber">💧 Plumber</option>
+    </select>
                     </div>
                     <div>
                         <label for="worker-phone" class="block text-sm font-medium text-gray-700">Phone (Required)*</label>
