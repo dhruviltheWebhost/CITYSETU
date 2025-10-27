@@ -533,8 +533,15 @@
                     </div>
                     <div>
                         <label for="signup-service" class="block text-gray-700 font-bold mb-1">Primary Service*</label>
-                        <input type="text" id="signup-service" class="form-input w-full px-3 py-2"
-                            placeholder="e.g., AC Repair, Electrician" required>
+                       <select id="signup-service" class="form-input w-full px-3 py-2" required>
+    <option value="" disabled selected>Select a Service</option>
+    <option value="AC Repair">❄️ AC Repair</option>
+    <option value="Laptop Repair">💻 Laptop Repair</option>
+    <option value="Electrician">💡 Electrician</option>
+    <option value="Home Repair">🔨 Home Repair</option>
+    <option value="Cleaning">🧹 Home Cleaning</option>
+    <option value="Plumber">💧 Plumber</option>
+    </select>
                     </div>
                     <div>
                         <label for="signup-location" class="block text-gray-700 font-bold mb-1">Your Area*</label>
@@ -1186,3 +1193,4 @@
     </body>
 
 </html>
+
