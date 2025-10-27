@@ -686,7 +686,7 @@
             async loadWorkerData() {
                 this.isWorkerDataLoading = true;
                 if (!API_BASE_URL) {
-                    console.warn("API_BASE_URL is not set correctly. Using mock data.");
+                    console.warn("API_BASE_URL is not set correctly. Cannot load worker data.");
                     this.workerData = {};
                     this.isWorkerDataLoading = false;
                     return;
@@ -709,12 +709,12 @@
                         console.error("API Error reported by server:", data.message);
                         throw new Error(`API Error: ${data.message}`);
                     }
-                    if (!data.workers) {
-                        console.error("Worker data array not found in response:", data);
-                        throw new Error('Workers data array not found in the response.');
+                    if (!Array.isArray(data.workers)) { // Check if data.workers is an array
+                        console.error("Worker data is not an array:", data);
+                        throw new Error('Workers data is not in the expected array format.');
                     }
 
-                    // Group workers by service (Logic from your original file)
+                    // Group workers by service
                     const groupedData = {};
                     data.workers.forEach(worker => {
                         const service = worker.service;
@@ -724,11 +724,20 @@
                         }
                         const serviceKey = String(service).trim();
                         if (!groupedData[serviceKey]) groupedData[serviceKey] = [];
+                        // Store the data as received from the API
                         groupedData[serviceKey].push({
-                            id: worker.id || `w_${Math.random().toString(36).substr(2, 9)}`,
-                            name: worker.name || 'N/A', experience: worker.experience || 'N/A',
-                            location: worker.location || 'N/A', rating: parseFloat(worker.rating) || 0,
-                            status: worker.status || 'available', phone: worker.phone || 'N/A'
+                            id: worker.id,
+                            name: worker.name,
+                            phone: worker.phone,
+                            service: worker.service,
+                            city: worker.city,
+                            pincode: worker.pincode,
+                            status: worker.status,
+                            timestamp: worker.timestamp,
+                            // Map old fields for compatibility (replace with actual data if needed)
+                            experience: 'N/A', 
+                            location: worker.city || 'N/A', // Use city for location
+                            rating: 0 // Default rating, API doesn't provide it
                         });
                     });
                     this.workerData = groupedData;
@@ -740,6 +749,8 @@
                     this.workerData = {}; // Use empty object on error
                 }
                 this.isWorkerDataLoading = false;
+                 // Re-render the current page if it depends on worker data
+                 this.router();
             },
 
             router() {
@@ -756,8 +767,7 @@
                         const targetId = window.location.hash;
                         setTimeout(() => document.querySelector(targetId)?.scrollIntoView({ behavior: 'smooth' }), 100);
                     } else if (param) { 
-                        // This handles the old 'home/#services' case, now it's just '#services'
-                        // param will be '#services'
+                        // Handles hash like 'home/#services' if needed, though direct hash is better
                         setTimeout(() => document.querySelector(param)?.scrollIntoView({ behavior: 'smooth' }), 100);
                     }
                 }
@@ -772,13 +782,13 @@
                     window.location.hash = param; // Just set hash to #services etc.
                     // Manually call scrollIntoView 
                      setTimeout(() => {
-                        const targetElement = document.querySelector(param);
-                        if (targetElement) {
-                             targetElement.scrollIntoView({ behavior: 'smooth' });
-                        }
+                         const targetElement = document.querySelector(param);
+                         if (targetElement) {
+                              targetElement.scrollIntoView({ behavior: 'smooth' });
+                         }
                      }, 100);
                 } else if (page === 'service') {
-                     window.location.hash = `${page}/${param}`;
+                     window.location.hash = `${page}/${encodeURIComponent(param)}`; // Ensure service name is encoded
                 } else {
                      window.location.hash = page;
                 }
@@ -797,8 +807,8 @@
                         <h1 class="hero-title text-4xl md:text-6xl font-bold leading-tight mb-4">Your City, Your Services, One Setu.</h1>
                         <p class="hero-subtitle text-lg md:text-xl text-blue-200 mb-8 max-w-3xl mx-auto">Find verified experts in Ahmedabad. Instantly book via Chat, Call, or WhatsApp.</p>
                         <div class="hero-buttons flex flex-col sm:flex-row justify-center items-center gap-4">
-                             <button onclick="app.chat.open()" class="btn-animated btn-orange text-white text-lg font-bold py-4 px-8 rounded-full inline-block shadow-lg">💬 Book via Chat</button>
-                             <button onclick="app.bookServiceViaWhatsapp('General Inquiry')" class="btn-animated bg-green-500 text-white text-lg font-bold py-4 px-8 rounded-full inline-block shadow-lg hover:bg-green-600"> <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="inline-block mr-2 -mt-1" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg> Book on WhatsApp </button>
+                            <button onclick="app.chat.open()" class="btn-animated btn-orange text-white text-lg font-bold py-4 px-8 rounded-full inline-block shadow-lg">💬 Book via Chat</button>
+                            <button onclick="app.bookServiceViaWhatsapp('General Inquiry')" class="btn-animated bg-green-500 text-white text-lg font-bold py-4 px-8 rounded-full inline-block shadow-lg hover:bg-green-600"> <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="inline-block mr-2 -mt-1" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg> Book on WhatsApp </button>
                         </div>
                     </div>
                 </section>
@@ -831,10 +841,8 @@
 
             renderServicePage(serviceName) {
                 window.scrollTo(0, 0);
+                let workersHtmlContent; 
 
-                let workersHtmlContent; // Variable to hold the content for the worker grid
-
-                // --- ADD LOADING CHECK ---
                 if (this.isWorkerDataLoading) {
                     workersHtmlContent = '<p class="col-span-full text-center text-gray-500 py-10">Loading workers...</p>';
                 } else {
@@ -842,25 +850,24 @@
                     if (workers.length > 0) {
                         workersHtmlContent = workers.map(worker => `
                         <div class="card bg-white rounded-lg shadow-md p-6 text-left hover:shadow-xl flex flex-col">
-                                <div class="flex-grow">
-                                    <div class="flex justify-between items-start">
-                                        <h4 class="text-xl font-bold">👨‍🔧 ${worker.name}</h4>
-                                        <span class="verified-badge text-green-600 font-semibold text-sm">✅ Verified</span>
-                                    </div>
-                                    <p class="text-gray-600 my-2"><strong>Experience:</strong> ${worker.experience}</p>
-                                    <p class="text-gray-600 mb-2"><strong>📍 Location:</strong> ${worker.location}</p>
-                                    <p class="text-gray-600 mb-4"><strong>⭐ Rating:</strong> ${worker.rating} / 5</p>
+                            <div class="flex-grow">
+                                <div class="flex justify-between items-start">
+                                    <h4 class="text-xl font-bold">👨‍🔧 ${worker.name}</h4>
+                                    <span class="verified-badge text-green-600 font-semibold text-sm">✅ Verified</span>
                                 </div>
-                                <div class="mt-auto pt-4 flex gap-2">
-                                    <button onclick="app.startCallSimulation('${worker.name}', '${serviceName}', '${worker.status}')" class="w-1/2 btn-animated btn-navy text-white py-2 rounded-lg font-semibold text-sm">📞 Call Now</button>
-                                    <button onclick="app.chat.openWithService('${serviceName}', '${worker.name}')" class="w-1/2 btn-animated btn-orange text-white py-2 rounded-lg font-semibold text-sm">💬 Book Now</button>
-                                </div>
+                                <p class="text-gray-600 my-2"><strong>Experience:</strong> ${worker.experience}</p> 
+                                <p class="text-gray-600 mb-2"><strong>📍 Location:</strong> ${worker.location}</p> 
+                                <p class="text-gray-600 mb-4"><strong>⭐ Rating:</strong> ${worker.rating} / 5</p> 
+                            </div>
+                            <div class="mt-auto pt-4 flex gap-2">
+                                <button onclick="app.startCallSimulation('${worker.name}', '${serviceName}', '${worker.status}')" class="w-1/2 btn-animated btn-navy text-white py-2 rounded-lg font-semibold text-sm">📞 Call Now</button>
+                                <button onclick="app.chat.openWithService('${serviceName}', '${worker.name}')" class="w-1/2 btn-animated btn-orange text-white py-2 rounded-lg font-semibold text-sm">💬 Book Now</button>
+                            </div>
                         </div>`).join('');
                     } else {
                         workersHtmlContent = '<p class="col-span-full text-center text-gray-500 py-10">No workers currently listed for this service. We are expanding quickly!</p>';
                     }
                 }
-                // --- END LOADING CHECK ---
 
                 this.elements.root.innerHTML = `
             <div id="service-page">
@@ -899,7 +906,8 @@
                         gsap.to("#call-modal-content", { opacity: 1, duration: 0.3 });
                     }
                 });
-                this.logToSheet('call', { workerName: workerName, service: serviceName });
+                // Log call attempt to the backend
+                this.logCallAttempt(workerName, serviceName); 
             },
 
             hideCallModal() {
@@ -911,127 +919,198 @@
                 });
             },
 
+            // --- THIS IS THE CORRECTED CHAT OBJECT ---
             chat: {
-                isOpen: false,
-                state: 'initial',
-                // --- 1. IMPROVED: Added 'preferredWorker' ---
-                bookingDetails: { name: "", phone: "", service: "", location: "", time: "", preferredWorker: null },
-                elements: { bubble: document.getElementById('chat-bubble'), window: document.getElementById('chat-window'), headerClose: document.getElementById('chat-header-close'), messages: document.getElementById('chat-messages'), inputArea: document.getElementById('chat-input-area'), inputForm: document.getElementById('chat-input-form'), input: document.getElementById('chat-input'), optionsArea: document.getElementById('chat-options-area'), },
-                init() { this.elements.bubble.addEventListener('click', () => this.open()); this.elements.headerClose.addEventListener('click', () => this.close()); this.elements.inputForm.addEventListener('submit', (e) => this.handleSubmit(e)); this.startChat(); },
-                open() { if (this.isOpen) return; this.isOpen = true; gsap.to(this.elements.bubble, { opacity: 0, scale: 0.5, duration: 0.2, ease: 'power3.in' }); this.elements.window.style.visibility = 'visible'; gsap.to(this.elements.window, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'power3.out' }); },
-                close() { if (!this.isOpen) return; this.isOpen = false; gsap.to(this.elements.window, { opacity: 0, y: 20, scale: 0.95, duration: 0.3, ease: 'power3.in', onComplete: () => { this.elements.window.style.visibility = 'hidden'; } }); gsap.to(this.elements.bubble, { opacity: 1, scale: 1, duration: 0.3, delay: 0.2, ease: 'back.out(1.7)' }); },
-                
-                // --- 2. IMPROVED: This function is now much smarter ---
-                openWithService(serviceName, workerName = null) {
-                    // Manually reset the chat (don't call startChat)
-                    this.state = 'initial';
-                    this.bookingDetails = { name: "", phone: "", service: "", location: "", time: "", preferredWorker: null };
-                    this.elements.messages.innerHTML = '';
-                    this.elements.input.disabled = true;
-                    this.elements.optionsArea.innerHTML = '';
+                isOpen: false,
+                state: 'initial',
+                bookingDetails: { name: "", phone: "", service: "", location: "", time: "", preferredWorker: null },
+                elements: { bubble: document.getElementById('chat-bubble'), window: document.getElementById('chat-window'), headerClose: document.getElementById('chat-header-close'), messages: document.getElementById('chat-messages'), inputArea: document.getElementById('chat-input-area'), inputForm: document.getElementById('chat-input-form'), input: document.getElementById('chat-input'), optionsArea: document.getElementById('chat-options-area'), },
+                init() { this.elements.bubble.addEventListener('click', () => this.open()); this.elements.headerClose.addEventListener('click', () => this.close()); this.elements.inputForm.addEventListener('submit', (e) => this.handleSubmit(e)); this.startChat(); },
+                open() { if (this.isOpen) return; this.isOpen = true; gsap.to(this.elements.bubble, { opacity: 0, scale: 0.5, duration: 0.2, ease: 'power3.in' }); this.elements.window.style.visibility = 'visible'; gsap.to(this.elements.window, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: 'power3.out' }); },
+                close() { if (!this.isOpen) return; this.isOpen = false; gsap.to(this.elements.window, { opacity: 0, y: 20, scale: 0.95, duration: 0.3, ease: 'power3.in', onComplete: () => { this.elements.window.style.visibility = 'hidden'; } }); gsap.to(this.elements.bubble, { opacity: 1, scale: 1, duration: 0.3, delay: 0.2, ease: 'back.out(1.7)' }); },
+                
+                openWithService(serviceName, workerName = null) {
+                    // Manually reset the chat
+                    this.state = 'initial';
+                    this.bookingDetails = { name: "", phone: "", service: "", location: "", time: "", preferredWorker: null };
+                    this.elements.messages.innerHTML = '';
+                    this.elements.input.disabled = true;
+                    this.elements.optionsArea.innerHTML = '';
 
-                    // Set the pre-filled details
-                    this.bookingDetails.service = serviceName;
-                    this.bookingDetails.preferredWorker = workerName; // Save the worker!
+                    // Set the pre-filled details
+                    this.bookingDetails.service = serviceName;
+                    this.bookingDetails.preferredWorker = workerName; 
 
-                    // Create the intro message
-                    let introMessage = `I need the <strong>${serviceName}</strong> service.`;
-                    if (workerName) {
-                        introMessage = `Hi! I'd like to book <strong>${workerName}</strong> for <strong>${serviceName}</strong>.`;
-                    }
-                    this.addMessage(introMessage, 'user');
+                    // Create the intro message
+                    let introMessage = `I need the <strong>${serviceName}</strong> service.`;
+                    if (workerName) {
+                        introMessage = `Hi! I'd like to book <strong>${workerName}</strong> for <strong>${serviceName}</strong>.`;
+                    }
+                    this.addMessage(introMessage, 'user');
 
-                    // Skip straight to asking for the name
-                    this.state = 'awaiting_name';
-                    this.showTypingAndReply("Great! What is your full name?", 1500, () => {
-                        this.elements.input.disabled = false;
-                        this.elements.input.placeholder = "Type your name...";
-                        this.elements.input.focus();
-                    });
-                    this.open();
-                },
+                    // Skip straight to asking for the name
+                    this.state = 'awaiting_name';
+                    this.showTypingAndReply("Great! What is your full name?", 1500, () => {
+                        this.elements.input.disabled = false;
+                        this.elements.input.placeholder = "Type your name...";
+                        this.elements.input.focus();
+                    });
+                    this.open();
+                },
 
-                // --- 3. IMPROVED: Added 'preferredWorker' to the reset ---
-                startChat() { this.state = 'initial'; this.bookingDetails = { name: "", phone: "", service: "", location: "", time: "", preferredWorker: null }; this.elements.messages.innerHTML = ''; this.elements.input.placeholder = "Type your message..."; this.elements.input.disabled = true; this.elements.optionsArea.innerHTML = ''; this.showTypingAndReply("👋 Hi! Welcome to CitySetu.", 500, () => { this.showTypingAndReply("What service do you need?", 1200, () => { this.showServiceOptions(); this.state = 'awaiting_service'; }); }); },
-                handleSubmit(e) { e.preventDefault(); const userInput = this.elements.input.value.trim(); if (!userInput) return; this.addMessage(userInput, 'user'); this.elements.input.value = ''; this.handleReply(userInput, userInput); },
-                handleOptionClick(value, text) { this.addMessage(text, 'user'); this.elements.optionsArea.innerHTML = ''; this.handleReply(value, text); },
-                handleReply(value, text) { this.elements.input.disabled = true; this.elements.input.placeholder = "Please wait..."; switch (this.state) { case 'awaiting_service': this.bookingDetails.service = text; this.state = 'awaiting_name'; this.showTypingAndReply("Got it! What is your full name?", 1500, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your name..."; this.elements.input.focus(); }); break; case 'awaiting_name': this.bookingDetails.name = value; this.state = 'awaiting_phone'; this.showTypingAndReply(`Thanks, ${value}. What's your mobile number?`, 1500, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your 10-digit number..."; this.elements.input.focus(); }); break; case 'awaiting_phone': this.bookingDetails.phone = value; this.state = 'awaiting_location'; this.showTypingAndReply("Please share your location (e.g., Gota, Vastrapur).", 1500, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your location..."; this.elements.input.focus(); }); break; case 'awaiting_location': this.bookingDetails.location = value; this.state = 'awaiting_time'; this.showTypingAndReply("When do you need the service? (e.g., 'Today ASAP', 'Tomorrow 4 PM')", 1500, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your preferred time..."; this.elements.input.focus(); }); break;
-                    // --- 4. IMPROVED: Summary message now shows the worker ---
-                    case 'awaiting_time':
-                        this.bookingDetails.time = value;
-                        this.state = 'awaiting_confirmation';
-                        // Build the summary message dynamically
-                        let summary = `Great! Here's your booking summary:<br>
-                            <strong>Name:</strong> ${this.bookingDetails.name}<br>
-                            <strong>Phone:</strong> ${this.bookingDetails.phone}<br>
-                            <strong>Service:</strong> ${this.bookingDetails.service}`;
-                        
-                        if (this.bookingDetails.preferredWorker) {
-SI                        summary += `<br><strong>Preferred Worker:</strong> ${this.bookingDetails.preferredWorker}`;
-                        }
+                startChat() { this.state = 'initial'; this.bookingDetails = { name: "", phone: "", service: "", location: "", time: "", preferredWorker: null }; this.elements.messages.innerHTML = ''; this.elements.input.placeholder = "Type your message..."; this.elements.input.disabled = true; this.elements.optionsArea.innerHTML = ''; this.showTypingAndReply("👋 Hi! Welcome to CitySetu.", 500, () => { this.showTypingAndReply("What service do you need?", 1200, () => { this.showServiceOptions(); this.state = 'awaiting_service'; }); }); },
+                handleSubmit(e) { e.preventDefault(); const userInput = this.elements.input.value.trim(); if (!userInput) return; this.addMessage(userInput, 'user'); this.elements.input.value = ''; this.handleReply(userInput, userInput); },
+                handleOptionClick(value, text) { this.addMessage(text, 'user'); this.elements.optionsArea.innerHTML = ''; this.handleReply(value, text); },
+                handleReply(value, text) { 
+                    this.elements.input.disabled = true; 
+                    this.elements.input.placeholder = "Please wait..."; 
+                    // Sanitize input slightly (basic example)
+                    const safeValue = value.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-                        summary += `<br><strong>Location:</strong> ${this.bookingDetails.location}<br>
-Z                       <strong>Time:</strong> ${this.bookingDetails.time}<br><br>
-                            Do you want to confirm this booking?`;
+                    switch (this.state) { 
+                        case 'awaiting_service': 
+                            this.bookingDetails.service = text; // Use the display text for service name
+                            this.state = 'awaiting_name'; 
+                            this.showTypingAndReply("Got it! What is your full name?", 1500, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your name..."; this.elements.input.focus(); }); 
+                            break; 
+                        case 'awaiting_name': 
+                            this.bookingDetails.name = safeValue; 
+                            this.state = 'awaiting_phone'; 
+                            this.showTypingAndReply(`Thanks, ${safeValue}. What's your mobile number?`, 1500, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your 10-digit number..."; this.elements.input.type = 'tel'; this.elements.input.focus(); }); 
+                            break; 
+                        case 'awaiting_phone': 
+                            if (!/^\d{10}$/.test(safeValue)) {
+                                this.showTypingAndReply("Please enter a valid 10-digit mobile number.", 1000, () => {
+                                    this.elements.input.disabled = false;
+                                    this.elements.input.placeholder = "Type your 10-digit number...";
+                                    this.elements.input.focus();
+                                });
+                                return; // Don't proceed
+                            }
+                            this.bookingDetails.phone = safeValue; 
+                            this.state = 'awaiting_location'; 
+                            this.elements.input.type = 'text'; // Change back to text
+                            this.showTypingAndReply("Please share your location (e.g., Gota, Vastrapur).", 1500, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your location..."; this.elements.input.focus(); }); 
+                            break; 
+                        case 'awaiting_location': 
+                            this.bookingDetails.location = safeValue; 
+                            this.state = 'awaiting_time'; 
+                            this.showTypingAndReply("When do you need the service? (e.g., 'Today ASAP', 'Tomorrow 4 PM')", 1500, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your preferred time..."; this.elements.input.focus(); }); 
+                            break;
+                        case 'awaiting_time':
+                            this.bookingDetails.time = safeValue;
+                            this.state = 'awaiting_confirmation';
+                            // Build the summary message dynamically
+                            let summary = `Great! Here's your booking summary:<br>
+                                <strong>Name:</strong> ${this.bookingDetails.name}<br>
+                                <strong>Phone:</strong> ${this.bookingDetails.phone}<br>
+                                <strong>Service:</strong> ${this.bookingDetails.service}`;
+                            
+                            if (this.bookingDetails.preferredWorker) {
+                                summary += `<br><strong>Preferred Worker:</strong> ${this.bookingDetails.preferredWorker}`;
+                            }
 
-                        this.showTypingAndReply(summary, 2000, () => {
-                            this.showConfirmationOptions();
-                        });
-                        break;
-                    // --- End of improved summary ---
-                    case 'awaiting_confirmation': if (value === 'yes') { this.confirmBooking(); } else { this.showTypingAndReply("No problem! Let's start over.", 1000, () => { this.startChat(); }); } break; default: this.showTypingAndReply("I'm sorry, I'm just a simple bot. I can only help with booking.", 1500, () => { this.reAskCurrentQuestion(); }); break; } },
-JSON              reAskCurrentQuestion() { this.elements.input.disabled = true; this.elements.input.placeholder = "Please wait..."; if (this.state === 'awaiting_service') { this.showTypingAndReply("What service do you need?", 1000, () => this.showServiceOptions()); } else if (this.state === 'awaiting_name') { this.showTypingAndReply("What is your full name?", 1000, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your name..."; }); } },
-                addMessage(text, sender = 'bot', onComplete = null) { const msgEl = document.createElement('div'); msgEl.classList.add('chat-message', sender); msgEl.innerHTML = text; this.elements.messages.appendChild(msgEl); gsap.to(msgEl, { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out', onComplete: () => { this.elements.messages.scrollTop = this.elements.messages.scrollHeight; if (onComplete) onComplete(); } }); },
-                showTypingAndReply(replyText, delay, onComplete) { const typingEl = document.createElement('div'); typingEl.classList.add('chat-message', 'typing-indicator'); typingEl.innerHTML = '<span></span><span></span><span></span>'; this.elements.messages.appendChild(typingEl); this.elements.messages.scrollTop = this.elements.messages.scrollHeight; setTimeout(() => { typingEl.remove(); this.addMessage(replyText, 'bot', onComplete); }, delay); },
-                showServiceOptions() { this.elements.input.disabled = true; this.elements.input.placeholder = "Please select an option above"; this.elements.optionsArea.innerHTML = `<button class="chat-option-btn" onclick="app.chat.handleOptionClick('Laptop Repair', 'Laptop Repair')">💻 Laptop Repair</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('AC Repair', 'AC Repair')">❄️ AC Repair</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Electrician', 'Electrician')">💡 Electrician</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Home Repair', 'Home Repair')">🔨 Home Repair</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Cleaning', 'Cleaning')">🧹 Cleaning</button>`; },
-                showConfirmationOptions() { this.elements.input.disabled = true; this.elements.input.placeholder = "Please confirm above"; this.elements.optionsArea.innerHTML = `<button class="chat-option-btn" onclick="app.chat.handleOptionClick('yes', 'Yes, confirm booking')">✅ Yes, Confirm</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('no', 'No, cancel')">❌ No, Cancel</button>`; },
-                // --- 5. NO CHANGE NEEDED HERE ---
-                // This function already sends `this.bookingDetails`, which now
-                // automatically includes `preferredWorker`.
-                confirmBooking() { this.elements.inputArea.style.display = 'none'; this.elements.optionsArea.style.display = 'none'; this.elements.messages.innerHTML += `<div id="success-animation"> <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"> <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/> <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/> </svg> <p class="font-semibold text-lg mt-4" style="color: ${app.getBrandColor('navy')}">Booking Received!</p> <p class="text-gray-600">Our verified team will confirm shortly.</p> </div>`; app.logToSheet('chat', this.bookingDetails); setTimeout(() => { this.elements.inputArea.style.display = 'flex'; this.elements.optionsArea.style.display = 'block'; this.startChat(); }, 5000); }
-            },
-            // --- UPDATED: To use new API_BASE_URL and dynamic endpoints ---
-            logToSheet(type, data) {
-                if (!API_BASE_URL) { 
-                    console.warn("API_BASE_URL not set. Skipping log.");
-                    return; 
+                            summary += `<br><strong>Location:</strong> ${this.bookingDetails.location}<br>
+                                <strong>Time:</strong> ${this.bookingDetails.time}<br><br>
+                                Do you want to confirm this booking?`;
+
+                            this.showTypingAndReply(summary, 2000, () => {
+                                this.showConfirmationOptions();
+                            });
+                            break;
+                        case 'awaiting_confirmation': 
+                            if (value === 'yes') { 
+                                this.confirmBooking(); 
+                            } else { 
+                                this.showTypingAndReply("No problem! Let's start over.", 1000, () => { this.startChat(); }); 
+                            } 
+                            break; 
+                        default: 
+                            this.showTypingAndReply("I'm sorry, I'm just a simple bot. I can only help with booking.", 1500, () => { this.reAskCurrentQuestion(); }); 
+                            break; 
+                    } 
+                },
+                reAskCurrentQuestion() { this.elements.input.disabled = true; this.elements.input.placeholder = "Please wait..."; if (this.state === 'awaiting_service') { this.showTypingAndReply("What service do you need?", 1000, () => this.showServiceOptions()); } else if (this.state === 'awaiting_name') { this.showTypingAndReply("What is your full name?", 1000, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your name..."; }); } }, // Other states omitted for brevity
+                addMessage(text, sender = 'bot', onComplete = null) { const msgEl = document.createElement('div'); msgEl.classList.add('chat-message', sender); msgEl.innerHTML = text; this.elements.messages.appendChild(msgEl); gsap.to(msgEl, { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out', onComplete: () => { this.elements.messages.scrollTop = this.elements.messages.scrollHeight; if (onComplete) onComplete(); } }); },
+                showTypingAndReply(replyText, delay, onComplete) { const typingEl = document.createElement('div'); typingEl.classList.add('chat-message', 'typing-indicator'); typingEl.innerHTML = '<span></span><span></span><span></span>'; this.elements.messages.appendChild(typingEl); this.elements.messages.scrollTop = this.elements.messages.scrollHeight; setTimeout(() => { typingEl.remove(); this.addMessage(replyText, 'bot', onComplete); }, delay); },
+                showServiceOptions() { this.elements.input.disabled = true; this.elements.input.placeholder = "Please select an option above"; this.elements.optionsArea.innerHTML = `<button class="chat-option-btn" onclick="app.chat.handleOptionClick('Laptop Repair', 'Laptop Repair')">💻 Laptop Repair</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('AC Repair', 'AC Repair')">❄️ AC Repair</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Electrician', 'Electrician')">💡 Electrician</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Home Repair', 'Home Repair')">🔨 Home Repair</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Cleaning', 'Cleaning')">🧹 Cleaning</button>`; },
+                showConfirmationOptions() { this.elements.input.disabled = true; this.elements.input.placeholder = "Please confirm above"; this.elements.optionsArea.innerHTML = `<button class="chat-option-btn" onclick="app.chat.handleOptionClick('yes', 'Yes, confirm booking')">✅ Yes, Confirm</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('no', 'No, cancel')">❌ No, Cancel</button>`; },
+                confirmBooking() { 
+                    this.elements.inputArea.style.display = 'none'; 
+                    this.elements.optionsArea.style.display = 'none'; 
+                    this.elements.messages.innerHTML += `<div id="success-animation"> <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52"> <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/> <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/> </svg> <p class="font-semibold text-lg mt-4" style="color: ${app.getBrandColor('navy')}">Booking Received!</p> <p class="text-gray-600">Our verified team will confirm shortly.</p> </div>`; 
+                    
+                    // --- Send booking details to backend ---
+                    app.logBooking('chat', this.bookingDetails); // Use the new function
+
+                    setTimeout(() => { 
+                        this.elements.inputArea.style.display = 'block'; // Changed from 'flex'
+                        this.elements.optionsArea.style.display = 'block'; 
+                        this.startChat(); 
+                    }, 5000); 
                 }
+            },
+
+            // --- Renamed logToSheet to logCallAttempt for clarity ---
+            logCallAttempt(workerName, serviceName) {
+                 if (!API_BASE_URL) { 
+                     console.warn("API_BASE_URL not set. Skipping call log.");
+                     return; 
+                 }
                 
-                // New API structure: /api/log/call, /api/log/chat, etc.
-                const logEndpoint = `${API_BASE_URL}/api/log/${type}`;
+                // Use the correct API endpoint for calls
+                const logEndpoint = `${API_BASE_URL}/api/log/call`;
                 
-                // The payload for the new API is just the data, 'type' is in the URL.
-                const payload = data; 
+                // Payload for the call log endpoint
+                const payload = { 
+                    workerName: workerName, 
+                    // Assuming you might want to add customer phone later if captured
+                    // customerPhone: 'some_phone_if_available' 
+                }; 
 
                 fetch(logEndpoint, {
                     method: 'POST',
-                    mode: 'cors', // Use 'cors' for a standard API
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 })
-                .then(response => { 
-                    if (!response.ok) {
-                         // Try to get error message from server
-                        return response.json().then(err => {
-                             throw new Error(err.message || `Logging failed (${response.status})`);
-                        }).catch(() => {
-                             throw new Error(`Logging failed (${response.status})`);
-                        });
-                    }
-                    return response.json();
-                })
-                .then(result => {
-                    console.log(`Log successful (${type}):`, result.message || result);
-                })
-                .catch(error => {
-                    console.error(`Error logging (${type}) to Render API:`, error);
-                });
+                .then(response => response.ok ? response.json() : response.json().then(err => { throw new Error(err.message || `Call log failed (${response.status})`); }))
+                .then(result => console.log(`Call log successful:`, result.message || result))
+                .catch(error => console.error(`Error logging call to Render API:`, error));
+            },
+
+            // --- NEW function specifically for logging chat bookings ---
+            logBooking(type, data) {
+                 if (!API_BASE_URL) { 
+                     console.warn("API_BASE_URL not set. Skipping booking log.");
+                     return; 
+                 }
+                
+                 const logEndpoint = `${API_BASE_URL}/api/log/${type}`; // e.g., /api/log/chat
+                
+                 // Map frontend names to backend names if needed, and include preferredWorker
+                 const payload = {
+                    customerName: data.name,
+                    customerPhone: data.phone,
+                    service: data.service,
+                    location: data.location, // Assuming backend accepts location
+                    time: data.time,         // Assuming backend accepts time
+                    preferredWorker: data.preferredWorker // Send the preferred worker
+                 };
+
+                 fetch(logEndpoint, {
+                     method: 'POST',
+                     mode: 'cors',
+                     headers: { 'Content-Type': 'application/json', },
+                     body: JSON.stringify(payload)
+                 })
+                 .then(response => response.ok ? response.json() : response.json().then(err => { throw new Error(err.message || `Booking log failed (${response.status})`); }))
+                 .then(result => console.log(`Booking log successful (${type}):`, result.message || result))
+                 .catch(error => console.error(`Error logging booking (${type}) to Render API:`, error));
             },
 
             bookServiceViaWhatsapp(serviceName) {
-                const phoneNumber = '916351541231'; // Make sure this is the correct number
+                const phoneNumber = '916351541231'; 
                 let message = `Hi CitySetu 👋\nI need help with a service.\nPlease help me connect with a verified expert near me.`;
                 if (serviceName !== 'General Inquiry') { message = `Hi CitySetu 👋\nI need help with *${serviceName}*.\nPlease help me connect with a verified expert near me.`; }
                 const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
@@ -1048,18 +1127,18 @@ JSON              reAskCurrentQuestion() { this.elements.input.disabled =
                 submitBtn.disabled = true; submitBtn.textContent = 'Submitting...';
                 messageDiv.classList.add('hidden'); messageDiv.textContent = '';
 
-                // Payload for the new API endpoint (doesn't need 'type')
+                // Payload for the new API endpoint
                 const signupData = {
                     name: document.getElementById('signup-name').value.trim(),
                     phone: document.getElementById('signup-phone').value.trim(),
                     service: document.getElementById('signup-service').value.trim(),
-                    location: document.getElementById('signup-location').value.trim()
+                    // Update field name to match backend expectation if needed
+                    city: document.getElementById('signup-location').value.trim() 
                 };
 
-                if (!signupData.name || !signupData.phone || !signupData.service || !signupData.location) { this.showSignupMessage('Please fill in all required (*) fields.', 'red'); submitBtn.disabled = false; submitBtn.textContent = 'Request to Join'; return; }
+                if (!signupData.name || !signupData.phone || !signupData.service || !signupData.city) { this.showSignupMessage('Please fill in all required (*) fields.', 'red'); submitBtn.disabled = false; submitBtn.textContent = 'Request to Join'; return; }
                 if (!/^\d{10}$/.test(signupData.phone)) { this.showSignupMessage('Please enter a valid 10-digit mobile number.', 'red'); submitBtn.disabled = false; submitBtn.textContent = 'Request to Join'; return; }
 
-                // New API endpoint for worker signup
                 const signupEndpoint = `${API_BASE_URL}/api/workers/signup`;
 
                 fetch(signupEndpoint, {
@@ -1069,15 +1148,12 @@ JSON              reAskCurrentQuestion() { this.elements.input.disabled =
                     body: JSON.stringify(signupData)
                 })
                 .then(response => {
-                    // We need to check response.ok and then parse JSON
                     if (!response.ok) {
-                         // Try to parse the error body from the server
-                         return response.json().then(errData => {
-                             throw new Error(errData.message || `Network error (${response.status})`);
-                         }).catch(() => {
-                             // Fallback if error body isn't JSON
-                             throw new Error(`Network error (${response.status})`);
-                         });
+                        return response.json().then(errData => {
+                            throw new Error(errData.message || `Network error (${response.status})`);
+                        }).catch(() => {
+                            throw new Error(`Network error (${response.status})`);
+                        });
                     }
                     return response.json(); 
                 })
@@ -1086,7 +1162,6 @@ JSON              reAskCurrentQuestion() { this.elements.input.disabled =
                         this.showSignupMessage(result.message || 'Request sent! We will contact you soon.', 'green');
                         document.getElementById('worker-signup-form').reset();
                     } else {
-                        // Handle cases where server returns 200 OK but { status: 'error' }
                         throw new Error(result.message || 'Unknown error');
                     }
                 })
@@ -1111,4 +1186,3 @@ JSON              reAskCurrentQuestion() { this.elements.input.disabled =
     </body>
 
 </html>
-
