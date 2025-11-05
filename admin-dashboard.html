@@ -640,56 +640,45 @@
             },
 
             async updateStatus(id, newStatus) {
-                console.log(`Updating ${id} to ${newStatus}`);
-                const statusBadge = document.getElementById(`status-${id}`);
-                
-                // Optimistic UI update
-                if (statusBadge) {
-                    statusBadge.textContent = newStatus;
-                    statusBadge.className = `status-badge status-${newStatus.replace(' ', '-')}`;
-                }
+                console.log(`Updating ${id} to ${newStatus}`);
+                const statusBadge = document.getElementById(`status-${id}`);
+                
+                // Optimistic UI update
+                if (statusBadge) {
+                    statusBadge.textContent = newStatus;
+                    statusBadge.className = `status-badge status-${newStatus.replace(' ', '-')}`;
+                }
 
-                try {
-                    // ### UPDATED FETCH CALL ###
-                    // Puts to the new /api/update-status/:id endpoint
-                    const response = await fetch(`${RENDER_API_URL}/api/update-status/${id}`, {
-                        method: 'PUT',
-                        headers: { 
-                            "Content-Type": "application/json",
-                            'Authorization': `Bearer ${ADMIN_TOKEN}`
-                        },
-                        body: JSON.stringify({ newStatus: newStatus }) // Server expects newStatus
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (!response.ok || result.status !== 'success') {
-                        throw new Error(result.message || 'Failed to update');
-                    }
-                    
-                    console.log('Status updated in DB');
-                    this.fetchData();
-                    if (!response.ok || result.status !== 'success') {
+                try {
+                    // Puts to the new /api/update-status/:id endpoint
+                    const response = await fetch(`${RENDER_API_URL}/api/update-status/${id}`, {
+                        method: 'PUT',
+                        headers: { 
+                            "Content-Type": "application/json",
+                            'Authorization': `Bearer ${ADMIN_TOKEN}`
+                        },
+                        body: JSON.stringify({ newStatus: newStatus }) // Server expects newStatus
+                    });
+                    
+              _       const result = await response.json();
+                    
+                    if (!response.ok || result.status !== 'success') {
                         throw new Error(result.message || 'Failed to update');
                     }
                     
                     console.log('Status updated in DB');
-                    this.fetchData(); // <-- ADD THIS LINE to refresh the table
+                    this.fetchData(); // Refresh the table
                     
                 } catch (error) {
-                    // ... (rest of error handling)
-                    
-                } catch (error) {
-                    console.error('Failed to update status in DB:', error);
-                    if (statusBadge) {
-                         // Revert on error
-                        statusBadge.textContent = 'Pending';
-                        statusBadge.className = 'status-badge status-Pending';
-                    }
-                    alert('Error updating status: ' + error.message);
-                }
-            },
-            
+                    console.error('Failed to update status in DB:', error);
+                    if (statusBadge) {
+    nbsp;                  // Revert on error
+                        statusBadge.textContent = 'Pending'; // Revert to original text
+                        statusBadge.className = 'status-badge status-Pending'; // Revert to original class
+                    }
+                    alert('Error updating status: ' + error.message);
+                }
+            },
             // This function is new. It takes a signup, posts it to /api/workers,
             // and then (on success) deletes the signup.
             async approveSignup(button, signupId) {
