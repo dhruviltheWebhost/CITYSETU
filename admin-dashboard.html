@@ -668,6 +668,16 @@
                     }
                     
                     console.log('Status updated in DB');
+                    this.fetchData();
+                    if (!response.ok || result.status !== 'success') {
+                        throw new Error(result.message || 'Failed to update');
+                    }
+                    
+                    console.log('Status updated in DB');
+                    this.fetchData(); // <-- ADD THIS LINE to refresh the table
+                    
+                } catch (error) {
+                    // ... (rest of error handling)
                     
                 } catch (error) {
                     console.error('Failed to update status in DB:', error);
