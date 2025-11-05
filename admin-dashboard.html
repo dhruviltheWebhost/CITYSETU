@@ -485,7 +485,14 @@
                         <td>${chat.customername}</td>
                         <td>${chat.customerphone}</td>
                         <td class="font-medium text-gray-900">${chat.service}</td>
-                        <td>${chat.workerassigned || 'N/A'}</td>
+                        <td class="font-medium">
+    ${chat.workerassigned 
+    ? `<span>${chat.workerassigned}</span>` 
+    : (chat.preferredworker 
+        ? `<span style="color: #FF7B00; font-weight: 600;">(Prefers: ${chat.preferredworker})</span>` 
+        : 'N/A')
+  }
+</td>
                         <td><span class="status-badge ${statusClass}" id="status-${chat.id}">${chat.status}</span></td>
                         <td class="space-x-2">
                             <button class="btn-action btn-approve" onclick="admin.updateStatus('${chat.id}', 'Completed')">Complete</button>
