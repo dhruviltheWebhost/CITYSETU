@@ -302,13 +302,16 @@
                                 <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     Service</th>
                                 <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                    City</th> <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    City</th> 
+                                <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                     Status</th>
+                                <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider action-header">
+                                    Action</th>
                             </tr>
                         </thead>
                         <tbody id="workers-table-body" class="divide-y divide-gray-200">
                             <tr>
-                                <td colspan="6" class="p-6 text-center text-gray-500" id="workers-loading">Loading
+                                <td colspan="7" class="p-6 text-center text-gray-500" id="workers-loading">Loading
                                     workers...</td>
                             </tr>
                         </tbody>
@@ -317,6 +320,63 @@
             </div>
         </div>
     </main>
+
+    <div id="edit-worker-modal" class="fixed inset-0 z-50 items-center justify-center hidden" style="background-color: rgba(0,0,0,0.6);">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg m-8">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="text-xl font-semibold" style="color: var(--brand-navy);">Edit Worker Details</h3>
+                <button onclick="admin.hideEditModal()" class="text-gray-500 text-3xl">&times;</button>
+            </div>
+            <form id="edit-worker-form" class="p-6">
+                <input type="hidden" id="edit-worker-id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="edit-worker-name" class="block text-sm font-medium text-gray-700">Name*</label>
+                        <input type="text" id="edit-worker-name" required class="form-input">
+                    </div>
+                    <div>
+                        <label for="edit-worker-phone" class="block text-sm font-medium text-gray-700">Phone*</label>
+                        <input type="tel" id="edit-worker-phone" required class="form-input">
+                    </div>
+                    <div>
+                        <label for="edit-worker-service" class="block text-sm font-medium text-gray-700">Service*</label>
+                        <select id="edit-worker-service" class="form-input" required>
+                            <option value="AC Repair">❄️ AC Repair</option>
+                            <option value="Laptop Repair">💻 Laptop Repair</option>
+                            <option value="Electrician">💡 Electrician</option>
+                            <option value="Home Repair">🔨 Home Repair</option>
+                            <option value="Cleaning">🧹 Home Cleaning</option>
+                            <option value="Plumber">💧 Plumber</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="edit-worker-city" class="block text-sm font-medium text-gray-700">City</label>
+                        <input type="text" id="edit-worker-city" class="form-input">
+                    </div>
+                    <div>
+                        <label for="edit-worker-pincode" class="block text-sm font-medium text-gray-700">Pincode</label>
+                        <input type="text" id="edit-worker-pincode" class="form-input">
+                    </div>
+                    <div>
+                        <label for="edit-worker-status" class="block text-sm font-medium text-gray-700">Status</label>
+                        <select id="edit-worker-status" class="form-input">
+                            <option value="available">Available</option>
+                            <option value="busy">Busy</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="edit-worker-message" class="mt-4 text-sm font-medium text-center hidden"></div>
+    
+                <div class="flex justify-end pt-6 border-t mt-6">
+                    <button type="button" onclick="admin.hideEditModal()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold mr-2 hover:bg-gray-300">Cancel</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
         // ------------------------------------------------------------------
@@ -382,6 +442,10 @@
 
             init() {
                 this.elements.addWorkerForm.addEventListener('submit', this.handleAddWorker.bind(this));
+                
+                // --- [NEW] ADDED EVENT LISTENER FOR EDIT FORM ---
+                document.getElementById('edit-worker-form').addEventListener('submit', this.handleUpdateWorker.bind(this));
+
                 this.fetchData();
             },
 
@@ -556,17 +620,24 @@
                 });
             },
 
+            // --- [UPDATED] RENDER WORKER TABLE ---
             renderWorkerTable(workers) {
                 this.elements.workerTableBody.innerHTML = '';
                 this.elements.workerCount.textContent = workers.length;
 
                 if (workers.length === 0) {
-                    this.elements.workerTableBody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-gray-500">No workers added yet.</td></tr>';
+                    // Colspan is now 7
+                    this.elements.workerTableBody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-gray-500">No workers added yet.</td></tr>';
                     return;
                 }
 
                 workers.forEach(worker => { // No reverse, server sends in DESC order
                     const tr = document.createElement('tr');
+                    
+                    // We must pass the *entire* worker object to the edit function
+                    // We escape single quotes to avoid breaking the HTML
+                    const workerJson = JSON.stringify(worker).replace(/'/g, "\\'");
+
                     tr.innerHTML = `
                         <td class="font-mono text-xs">${worker.id}</td>
                         <td class="font-medium text-gray-900">${worker.name}</td>
@@ -574,6 +645,10 @@
                         <td>${worker.service}</td>
                         <td>${worker.city || 'N/A'}</td> 
                         <td>${worker.status}</td>
+                        <td class="space-x-2">
+                            <button class="btn-action bg-blue-600 text-white" onclick='admin.showEditModal(${workerJson})'>Edit</button>
+                            <button class="btn-action btn-reject" onclick="admin.handleDeleteWorker('${worker.id}', '${worker.name}')">Delete</button>
+                        </td>
                     `;
                     this.elements.workerTableBody.appendChild(tr);
                 });
@@ -787,6 +862,99 @@
                 });
                 const data = await response.json();
                 return data.signups || [];
+            },
+
+            // --- [NEW] FUNCTIONS FOR EDIT/DELETE WORKER ---
+            showEditModal(worker) {
+                // Pre-fill the form
+                document.getElementById('edit-worker-id').value = worker.id;
+                document.getElementById('edit-worker-name').value = worker.name;
+                document.getElementById('edit-worker-phone').value = worker.phone;
+                document.getElementById('edit-worker-service').value = worker.service;
+                document.getElementById('edit-worker-city').value = worker.city || '';
+                document.getElementById('edit-worker-pincode').value = worker.pincode || '';
+                document.getElementById('edit-worker-status').value = worker.status;
+                
+                // Show the modal
+                document.getElementById('edit-worker-modal').classList.remove('hidden');
+                document.getElementById('edit-worker-modal').classList.add('flex');
+            },
+
+            hideEditModal() {
+                document.getElementById('edit-worker-modal').classList.add('hidden');
+                document.getElementById('edit-worker-modal').classList.remove('flex');
+                document.getElementById('edit-worker-message').classList.add('hidden');
+            },
+
+            async handleUpdateWorker(event) {
+                event.preventDefault();
+                const messageDiv = document.getElementById('edit-worker-message');
+                messageDiv.classList.add('hidden');
+                
+                const workerId = document.getElementById('edit-worker-id').value;
+
+                // Get all data from the edit form
+                const workerData = {
+                    name: document.getElementById('edit-worker-name').value,
+                    phone: document.getElementById('edit-worker-phone').value,
+                    service: document.getElementById('edit-worker-service').value,
+                    city: document.getElementById('edit-worker-city').value,
+                    pincode: document.getElementById('edit-worker-pincode').value,
+                    status: document.getElementById('edit-worker-status').value,
+                };
+
+                try {
+                    const response = await fetch(`${RENDER_API_URL}/api/workers/${workerId}`, {
+                        method: 'PUT',
+                        headers: { 
+                            "Content-Type": "application/json",
+                            'Authorization': `Bearer ${ADMIN_TOKEN}`
+                        },
+                        body: JSON.stringify(workerData)
+                    });
+
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message || 'Failed to update');
+
+                    // Success! Show message, hide modal, refresh data
+                    messageDiv.textContent = 'Worker updated successfully!';
+                    messageDiv.style.color = 'green';
+                    messageDiv.classList.remove('hidden');
+
+                    setTimeout(() => {
+                        this.hideEditModal();
+                        this.fetchData();
+                    }, 1500);
+
+                } catch (error) {
+                    messageDiv.textContent = `Error: ${error.message}`;
+                    messageDiv.style.color = 'red';
+                    messageDiv.classList.remove('hidden');
+                }
+            },
+
+            async handleDeleteWorker(workerId, workerName) {
+                if (!confirm(`Are you sure you want to delete ${workerName}? This action cannot be undone.`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${RENDER_API_URL}/api/workers/${workerId}`, {
+                        method: 'DELETE',
+                        headers: { 
+                            'Authorization': `Bearer ${ADMIN_TOKEN}`
+                        }
+                    });
+
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message || 'Failed to delete');
+
+                    alert('Worker deleted successfully.');
+                    this.fetchData(); // Refresh the list
+
+                } catch (error) {
+                    alert(`Error: ${error.message}`);
+                }
             }
         };
 
