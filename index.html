@@ -1044,7 +1044,28 @@
                             break; 
                     } 
                 },
-                reAskCurrentQuestion() { this.elements.input.disabled = true; this.elements.input.placeholder = "Please wait..."; if (this.state === 'awaiting_service') { this.showTypingAndReply("What service do you need?", 1000, () => this.showServiceOptions()); } else if (this.state === 'awaiting_name') { this.showTypingAndReply("What is your full name?", 1000, () => { this.elements.input.disabled = false; this.elements.input.placeholder = "Type your name..."; }); } }, // Other states omitted for brevity
+                reAskCurrentQuestion() {
+    this.elements.input.disabled = true;
+    this.elements.input.placeholder = "Please wait...";
+
+    if (this.state === 'awaiting_service') {
+        this.showTypingAndReply(
+            "What service do you need?",
+            1000,
+            () => this.showServiceOptions()
+        );
+    } 
+    else if (this.state === 'awaiting_name') {
+        this.showTypingAndReply(
+            "What is your full name?",
+            1000,
+            () => {
+                this.elements.input.disabled = false;
+                this.elements.input.placeholder = "Type your name...";
+            }
+        );
+    }
+}, // Other states omitted for brevity
                 addMessage(text, sender = 'bot', onComplete = null) { const msgEl = document.createElement('div'); msgEl.classList.add('chat-message', sender); msgEl.innerHTML = text; this.elements.messages.appendChild(msgEl); gsap.to(msgEl, { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out', onComplete: () => { this.elements.messages.scrollTop = this.elements.messages.scrollHeight; if (onComplete) onComplete(); } }); },
                 showTypingAndReply(replyText, delay, onComplete) { const typingEl = document.createElement('div'); typingEl.classList.add('chat-message', 'typing-indicator'); typingEl.innerHTML = '<span></span><span></span><span></span>'; this.elements.messages.appendChild(typingEl); this.elements.messages.scrollTop = this.elements.messages.scrollHeight; setTimeout(() => { typingEl.remove(); this.addMessage(replyText, 'bot', onComplete); }, delay); },
                 showServiceOptions() { this.elements.input.disabled = true; this.elements.input.placeholder = "Please select an option above"; this.elements.optionsArea.innerHTML = `<button class="chat-option-btn" onclick="app.chat.handleOptionClick('Laptop Repair', 'Laptop Repair')">💻 Laptop Repair</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('AC Repair', 'AC Repair')">❄️ AC Repair</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Electrician', 'Electrician')">💡 Electrician</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Home Repair', 'Home Repair')">🔨 Home Repair</button> <button class="chat-option-btn" onclick="app.chat.handleOptionClick('Cleaning', 'Cleaning')">🧹 Cleaning</button>`; },
@@ -1200,5 +1221,6 @@
     </body>
 
 </html>
+
 
 
