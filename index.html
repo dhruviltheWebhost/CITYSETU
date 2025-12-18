@@ -700,7 +700,7 @@
                 }
                 try {
                     // Fetch data from the new Render API endpoint (GET request)
-                    const response = await fetch(`${API_BASE_URL}/api/workers`);
+                    const response = await fetch(`${API_BASE_URL}/api/professionals`);
                     console.log("Fetch response status:", response.status); 
 
                     if (!response.ok) {
@@ -716,7 +716,14 @@
                         console.error("API Error reported by server:", data.message);
                         throw new Error(`API Error: ${data.message}`);
                     }
-                    if (!Array.isArray(data.workers)) { // Check if data.workers is an array
+                    const list = data.professionals || data.workers || []; 
+                    list.forEach(worker => {
+                        const list = Array.isArray(data.professionals)
+                            ? data.professionals
+                            : Array.isArray(data.workers)
+                            ? data.workers
+                            : [];
+// Check if data.workers is an array
                         console.error("Worker data is not an array:", data);
                         throw new Error('Workers data is not in the expected array format.');
                     }
@@ -1146,7 +1153,7 @@
                 if (!signupData.name || !signupData.phone || !signupData.service || !signupData.city) { this.showSignupMessage('Please fill in all required (*) fields.', 'red'); submitBtn.disabled = false; submitBtn.textContent = 'Request to Join'; return; }
                 if (!/^\d{10}$/.test(signupData.phone)) { this.showSignupMessage('Please enter a valid 10-digit mobile number.', 'red'); submitBtn.disabled = false; submitBtn.textContent = 'Request to Join'; return; }
 
-                const signupEndpoint = `${API_BASE_URL}/api/workers/signup`;
+                const signupEndpoint = `${API_BASE_URL}/api/professionals/signup`;
 
                 fetch(signupEndpoint, {
                     method: 'POST',
@@ -1193,4 +1200,5 @@
     </body>
 
 </html>
+
 
