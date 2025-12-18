@@ -690,31 +690,33 @@
             },
 
             // --- UPDATED: To use new API_BASE_URL and endpoint ---
-            async loadWorkerData() {
+           async loadWorkerData() {
     this.isWorkerDataLoading = true;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/api/professionals`);
+        const response = await fetch(`${API_BASE_URL}/api/workers`);
 
         if (!response.ok) {
-            throw new Error(`Network error ${response.status}`);
+            throw new Error(`API error: ${response.status}`);
         }
 
         const data = await response.json();
 
-        // ✅ SINGLE declaration
-        const list = Array.isArray(data.professionals)
-            ? data.professionals
-            : Array.isArray(data.workers)
+        // ✅ Normalize workers array safely
+        const workers = Array.isArray(data.workers)
             ? data.workers
+            : Array.isArray(data)
+            ? data
             : [];
 
+        // ✅ Group workers by service
         const groupedData = {};
 
-        list.forEach(worker => {
+        workers.forEach(worker => {
             if (!worker.service) return;
 
             const serviceKey = worker.service.trim();
+
             if (!groupedData[serviceKey]) {
                 groupedData[serviceKey] = [];
             }
@@ -725,6 +727,7 @@
                 phone: worker.phone,
                 service: worker.service,
                 city: worker.city,
+                pincode: worker.pincode,
                 status: worker.status,
                 timestamp: worker.timestamp,
                 experience: 'N/A',
@@ -734,14 +737,15 @@
         });
 
         this.workerData = groupedData;
+        console.log("✅ Worker data loaded:", groupedData);
 
     } catch (error) {
-        console.error("Failed to load worker data:", error);
+        console.error("❌ Failed to load worker data:", error);
         this.workerData = {};
     }
 
     this.isWorkerDataLoading = false;
-    this.router(); // re-render
+    this.router(); // re-render UI safely
 }
 
 // Group workers by service
@@ -1262,6 +1266,7 @@ this.workerData = groupedData;
     </body>
 
 </html>
+
 
 
 
