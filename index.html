@@ -717,16 +717,40 @@
                         throw new Error(`API Error: ${data.message}`);
                     }
                     const list = data.professionals || data.workers || []; 
-                    list.forEach(worker => {
-                        const list = Array.isArray(data.professionals)
-                            ? data.professionals
-                            : Array.isArray(data.workers)
-                            ? data.workers
-                            : [];
-// Check if data.workers is an array
-                        console.error("Worker data is not an array:", data);
-                        throw new Error('Workers data is not in the expected array format.');
-                    }
+                   const list = Array.isArray(data.professionals)
+    ? data.professionals
+    : Array.isArray(data.workers)
+    ? data.workers
+    : [];
+
+if (!Array.isArray(list)) {
+    throw new Error("Workers data is not an array");
+}
+
+// Group workers by service
+const groupedData = {};
+list.forEach(worker => {
+    if (!worker.service) return;
+
+    const serviceKey = worker.service.trim();
+    if (!groupedData[serviceKey]) groupedData[serviceKey] = [];
+
+    groupedData[serviceKey].push({
+        id: worker.id,
+        name: worker.name,
+        phone: worker.phone,
+        service: worker.service,
+        city: worker.city,
+        status: worker.status,
+        timestamp: worker.timestamp,
+        experience: 'N/A',
+        location: worker.city || 'N/A',
+        rating: 0
+    });
+});
+
+this.workerData = groupedData;
+
 
                     // Group workers by service
                     const groupedData = {};
@@ -1221,6 +1245,7 @@
     </body>
 
 </html>
+
 
 
 
