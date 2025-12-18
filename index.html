@@ -691,40 +691,57 @@
 
             // --- UPDATED: To use new API_BASE_URL and endpoint ---
             async loadWorkerData() {
-                this.isWorkerDataLoading = true;
-                if (!API_BASE_URL) {
-                    console.warn("API_BASE_URL is not set correctly. Cannot load worker data.");
-                    this.workerData = {};
-                    this.isWorkerDataLoading = false;
-                    return;
-                }
-                try {
-                    // Fetch data from the new Render API endpoint (GET request)
-                    const response = await fetch(`${API_BASE_URL}/api/professionals`);
-                    console.log("Fetch response status:", response.status); 
+    this.isWorkerDataLoading = true;
 
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        console.error("Network response was not ok:", response.statusText, errorText);
-                        throw new Error(`Network error: ${response.statusText}`);
-                    }
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/professionals`);
 
-                    const data = await response.json();
-                    console.log("Data received from API:", data); 
+        if (!response.ok) {
+            throw new Error(`Network error ${response.status}`);
+        }
 
-                    if (data.status === 'error') {
-                        console.error("API Error reported by server:", data.message);
-                        throw new Error(`API Error: ${data.message}`);
-                    }
-                    const list = data.professionals || data.workers || []; 
-                   const list = Array.isArray(data.professionals)
-    ? data.professionals
-    : Array.isArray(data.workers)
-    ? data.workers
-    : [];
+        const data = await response.json();
 
-if (!Array.isArray(list)) {
-    throw new Error("Workers data is not an array");
+        // ✅ SINGLE declaration
+        const list = Array.isArray(data.professionals)
+            ? data.professionals
+            : Array.isArray(data.workers)
+            ? data.workers
+            : [];
+
+        const groupedData = {};
+
+        list.forEach(worker => {
+            if (!worker.service) return;
+
+            const serviceKey = worker.service.trim();
+            if (!groupedData[serviceKey]) {
+                groupedData[serviceKey] = [];
+            }
+
+            groupedData[serviceKey].push({
+                id: worker.id,
+                name: worker.name,
+                phone: worker.phone,
+                service: worker.service,
+                city: worker.city,
+                status: worker.status,
+                timestamp: worker.timestamp,
+                experience: 'N/A',
+                location: worker.city || 'N/A',
+                rating: 0
+            });
+        });
+
+        this.workerData = groupedData;
+
+    } catch (error) {
+        console.error("Failed to load worker data:", error);
+        this.workerData = {};
+    }
+
+    this.isWorkerDataLoading = false;
+    this.router(); // re-render
 }
 
 // Group workers by service
@@ -1245,6 +1262,7 @@ this.workerData = groupedData;
     </body>
 
 </html>
+
 
 
 
