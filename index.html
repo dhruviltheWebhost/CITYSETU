@@ -618,31 +618,31 @@ const app = {
        SERVICES GRID
     ========================= */
     renderServicesGrid() {
-        if (this.isWorkerDataLoading) {
-            return `<p class="col-span-3 text-gray-500">Loading services...</p>`;
-        }
+    if (this.isWorkerDataLoading) {
+        return `<p class="col-span-3 text-gray-500">Loading services...</p>`;
+    }
 
-        const services = Object.values(this.workerData);
+    const services = Object.values(this.workerData);
 
-        if (!services.length) {
-            return `
-                <div class="col-span-3 text-gray-500">
-                    No professionals available yet.<br>
-                    Be the first to join CitySetu 🚀
-                </div>
-            `;
-        }
-
-        return services.map(serviceObj => `
-            <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
-                 onclick="app.navigateTo('service', '${serviceObj.name}')">
-                <h3 class="text-xl font-bold mb-2">${serviceObj.name}</h3>
-                <p class="text-sm text-gray-600">
-                    ${serviceObj.workers.length} experts available
-                </p>
+    if (!services.length) {
+        return `
+            <div class="col-span-3 text-gray-500">
+                No professionals available yet.<br>
+                Be the first to join CitySetu 🚀
             </div>
-        `).join('');
-    },
+        `;
+    }
+
+    return services.map(serviceObj => `
+        <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
+             onclick="app.navigateTo('service', '${serviceObj.name}')">
+            <h3 class="text-xl font-bold mb-2">${serviceObj.name}</h3>
+            <p class="text-sm text-gray-600">
+                ${serviceObj.workers.length} experts available
+            </p>
+        </div>
+    `).join('');
+}
 
     /* =========================
        ELEMENT REFERENCES
@@ -690,17 +690,23 @@ const app = {
 
             const json = await res.json();
             const workers = Array.isArray(json.professionals) ? json.professionals : [];
-
             const grouped = {};
-            workers.forEach(w => {
-                if (!w.service_id || !w.service) return;
 
-                if (!grouped[w.service_id]) {
-                    grouped[w.service_id] = {
-                        name: w.service,
-                        workers: []
-                    };
-                }
+workers.forEach(w => {
+    if (!w.services || !w.services.length) return;
+
+    const serviceName = w.services[0].name;
+
+    if (!grouped[serviceName]) {
+        grouped[serviceName] = {
+            name: serviceName,
+            workers: []
+        };
+    }
+
+    grouped[serviceName].workers.push(w);
+});
+
 
                 grouped[w.service_id].workers.push(w);
             });
@@ -821,6 +827,7 @@ document.addEventListener('DOMContentLoaded', () => app.init());
     </body>
 
 </html>
+
 
 
 
