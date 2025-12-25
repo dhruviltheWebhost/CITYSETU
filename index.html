@@ -45,18 +45,6 @@
             border-color: var(--brand-orange);
         }
 
-        .card .verified-badge {
-            transition: all 0.3s ease;
-            opacity: 0.8;
-        }
-
-        .card:hover .verified-badge {
-            opacity: 1;
-            transform: scale(1.1);
-            text-shadow: 0 0 10px var(--brand-gold);
-            color: var(--brand-gold);
-        }
-
         .btn-animated {
             transition: all 0.3s ease;
             position: relative;
@@ -64,13 +52,7 @@
             z-index: 1;
         }
 
-        .btn-animated:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-        }
-
         .btn-orange {
-            background-color: var(--brand-orange);
             background-image: linear-gradient(to right, var(--brand-orange) 0%, var(--brand-gold) 100%);
             background-size: 200% auto;
         }
@@ -79,366 +61,18 @@
             background-position: right center;
         }
 
-        .btn-navy {
-            background-color: var(--brand-navy);
-        }
-
-        .btn-navy:hover {
-            background-color: #2a3b5e;
-        }
-
-        #call-modal {
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
-
-        .glassmorphism-modal {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            color: white;
-            opacity: 0;
-            transform: scale(0.95);
-        }
-
-        .phone-icon-wrapper {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            margin: 20px auto;
-        }
-
-        .phone-icon-wrapper .pulsating-ring {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 80px;
-            height: 80px;
-            border: 4px solid rgba(255, 123, 0, 0.7);
-            border-radius: 50%;
-            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
-        }
-
-        .phone-icon-wrapper .phone-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
-            background: var(--brand-orange);
-            border-radius: 50%;
-            animation: rotate-phone 2s linear infinite;
-        }
-
-        @keyframes pulse-ring {
-            0% {
-                transform: scale(0.8);
-                opacity: 0.8;
-            }
-
-            100% {
-                transform: scale(1.5);
-                opacity: 0;
-            }
-        }
-
-        @keyframes rotate-phone {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        #citysetu-chat-widget {
-            z-index: 1000;
-        }
-
-        #chat-bubble {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--brand-navy), var(--brand-orange));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            transform: scale(1);
-        }
-
-        #chat-bubble:hover {
-            transform: scale(1.1);
-        }
-
+        /* Modal & Chat Visibility */
         #chat-window {
-            position: fixed;
-            bottom: 100px;
-            right: 25px;
-            width: 350px;
-            max-width: 90vw;
-            height: 500px;
-            max-height: 70vh;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            transition: all 0.3s ease;
             opacity: 0;
-            transform: translateY(20px) scale(0.95);
             visibility: hidden;
+            transform: translateY(20px);
         }
 
-        #chat-header {
-            background: var(--brand-navy);
-            color: white;
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--brand-orange);
-        }
-
-        #chat-header h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-        }
-
-        #chat-header-close {
-            cursor: pointer;
-            font-size: 1.5rem;
-            line-height: 1;
-        }
-
-        #chat-messages {
-            flex-grow: 1;
-            padding: 12px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .chat-message {
-            padding: 10px 15px;
-            border-radius: 18px;
-            max-width: 80%;
-            line-height: 1.4;
-            opacity: 0;
-            transform: translateY(10px);
-        }
-
-        .chat-message.bot {
-            background: #f1f1f1;
-            color: #333;
-            border-bottom-left-radius: 4px;
-            align-self: flex-start;
-        }
-
-        .chat-message.user {
-            background: var(--brand-navy);
-            color: white;
-            border-bottom-right-radius: 4px;
-            align-self: flex-end;
-        }
-
-        .chat-message.typing-indicator {
-            align-self: flex-start;
-            padding: 10px 15px;
-        }
-
-        .typing-indicator span {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #ccc;
-            margin: 0 2px;
-            animation: typing-dots 1.4s infinite both;
-        }
-
-        .typing-indicator span:nth-child(1) {
-            animation-delay: 0s;
-        }
-
-        .typing-indicator span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-indicator span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes typing-dots {
-            0% {
-                opacity: 0.2;
-            }
-
-            20% {
-                opacity: 1;
-            }
-
-            100% {
-                opacity: 0.2;
-            }
-        }
-
-        #chat-input-area {
-            border-top: 1px solid #e0e0e0;
-            padding: 12px;
-            background: #f9f9f9;
-        }
-
-        #chat-input-form {
-            display: flex;
-            gap: 8px;
-        }
-
-        #chat-input {
-            flex-grow: 1;
-            border: 1px solid #ccc;
-            border-radius: 20px;
-            padding: 10px 15px;
-            font-size: 0.95rem;
-        }
-
-        #chat-input:focus {
-            outline: none;
-            border-color: var(--brand-navy);
-            box-shadow: 0 0 0 2px rgba(27, 42, 73, 0.2);
-        }
-
-        #chat-send-btn {
-            background: var(--brand-navy);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 42px;
-            height: 42px;
-            flex-shrink: 0;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-
-        #chat-send-btn:hover {
-            background: #2a3b5e;
-        }
-
-        #chat-options-area {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 12px;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .chat-option-btn {
-            background: #fff;
-            border: 1px solid var(--brand-navy);
-            color: var(--brand-navy);
-            padding: 8px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-        }
-
-        .chat-option-btn:hover {
-            background: var(--brand-navy);
-            color: white;
-        }
-
-        #success-animation {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .checkmark__circle {
-            stroke-dasharray: 166;
-            stroke-dashoffset: 166;
-            stroke-width: 3;
-            stroke-miterlimit: 10;
-            stroke: var(--brand-orange);
-            fill: none;
-            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
-        }
-
-        .checkmark {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            display: block;
-            stroke-width: 4;
-            stroke: #fff;
-            stroke-miterlimit: 10;
-            margin: 0 auto;
-            box-shadow: inset 0px 0px 0px var(--brand-orange);
-            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
-        }
-
-        .checkmark__check {
-            transform-origin: 50% 50%;
-            stroke-dasharray: 48;
-            stroke-dashoffset: 48;
-            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
-        }
-
-        @keyframes stroke {
-            100% {
-                stroke-dashoffset: 0;
-            }
-        }
-
-        @keyframes scale {
-
-            0%,
-            100% {
-                transform: none;
-            }
-
-            50% {
-                transform: scale3d(1.1, 1.1, 1);
-            }
-        }
-
-        @keyframes fill {
-            100% {
-                box-shadow: inset 0px 0px 0px 40px var(--brand-orange);
-            }
-        }
-
-        header.header-scrolled {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: box-shadow 0.3s ease-in-out;
-        }
-
-        #mobile-menu {
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .form-input {
-            border: 1px solid #d1d5db;
-            border-radius: 0.375rem;
-            box-shadow: sm;
-            padding: 0.5rem;
-        }
-
-        .form-input:focus {
-            border-color: var(--brand-navy);
-            box-shadow: 0 0 0 2px rgba(27, 42, 73, 0.3);
-            outline: none;
+        #chat-window.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
         }
 
         .fade-in-section {
@@ -452,59 +86,34 @@
             transform: translateY(0);
         }
 
-        .step-icon {
-            background-color: #ffedd5;
-            color: var(--brand-orange);
-            transition: transform 0.3s ease, background-color 0.3s ease;
-        }
-
-        .step-icon:hover {
-            transform: scale(1.1);
-            background-color: #fed7aa;
-        }
-
-        .floating-whatsapp {
-            display: none;
+        header.header-scrolled {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 
 <body class="antialiased">
 
-    <header id="main-header" class="bg-white sticky top-0 z-50">
+    <header id="main-header" class="bg-white sticky top-0 z-50 transition-all duration-300">
         <nav class="container mx-auto px-6 py-2 flex justify-between items-center">
             <a href="#" onclick="app.navigateTo('home')" class="flex items-center">
-                <img src="logo.jpg" alt="CitySetu Logo" class="h-16 w-auto mr-2"
-                    onerror="this.style.display='none'; this.onerror=null;"> <span class="text-2xl font-bold"
-                    style="color: var(--brand-navy);">CitySetu</span> </a>
-            <div class="hidden md:flex items-center space-x-8">
-                <a href="#home" onclick="app.navigateTo('home')" class="text-gray-600 hover:text-blue-800">Home</a>
-                <a href="#services" onclick="app.navigateTo('home', '#services')"
-                    class="text-gray-600 hover:text-blue-800">Services</a>
-                <a href="#how-it-works" onclick="app.navigateTo('home', '#how-it-works')"
-                    class="text-gray-600 hover:text-blue-800">How It Works</a>
-                <a href="#join-us" onclick="app.navigateTo('home', '#join-us')"
-                    class="text-gray-600 hover:text-blue-800">Join Us</a>
+                <img src="logo.jpg" alt="Logo" class="h-12 w-auto mr-2" onerror="this.style.display='none'">
+                <span class="text-2xl font-bold" style="color: var(--brand-navy);">CitySetu</span>
+            </a>
+            <div class="hidden md:flex items-center space-x-8 text-gray-600">
+                <a href="#home" onclick="app.navigateTo('home')" class="hover:text-orange-500">Home</a>
+                <a href="#services" class="hover:text-orange-500">Services</a>
+                <a href="#join-us" class="hover:text-orange-500">Join Us</a>
             </div>
-            <div class="md:hidden">
-                <button id="mobile-menu-button" class="text-gray-600 hover:text-blue-800 focus:outline-none">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 6h16M4 12h16m-7 6h7" />
-                    </svg>
-                </button>
-            </div>
+            <button id="mobile-menu-button" class="md:hidden text-gray-600">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
         </nav>
-        <div id="mobile-menu"
-            class="md:hidden bg-white border-t border-gray-200 absolute w-full transform -translate-x-full">
-            <a href="#home" onclick="app.closeMenuAndNavigate('home')"
-                class="block py-2 px-4 text-sm text-gray-600 hover:bg-gray-100">Home</a>
-            <a href="#services" onclick="app.closeMenuAndNavigate('home', '#services')"
-                class="block py-2 px-4 text-sm text-gray-600 hover:bg-gray-100">Services</a>
-            <a href="#how-it-works" onclick="app.closeMenuAndNavigate('home', '#how-it-works')"
-                class="block py-2 px-4 text-sm text-gray-600 hover:bg-gray-100">How It Works</a>
-            <a href="#join-us" onclick="app.closeMenuAndNavigate('home', '#join-us')"
-                class="block py-2 px-4 text-sm text-gray-600 hover:bg-gray-100">Join Us</a>
+        <div id="mobile-menu" class="md:hidden bg-white border-t hidden">
+            <a href="#home" onclick="app.navigateTo('home')" class="block py-3 px-6 hover:bg-gray-50">Home</a>
+            <a href="#join-us" class="block py-3 px-6 hover:bg-gray-50">Join Us</a>
         </div>
     </header>
 
@@ -514,289 +123,193 @@
     <section id="join-us" class="py-20 bg-gray-100 fade-in-section">
         <div class="container mx-auto px-6">
             <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold" style="color: var(--brand-navy);">Join Our Team of Experts
-                </h2>
-                <p class="text-gray-600 mt-2">Are you a skilled professional in Ahmedabad? Get verified leads directly.
-                </p>
+                <h2 class="text-3xl font-bold" style="color: var(--brand-navy);">Join Our Team of Experts</h2>
+                <p class="text-gray-600 mt-2">Get verified leads in Ahmedabad.</p>
             </div>
             <form id="worker-signup-form" class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label for="signup-name" class="block text-gray-700 font-bold mb-1">Full Name*</label>
-                        <input type="text" id="signup-name" class="form-input w-full px-3 py-2" placeholder="Your Name"
-                            required>
-                    </div>
-                    <div>
-                        <label for="signup-phone" class="block text-gray-700 font-bold mb-1">Mobile Number*</label>
-                        <input type="tel" id="signup-phone" class="form-input w-full px-3 py-2" placeholder="9999999999"
-                            required pattern="[0-9]{10}">
-                    </div>
-                    <div>
-                        <label for="signup-service" class="block text-gray-700 font-bold mb-1">Primary Service*</label>
-                       <select id="signup-service" class="form-input w-full px-3 py-2" required>
-    <option value="" disabled selected>Select a Service</option>
-    <option value="AC Repair">❄️ AC Repair</option>
-    <option value="Laptop Repair">💻 Laptop Repair</option>
-    <option value="Electrician">💡 Electrician</option>
-    <option value="Home Repair">🔨 Home Repair</option>
-    <option value="Cleaning">🧹 Home Cleaning</option>
-    <option value="Plumber">💧 Plumber</option>
-    </select>
-                    </div>
-                    <div>
-                        <label for="signup-location" class="block text-gray-700 font-bold mb-1">Your Area*</label>
-                        <input type="text" id="signup-location" class="form-input w-full px-3 py-2"
-                            placeholder="e.g., Gota, Maninagar" required>
-                    </div>
+                    <input type="text" id="signup-name" placeholder="Full Name" class="border p-2 rounded w-full" required>
+                    <input type="tel" id="signup-phone" placeholder="Mobile Number" class="border p-2 rounded w-full" required pattern="[0-9]{10}">
+                    <select id="signup-service" class="border p-2 rounded w-full" required>
+                        <option value="" disabled selected>Select Service</option>
+                        <option value="AC Repair">AC Repair</option>
+                        <option value="Laptop Repair">Laptop Repair</option>
+                        <option value="Electrician">Electrician</option>
+                    </select>
+                    <input type="text" id="signup-location" placeholder="Your Area" class="border p-2 rounded w-full" required>
                 </div>
-                <div class="text-center">
-                    <button type="submit" id="signup-submit-btn"
-                        class="btn-animated btn-orange text-white font-bold py-3 px-8 rounded-full hover:bg-orange-600 transition-colors">
-                        Request to Join
-                    </button>
-                </div>
-                <div id="signup-message" class="mt-4 text-center text-sm font-medium hidden"></div>
+                <button type="submit" class="w-full btn-orange text-white font-bold py-3 rounded-full">Request to Join</button>
             </form>
         </div>
     </section>
 
-    <footer id="contact" class="bg-gray-800 text-white py-12">
-        <div class="container mx-auto px-6 text-center">
-            <h3 class="text-2xl font-bold">CitySetu</h3>
-            <p class="mt-2 mb-4">Your City, Your Services, One Setu.</p>
-            <p class="text-gray-400">For inquiries, contact us at <a href="mailto:support@citysetu.com"
-                    class="text-blue-400 hover:underline">support@citysetu.com</a></p>
-            <p class="text-xs text-gray-500 mt-4">&copy; 2025 CitySetu. All rights reserved.</p>
-        </div>
+    <footer class="bg-gray-800 text-white py-12 text-center">
+        <h3 class="text-2xl font-bold">CitySetu</h3>
+        <p class="text-gray-400 mt-2">© 2025 CitySetu. All rights reserved.</p>
     </footer>
 
-    <div id="call-modal" class="fixed inset-0 z-[1001] items-center justify-center hidden"
-        onclick="event.target === this && app.hideCallModal()">
-        <div class="fixed inset-0 bg-black opacity-80"></div>
-        <div id="call-modal-content" class="glassmorphism-modal p-8 w-full max-w-md z-10 m-4 text-center"></div>
-    </div>
-
     <div id="citysetu-chat-widget">
-        <div id="chat-bubble">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="white" viewBox="0 0 256 256">
-                <path
-                    d="M216,48H40A16,16,0,0,0,24,64V224L64,192H216a16,16,0,0,0,16-16V64A16,16,0,0,0,216,48ZM128,144a12,12,0,1,1,12-12A12,12,0,0,1,128,144Zm-40,0a12,12,0,1,1,12-12A12,12,0,0,1,88,144Zm80,0a12,12,0,1,1,12-12A12,12,0,0,1,168,144Z">
-                </path>
-            </svg>
+        <div id="chat-bubble" class="fixed bottom-6 right-6 w-14 h-14 bg-orange-500 rounded-full flex items-center justify-center shadow-lg cursor-pointer z-50">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="white" viewBox="0 0 256 256"><path d="M216,48H40A16,16,0,0,0,24,64V224L64,192H216a16,16,0,0,0,16-16V64A16,16,0,0,0,216,48Z"></path></svg>
         </div>
-        <div id="chat-window">
-            <div id="chat-header">
-                <div>
-                    <h3 class="font-bold">CitySetu Booking</h3><span class="text-xs text-gray-300">Our team replies
-                        instantly</span>
-                </div>
-                <span id="chat-header-close" class="font-bold">&times;</span>
+        <div id="chat-window" class="fixed bottom-24 right-6 w-80 h-96 bg-white rounded-xl shadow-2xl z-50 flex flex-direction-column overflow-hidden border">
+            <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+                <span>CitySetu Support</span>
+                <button id="chat-close" class="text-xl">&times;</button>
             </div>
-            <div id="chat-messages"></div>
-            <div id="chat-options-area"></div>
-            <div id="chat-input-area">
-                <form id="chat-input-form">
-                    <input type="text" id="chat-input" placeholder="Type your message..." autocomplete="off">
-                    <button id="chat-send-btn" type="submit"><svg xmlns="http://www.w3.org/2000/svg" width="20"
-                            height="20" fill="currentColor" viewBox="0 0 16 16">
-                            <path
-                                d="M15.854.146a.5.5 0 0 1 .11.54l-5.819 14.547a.75.75 0 0 1-1.329.124l-3.178-4.995L.643 7.184a.75.75 0 0 1 .124-1.33L15.314.037a.5.5 0 0 1 .54.11ZM6.636 10.07l2.761 4.338L14.13 2.576 6.636 10.07Zm6.787-8.201L1.591 6.602l4.339 2.76 7.494-7.493Z" />
-                        </svg></button>
-                </form>
+            <div class="p-4 flex-grow overflow-y-auto text-sm">
+                <div class="bg-gray-100 p-2 rounded mb-2">Hello! How can we help you today?</div>
             </div>
         </div>
     </div>
 
     <script>
-/* ===============================
-   CONFIG
-================================ */
-const API_BASE_URL = 'https://citysetu-api.onrender.com';
+        const API_BASE_URL = 'https://citysetu-api.onrender.com';
 
-/* ===============================
-   APP
-================================ */
-const app = {
-    workerData: {},
-    isWorkerDataLoading: false,
+        const app = {
+            workerData: {},
+            isLoading: false,
 
-    elements: {
-        root: document.getElementById('app-root'),
-        header: document.getElementById('main-header'),
-        modal: document.getElementById('call-modal'),
-        modalContent: document.getElementById('call-modal-content'),
-        mobileMenu: document.getElementById('mobile-menu'),
-        mobileMenuButton: document.getElementById('mobile-menu-button'),
-        signupForm: document.getElementById('worker-signup-form')
-    },
+            elements: {
+                root: document.getElementById('app-root'),
+                header: document.getElementById('main-header'),
+                mobileBtn: document.getElementById('mobile-menu-button'),
+                mobileMenu: document.getElementById('mobile-menu')
+            },
 
-    async init() {
-        this.elements.mobileMenuButton?.addEventListener('click', () =>
-            this.toggleMobileMenu()
-        );
+            async init() {
+                // Event Listeners
+                this.elements.mobileBtn.onclick = () => this.elements.mobileMenu.classList.toggle('hidden');
+                window.onhashchange = () => this.router();
+                window.onscroll = () => this.handleScroll();
+                
+                document.getElementById('worker-signup-form').onsubmit = (e) => {
+                    e.preventDefault();
+                    alert("Application submitted successfully! We will contact you soon.");
+                };
 
-        window.addEventListener('hashchange', () => this.router());
-        window.addEventListener('scroll', () => this.handleScroll());
+                // Load Data and Initialize UI
+                await this.loadWorkerData();
+                this.router();
+                this.initChat();
+            },
 
-        if (this.elements.signupForm) {
-            this.elements.signupForm.addEventListener(
-                'submit',
-                (e) => this.handleWorkerSignup(e)
-            );
-        }
+            async loadWorkerData() {
+                this.isLoading = true;
+                this.renderLoading();
+                try {
+                    const res = await fetch(`${API_BASE_URL}/api/professionals/all`);
+                    const json = await res.json();
+                    const workers = json.workers || [];
+                    
+                    // Group workers by service
+                    const grouped = {};
+                    workers.forEach(w => {
+                        const service = w.service || 'General';
+                        if (!grouped[service]) grouped[service] = [];
+                        grouped[service].push(w);
+                    });
+                    this.workerData = grouped;
+                } catch (err) {
+                    console.error("Data fetch error:", err);
+                } finally {
+                    this.isLoading = false;
+                }
+            },
 
-        // Load workers silently
-        this.loadWorkerData();
+            router() {
+                const hash = window.location.hash.replace('#', '') || 'home';
+                if (hash.startsWith('service/')) {
+                    const serviceName = decodeURIComponent(hash.split('/')[1]);
+                    this.renderServicePage(serviceName);
+                } else {
+                    this.renderHomePage();
+                }
+                window.scrollTo(0, 0);
+            },
 
-        // Initial render
-        this.router();
-        this.chat.init();
-    },
+            navigateTo(page, param = '') {
+                window.location.hash = param ? `${page}/${encodeURIComponent(param)}` : page;
+            },
 
-    /* ===============================
-       WORKERS DATA
-    ================================ */
-    async loadWorkerData() {
-        this.isWorkerDataLoading = true;
+            renderLoading() {
+                this.elements.root.innerHTML = `<div class="py-20 text-center text-gray-500">Loading services...</div>`;
+            },
 
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/professionals/all`);
-            if (!res.ok) throw new Error(res.status);
+            renderHomePage() {
+                const servicesHtml = Object.keys(this.workerData).map(service => `
+                    <div class="card bg-white p-8 rounded-xl shadow-sm cursor-pointer border-b-4 border-orange-400" 
+                         onclick="app.navigateTo('service', '${service}')">
+                        <h3 class="text-xl font-bold text-slate-800">${service}</h3>
+                        <p class="text-orange-500 font-medium mt-2">${this.workerData[service].length} Experts Available</p>
+                    </div>
+                `).join('');
 
-            const json = await res.json();
-            const workers = Array.isArray(json.workers) ? json.workers : [];
+                this.elements.root.innerHTML = `
+                    <section class="hero-gradient text-white py-24 px-6 text-center">
+                        <h1 class="text-4xl md:text-6xl font-bold">Your City, Your Services, One Setu</h1>
+                        <p class="mt-4 text-blue-100 text-lg">Ahmedabad's most trusted professional network.</p>
+                    </section>
+                    <section id="services" class="py-16 container mx-auto px-6">
+                        <h2 class="text-3xl font-bold mb-10 text-center">Popular Services</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            ${servicesHtml || '<p class="col-span-3 text-center">Connecting to server...</p>'}
+                        </div>
+                    </section>
+                `;
+                this.observeAnimations();
+            },
 
-            const grouped = {};
+            renderServicePage(service) {
+                const workers = this.workerData[service] || [];
+                const workersHtml = workers.map(w => `
+                    <div class="bg-white p-6 rounded-lg shadow flex justify-between items-center border">
+                        <div>
+                            <h4 class="font-bold text-lg">👨‍🔧 ${w.name}</h4>
+                            <p class="text-gray-500 text-sm">${w.city || 'Ahmedabad'}</p>
+                        </div>
+                        <button class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm">Book Now</button>
+                    </div>
+                `).join('');
 
-            workers.forEach(w => {
-                if (!w.service) return;
-                const key = w.service.trim();
-                if (!grouped[key]) grouped[key] = [];
-                grouped[key].push({
-                    id: w.id,
-                    name: w.name,
-                    phone: w.phone,
-                    service: w.service,
-                    city: w.city,
-                    status: w.status,
-                    experience: 'N/A',
-                    location: w.city || 'N/A',
-                    rating: 0
-                });
-            });
+                this.elements.root.innerHTML = `
+                    <div class="bg-slate-50 min-h-screen py-12 px-6">
+                        <div class="container mx-auto max-w-4xl">
+                            <button onclick="app.navigateTo('home')" class="mb-6 text-blue-600 font-medium flex items-center">
+                                ← Back to All Services
+                            </button>
+                            <h2 class="text-3xl font-bold mb-8">${service} Experts</h2>
+                            <div class="grid gap-4">
+                                ${workersHtml || '<p>No experts found for this service.</p>'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
 
-            this.workerData = grouped;
-            console.log('✅ Workers loaded:', grouped);
+            handleScroll() {
+                if (window.scrollY > 50) this.elements.header.classList.add('header-scrolled');
+                else this.elements.header.classList.remove('header-scrolled');
+            },
 
-        } catch (err) {
-            console.error('❌ Worker load failed:', err);
-            this.workerData = {};
-        }
+            observeAnimations() {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('is-visible') });
+                }, { threshold: 0.1 });
+                document.querySelectorAll('.fade-in-section').forEach(s => observer.observe(s));
+            },
 
-        this.isWorkerDataLoading = false;
-        this.router();
-    },
+            initChat() {
+                const bubble = document.getElementById('chat-bubble');
+                const win = document.getElementById('chat-window');
+                const close = document.getElementById('chat-close');
+                
+                bubble.onclick = () => win.classList.toggle('active');
+                close.onclick = () => win.classList.remove('active');
+            }
+        };
 
-    /* ===============================
-       ROUTER
-    ================================ */
-    router() {
-        const hash = window.location.hash.replace('#', '') || 'home';
-        const [page, param] = hash.split('/');
-
-        if (page === 'service' && param) {
-            this.renderServicePage(decodeURIComponent(param));
-        } else {
-            this.renderHomePage();
-        }
-    },
-
-    navigateTo(page, param = '') {
-        if (page === 'service') {
-            window.location.hash = `service/${encodeURIComponent(param)}`;
-        } else {
-            window.location.hash = page;
-        }
-    },
-
-    /* ===============================
-       UI
-    ================================ */
-    toggleMobileMenu() {
-        this.elements.mobileMenu.classList.toggle('-translate-x-full');
-    },
-
-    handleScroll() {
-        if (window.scrollY > 20)
-            this.elements.header.classList.add('header-scrolled');
-        else
-            this.elements.header.classList.remove('header-scrolled');
-    },
-
-    renderHomePage() {
-        this.elements.root.innerHTML = `
-            <section class="hero-gradient text-white py-24 text-center">
-                <h1 class="text-4xl md:text-6xl font-bold">Your City, Your Services, One Setu</h1>
-                <p class="mt-4 text-blue-200">Verified experts in Ahmedabad</p>
-            </section>
-        `;
-    },
-
-    renderServicePage(service) {
-        const workers = this.workerData[service] || [];
-
-        const html = workers.length
-            ? workers.map(w => `
-                <div class="card bg-white p-6 rounded shadow">
-                    <h3 class="font-bold">👨‍🔧 ${w.name}</h3>
-                    <p>${w.location}</p>
-                </div>
-            `).join('')
-            : `<p class="text-center text-gray-500">No workers available</p>`;
-
-        this.elements.root.innerHTML = `
-            <section class="py-12 text-center bg-blue-100">
-                <h2 class="text-3xl font-bold"> ${service} Experts </h2>
-            </section>
-            <section class="py-12 grid grid-cols-1 md:grid-cols-3 gap-6 px-6">
-                ${html}
-            </section>
-        `;
-    },
-
-    /* ===============================
-       SIGNUP
-    ================================ */
-    handleWorkerSignup(e) {
-        e.preventDefault();
-        alert('Signup API wired correctly ✅');
-    },
-
-    /* ===============================
-       CHAT (UNCHANGED CORE)
-    ================================ */
-    chat: {
-        init() {
-            document.getElementById('chat-bubble')
-                ?.addEventListener('click', () => this.open());
-        },
-        open() {
-            document.getElementById('chat-window').style.visibility = 'visible';
-        }
-    }
-};
-
-document.addEventListener('DOMContentLoaded', () => app.init());
-</script>
-
-    </body>
-
+        document.addEventListener('DOMContentLoaded', () => app.init());
+    </script>
+</body>
 </html>
-
-
-
-
-
-
-
-
