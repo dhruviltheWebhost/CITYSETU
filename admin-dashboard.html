@@ -379,591 +379,187 @@
     </div>
 
     <script>
-        // ------------------------------------------------------------------
-        // CONFIGURATION & AUTHENTICATION
-        // ------------------------------------------------------------------
-        
-        // This is your live Render API URL
-        const RENDER_API_URL = 'https://citysetu-api.onrender.com';
+/* =====================================================
+   CONFIG
+===================================================== */
+const RENDER_API_URL = 'https://citysetu-api.onrender.com';
+const ADMIN_TOKEN = sessionStorage.getItem('citysetu_admin_token');
 
-        // Get the token from sessionStorage (which admin-login.html should save)
-        const ADMIN_TOKEN = sessionStorage.getItem('citysetu_admin_token');
+if (!ADMIN_TOKEN) {
+    alert('Admin token not found. Please login again.');
+    window.location.href = 'admin-login.html';
+}
 
-        // --- Password Protection Check ---
-        if (!ADMIN_TOKEN) {
-            alert('Admin token not found. Please log in.');
-            window.location.href = 'admin-login.html';
+/* =====================================================
+   ADMIN OBJECT
+===================================================== */
+const admin = {
+    elements: {
+        chatTab: document.getElementById('tab-chats'),
+        callTab: document.getElementById('tab-calls'),
+        workerTab: document.getElementById('tab-workers'),
+        signupTab: document.getElementById('tab-signups'),
+
+        chatTable: document.getElementById('table-chats'),
+        callTable: document.getElementById('table-calls'),
+        workerSection: document.getElementById('section-workers'),
+        signupTable: document.getElementById('table-signups'),
+
+        workerTableBody: document.getElementById('workers-table-body'),
+        workerCount: document.getElementById('worker-count'),
+
+        addWorkerForm: document.getElementById('add-worker-form'),
+        addWorkerBtn: document.getElementById('add-worker-btn'),
+        workerFormMessage: document.getElementById('worker-form-message'),
+
+        refreshBtn: document.getElementById('refresh-btn')
+    },
+
+    init() {
+        this.elements.addWorkerForm.addEventListener(
+            'submit',
+            this.handleAddWorker.bind(this)
+        );
+
+        this.showTab('workers');
+        this.fetchData();
+    },
+
+    /* =====================================================
+       TAB SWITCHING
+    ===================================================== */
+    showTab(tab) {
+        [
+            this.elements.chatTab,
+            this.elements.callTab,
+            this.elements.workerTab,
+            this.elements.signupTab
+        ].forEach(t => t.classList.remove('active'));
+
+        [
+            this.elements.chatTable,
+            this.elements.callTable,
+            this.elements.workerSection,
+            this.elements.signupTable
+        ].forEach(s => s.style.display = 'none');
+
+        if (tab === 'workers') {
+            this.elements.workerTab.classList.add('active');
+            this.elements.workerSection.style.display = 'block';
         }
-        // --- End Protection Check ---
+    },
 
+    /* =====================================================
+       FETCH PROFESSIONALS (FIXED)
+    ===================================================== */
+    async fetchData() {
+        this.elements.refreshBtn.disabled = true;
+        this.elements.refreshBtn.textContent = 'Refreshing...';
 
-        // ------------------------------------------------------------------
-        // ADMIN DASHBOARD LOGIC (Updated for Render API)
-        // ------------------------------------------------------------------
-        const admin = {
-            elements: {
-                // Tabs
-                chatTab: document.getElementById('tab-chats'),
-                callTab: document.getElementById('tab-calls'),
-                workerTab: document.getElementById('tab-workers'),
-                signupTab: document.getElementById('tab-signups'),
+        try {
+            const response = await fetch(`${RENDER_API_URL}/api/professionals/all`);
+            if (!response.ok) throw new Error('Failed to fetch professionals');
 
-                // Sections
-                chatTable: document.getElementById('table-chats'),
-                callTable: document.getElementById('table-calls'),
-                workerSection: document.getElementById('section-workers'),
-                signupTable: document.getElementById('table-signups'),
-                
-                // Table Bodies
-                chatTableBody: document.getElementById('chats-table-body'),
-                callTableBody: document.getElementById('calls-table-body'),
-                workerTableBody: document.getElementById('workers-table-body'),
-                signupTableBody: document.getElementById('signups-table-body'),
-                
-                // Loading Indicators
-                chatLoading: document.getElementById('chats-loading'),
-                callLoading: document.getElementById('calls-loading'),
-                workerLoading: document.getElementById('workers-loading'),
-                signupLoading: document.getElementById('signups-loading'),
+            const result = await response.json();
+            this.renderWorkerTable(result.professionals || []);
+        } catch (err) {
+            console.error(err);
+            alert('Error loading professionals');
+        } finally {
+            this.elements.refreshBtn.disabled = false;
+            this.elements.refreshBtn.textContent = '🔄 Refresh Data';
+        }
+    },
 
-                // Counts
-                chatCount: document.getElementById('chat-count'),
-                callCount: document.getElementById('call-count'),
-                workerCount: document.getElementById('worker-count'),
-                signupCount: document.getElementById('signup-count'),
+    /* =====================================================
+       RENDER WORKERS
+    ===================================================== */
+    renderWorkerTable(workers) {
+        this.elements.workerTableBody.innerHTML = '';
+        this.elements.workerCount.textContent = workers.length;
 
-                refreshBtn: document.getElementById('refresh-btn'),
+        if (!workers.length) {
+            this.elements.workerTableBody.innerHTML =
+                `<tr><td colspan="7" class="p-6 text-center text-gray-500">
+                    No workers added yet.
+                 </td></tr>`;
+            return;
+        }
 
-                // Worker Form
-                addWorkerForm: document.getElementById('add-worker-form'),
-                addWorkerBtn: document.getElementById('add-worker-btn'),
-                workerFormMessage: document.getElementById('worker-form-message')
-            },
+        workers.forEach(worker => {
+            const row = document.createElement('tr');
+            const workerJson = JSON.stringify(worker).replace(/'/g, "\\'");
 
-            init() {
-                this.elements.addWorkerForm.addEventListener('submit', this.handleAddWorker.bind(this));
-                
-                // --- [NEW] ADDED EVENT LISTENER FOR EDIT FORM ---
-                document.getElementById('edit-worker-form').addEventListener('submit', this.handleUpdateWorker.bind(this));
+            row.innerHTML = `
+                <td class="text-xs font-mono">${worker.id}</td>
+                <td>${worker.name}</td>
+                <td>${worker.phone}</td>
+                <td>${worker.service}</td>
+                <td>${worker.city || 'N/A'}</td>
+                <td>${worker.status || 'active'}</td>
+                <td>
+                    <button class="btn-action btn-reject"
+                        onclick="admin.handleDeleteWorker('${worker.id}', '${worker.name}')">
+                        Delete
+                    </button>
+                </td>
+            `;
+            this.elements.workerTableBody.appendChild(row);
+        });
+    },
 
-                this.fetchData();
-            },
+    /* =====================================================
+       ADD WORKER (USES SIGNUP API)
+    ===================================================== */
+    async handleAddWorker(e) {
+        e.preventDefault();
+        this.elements.addWorkerBtn.disabled = true;
+        this.elements.addWorkerBtn.textContent = 'Adding...';
 
-            showTab(tabName) {
-                // Hide all tabs and sections
-                [this.elements.chatTab, this.elements.callTab, this.elements.workerTab, this.elements.signupTab].forEach(tab => tab.classList.remove('active'));
-                [this.elements.chatTable, this.elements.callTable, this.elements.workerSection, this.elements.signupTable].forEach(sec => {
-                    sec.classList.remove('active');
-                    sec.style.display = 'none'; // Use style.display to hide
-                });
-
-                // Show the active one
-                if (tabName === 'chats') {
-                    this.elements.chatTab.classList.add('active');
-                    this.elements.chatTable.style.display = 'block';
-                    this.elements.chatTable.classList.add('active');
-                } else if (tabName === 'calls') {
-                    this.elements.callTab.classList.add('active');
-                    this.elements.callTable.style.display = 'block';
-                    this.elements.callTable.classList.add('active');
-                } else if (tabName === 'workers') {
-                    this.elements.workerTab.classList.add('active');
-                    this.elements.workerSection.style.display = 'block';
-                    this.elements.workerSection.classList.add('active');
-                } else if (tabName === 'signups') {
-                    this.elements.signupTab.classList.add('active');
-                    this.elements.signupTable.style.display = 'block';
-                    this.elements.signupTable.classList.add('active');
-                }
-            },
-
-            async fetchData() {
-                this.elements.refreshBtn.disabled = true;
-                this.elements.refreshBtn.textContent = 'Refreshing...';
-                
-                // Show all loading messages
-                if(this.elements.chatLoading) this.elements.chatLoading.parentElement.style.display = 'table-row';
-                if(this.elements.callLoading) this.elements.callLoading.parentElement.style.display = 'table-row';
-                if(this.elements.workerLoading) this.elements.workerLoading.parentElement.style.display = 'table-row';
-                if(this.elements.signupLoading) this.elements.signupLoading.parentElement.style.display = 'table-row';
-                
-                if(this.elements.chatLoading) this.elements.chatLoading.textContent = 'Loading data...';
-                if(this.elements.callLoading) this.elements.callLoading.textContent = 'Loading data...';
-                if(this.elements.workerLoading) this.elements.workerLoading.textContent = 'Loading workers...';
-                if(this.elements.signupLoading) this.elements.signupLoading.textContent = 'Loading signups...';
-
-                try {
-                    // Fetch all data from the new admin endpoint
-                   const response = await fetch(`${RENDER_API_URL}/api/professionals/all`);
-const data = await response.json();
-
-this.renderWorkerTable(data.professionals || []);
-
-                    
-                    if (!response.ok) throw new Error(`Network error: ${response.status} ${response.statusText}`);
-                    
-                    const data = await response.json();
-                    
-                    if (data.message) throw new Error(`API Error: ${data.message}`);
-
-                    // Render all tables with the new data
-                    this.renderChatTable(data.chats || []);
-                    this.renderCallTable(data.calls || []);
-                    this.renderWorkerTable(data.workers || []);
-                    this.renderSignupTable(data.signups || []); // Render new table
-
-                } catch (error) {
-                    console.error('Failed to fetch data:', error);
-                    // Update all loading messages on error
-                    const errorMsg = `Error: ${error.message}`;
-                    if(this.elements.chatLoading) this.elements.chatLoading.textContent = errorMsg;
-                    if(this.elements.callLoading) this.elements.callLoading.textContent = errorMsg;
-                    if(this.elements.workerLoading) this.elements.workerLoading.textContent = errorMsg;
-                    if(this.elements.signupLoading) this.elements.signupLoading.textContent = errorMsg;
-                } finally {
-                    this.elements.refreshBtn.disabled = false;
-                    this.elements.refreshBtn.textContent = '🔄 Refresh Data';
-                }
-            },
-
-            renderChatTable(chats) {
-                this.elements.chatTableBody.innerHTML = ''; // Clear only body
-                this.elements.chatCount.textContent = chats.length;
-
-                if (chats.length === 0) {
-                    this.elements.chatTableBody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-gray-500">No chat bookings found.</td></tr>';
-                    return;
-                }
-
-                chats.forEach(chat => { // No reverse, server sends in DESC order
-                    const tr = document.createElement('tr');
-                    tr.setAttribute('data-id', chat.id);
-                    const timestamp = new Date(chat.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
-                    
-                    // Use a class-friendly status
-                    const statusClass = `status-${String(chat.status).replace(' ', '-')}`;
-
-                    // --- THIS IS THE FIX for Preferred Worker ---
-                    const workerDisplay = chat.workerassigned 
-                        ? `<span>${chat.workerassigned}</span>` 
-                        : (chat.preferredworker 
-                            ? `<span style="color: var(--brand-orange); font-weight: 600;">(Prefers: ${chat.preferredworker})</span>` 
-                            : 'N/A');
-
-                    tr.innerHTML = `
-                        <td>${timestamp}</td>
-                        <td class="font-mono text-xs">${chat.id}</td>
-                        <td>${chat.customername}</td>
-                        <td>${chat.customerphone}</td>
-                        <td class="font-medium text-gray-900">${chat.service}</td>
-                        <td class="font-medium">${workerDisplay}</td>
-                        <td><span class="status-badge ${statusClass}" id="status-${chat.id}">${chat.status}</span></td>
-                        <td class="space-x-2">
-                            <button class="btn-action btn-approve" onclick="admin.updateStatus('${chat.id}', 'Completed')">Complete</button>
-                            <button class="btn-action btn-reject" onclick="admin.updateStatus('${chat.id}', 'Cancelled')">Cancel</button>
-                        </td>
-                    `;
-                    this.elements.chatTableBody.appendChild(tr);
-                });
-            },
-
-            renderCallTable(calls) {
-                this.elements.callTableBody.innerHTML = '';
-                this.elements.callCount.textContent = calls.length;
-
-                if (calls.length === 0) {
-                    this.elements.callTableBody.innerHTML = '<tr><td colspan="3" class="p-6 text-center text-gray-500">No call logs found.</td></tr>';
-                    return;
-                }
-
-                calls.forEach(call => { // No reverse, server sends in DESC order
-                    const tr = document.createElement('tr');
-                    const timestamp = new Date(call.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
-
-                    tr.innerHTML = `
-                        <td>${timestamp}</td>
-                        <td class="font-medium text-gray-900">${call.workername}</td>
-                        <td>${call.customerphone}</td>
-                    `;
-                    this.elements.callTableBody.appendChild(tr);
-                });
-            },
-            
-            renderSignupTable(signups) {
-                this.elements.signupTableBody.innerHTML = '';
-                this.elements.signupCount.textContent = signups.length;
-
-                if (signups.length === 0) {
-                    this.elements.signupTableBody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-gray-500">No new signups.</td></tr>';
-                    return;
-                }
-                
-                signups.forEach(signup => {
-                    const tr = document.createElement('tr');
-                    const timestamp = new Date(signup.timestamp).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
-                    const statusClass = `status-${String(signup.status).replace(' ', '-')}`;
-                    
-                    tr.innerHTML = `
-                        <td>${timestamp}</td>
-                        <td class="font-medium text-gray-900">${signup.name}</td>
-                        <td>${signup.phone}</td>
-                        <td>${signup.service}</td>
-                        <td>${signup.city}</td>
-                        <td class="text-xs">${signup.address || 'N/A'}</td>
-                        <td><span class="status-badge ${statusClass}">${signup.status}</span></td>
-                        <td class="space-x-2">
-                            <button class="btn-action btn-approve" onclick="admin.approveSignup(this, '${signup.id}')">Approve</button>
-                            <button class="btn-action btn-reject" onclick="admin.rejectSignup(this, '${signup.id}')">Reject</button>
-                        </td>
-                    `;
-                    this.elements.signupTableBody.appendChild(tr);
-                });
-            },
-
-            // --- [UPDATED] RENDER WORKER TABLE ---
-            renderWorkerTable(workers) {
-                this.elements.workerTableBody.innerHTML = '';
-                this.elements.workerCount.textContent = workers.length;
-
-                if (workers.length === 0) {
-                    // Colspan is now 7
-                    this.elements.workerTableBody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-gray-500">No workers added yet.</td></tr>';
-                    return;
-                }
-
-                workers.forEach(worker => { // No reverse, server sends in DESC order
-                    const tr = document.createElement('tr');
-                    
-                    // We must pass the *entire* worker object to the edit function
-                    // We escape single quotes to avoid breaking the HTML
-                    const workerJson = JSON.stringify(worker).replace(/'/g, "\\'");
-
-                    tr.innerHTML = `
-                        <td class="font-mono text-xs">${worker.id}</td>
-                        <td class="font-medium text-gray-900">${worker.name}</td>
-                        <td>${worker.phone}</td>
-                        <td>${worker.service}</td>
-                        <td>${worker.city || 'N/A'}</td> 
-                        <td>${worker.status}</td>
-                        <td class="space-x-2">
-                            <button class="btn-action bg-blue-600 text-white" onclick='admin.showEditModal(${workerJson})'>Edit</button>
-                            <button class="btn-action btn-reject" onclick="admin.handleDeleteWorker('${worker.id}', '${worker.name}')">Delete</button>
-                        </td>
-                    `;
-                    this.elements.workerTableBody.appendChild(tr);
-                });
-            },
-
-            async handleAddWorker(event) {
-                event.preventDefault();
-                this.elements.addWorkerBtn.disabled = true;
-                this.elements.addWorkerBtn.textContent = 'Adding...';
-                this.elements.workerFormMessage.classList.add('hidden');
-
-                const workerData = {
-                    name: document.getElementById('worker-name').value.trim(),
-                    service: document.getElementById('worker-service').value.trim(),
-                    phone: document.getElementById('worker-phone').value.trim(),
-                    city: document.getElementById('worker-city').value.trim(),
-                    pincode: document.getElementById('worker-pincode').value.trim(),
-                    status: document.getElementById('worker-status').value
-                };
-
-                if (!workerData.name || !workerData.service || !workerData.phone) {
-                    this.showWorkerFormMessage('Name, Service, and Phone are required.', 'red');
-                    this.elements.addWorkerBtn.disabled = false;
-                    this.elements.addWorkerBtn.textContent = '+ Add Worker';
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`${RENDER_API_URL}/api/professionals/signup`, {
-  method: 'POST',
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    name: workerData.name,
-    phone: workerData.phone,
-    serviceIds: [workerData.service] // TEMP: string OK for now
-  })
-});
-
-                    
-                    const result = await response.json();
-
-                    if (response.ok && result.status === 'success') {
-                        this.showWorkerFormMessage(result.message || 'Worker added!', 'green');
-                        this.elements.addWorkerForm.reset();
-                        this.fetchData(); // Refresh list
-                    } else {
-                        throw new Error(result.message || 'Unknown error adding worker.');
-                    }
-                } catch (error) {
-                    console.error('Error adding worker:', error);
-                    this.showWorkerFormMessage(`Error: ${error.message}`, 'red');
-                } finally {
-                    this.elements.addWorkerBtn.disabled = false;
-                    this.elements.addWorkerBtn.textContent = '+ Add Worker';
-                }
-            },
-
-            showWorkerFormMessage(message, color = 'green') {
-                this.elements.workerFormMessage.textContent = message;
-                this.elements.workerFormMessage.style.color = color;
-                this.elements.workerFormMessage.classList.remove('hidden');
-            },
-
-            async updateStatus(id, newStatus) {
-                console.log(`Updating ${id} to ${newStatus}`);
-                const statusBadge = document.getElementById(`status-${id}`);
-                
-                // Save original state in case of error
-                const originalText = statusBadge ? statusBadge.textContent : 'Pending';
-                const originalClass = statusBadge ? statusBadge.className : 'status-badge status-Pending';
-
-                // Optimistic UI update
-                if (statusBadge) {
-                    statusBadge.textContent = newStatus;
-                    statusBadge.className = `status-badge status-${newStatus.replace(' ', '-')}`;
-                }
-
-                try {
-                    // Puts to the new /api/update-status/:id endpoint
-                    const response = await fetch(`${RENDER_API_URL}/api/update-status/${id}`, {
-                        method: 'PUT',
-                        headers: { 
-                            "Content-Type": "application/json",
-                            'Authorization': `Bearer ${ADMIN_TOKEN}`
-                        },
-                        body: JSON.stringify({ newStatus: newStatus }) // Server expects newStatus
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (!response.ok || result.status !== 'success') {
-                        throw new Error(result.message || 'Failed to update');
-                    }
-                    
-                    console.log('Status updated in DB');
-                    this.fetchData(); // <-- THIS IS THE FIX
-                    
-                } catch (error) {
-                    console.error('Failed to update status in DB:', error);
-                    if (statusBadge) {
-                        // Revert on error
-                        statusBadge.textContent = originalText;
-                        statusBadge.className = originalClass;
-                    }
-                    alert('Error updating status: ' + error.message);
-                }
-            },
-            
-            // --- THIS IS THE FULLY FIXED FUNCTION ---
-            async approveSignup(button, signupId) {
-                button.disabled = true;
-                button.textContent = 'Approving...';
-                
-                // 1. Find the signup data in our fetched list
-                const signup = (await admin.fetchDataForApproval()).find(s => s.id === signupId);
-                if (!signup) {
-                    alert('Error: Could not find signup data. Please refresh.');
-                    button.textContent = 'Approve';
-                    button.disabled = false;
-                    return;
-                }
-
-                // 2. Create the new worker object
-                const workerData = {
-                    name: signup.name,
-                    phone: signup.phone,
-                    service: signup.service,
-                    city: signup.city,
-                    pincode: signup.pincode,
-                    status: 'available' // Default status
-                };
-                
-                try {
-                    // 3. Post to /api/professionals/signup
-                    const addWorkerResponse = await fetch(`${RENDER_API_URL}/api/professionals/signup`, {
-                        method: 'POST',
-                        headers: { 
-                            "Content-Type": "application/json",
-                            'Authorization': `Bearer ${ADMIN_TOKEN}`
-                        },
-                        body: JSON.stringify(workerData)
-                    });
-                    
-                    const addResult = await addWorkerResponse.json();
-                    if (!addWorkerResponse.ok) {
-                        throw new Error(`Add Worker Failed: ${addResult.message}`);
-                    }
-                    
-                    console.log('Worker approved and added!');
-                    
-                    // 4. --- THIS IS THE FIX ---
-                    // Delete the original signup from the queue
-                    const deleteSignupResponse = await fetch(`${RENDER_API_URL}/api/signups/${signupId}`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${ADMIN_TOKEN}` }
-                    });
-
-                    const deleteResult = await deleteSignupResponse.json();
-                    if (!deleteSignupResponse.ok) { 
-                        // Note: The worker was added, but the signup wasn't deleted.
-                        // Alert the user and refresh anyway.
-                        throw new Error(`Delete Signup Failed: ${deleteResult.message}`); 
-                    }
-                    
-                    console.log('Original signup deleted!');
-                    
-                    // 5. Refresh all data
-                    this.fetchData();
-
-                } catch (error) {
-                    alert(`Approval Error: ${error.message}`);
-                    button.textContent = 'Approve';
-                    button.disabled = false;
-                }
-            },
-
-            // --- THIS IS THE NEW "REJECT" FUNCTION ---
-            async rejectSignup(button, signupId) {
-                if (!confirm('Are you sure you want to reject this signup? This cannot be undone.')) {
-                    return;
-                }
-                button.disabled = true;
-                button.textContent = 'Rejecting...';
-                
-                try {
-                    // 1. Delete the original signup from the queue
-                    const deleteSignupResponse = await fetch(`${RENDER_API_URL}/api/signups/${signupId}`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Bearer ${ADMIN_TOKEN}` }
-                    });
-                    
-                    const deleteResult = await deleteSignupResponse.json();
-                    if (!deleteSignupResponse.ok) { 
-                        throw new Error(`Delete Signup Failed: ${deleteResult.message}`); 
-                    }
-                    
-                    console.log('Signup rejected and deleted.');
-                    
-                    // 2. Refresh all data
-                    this.fetchData();
-
-                } catch (error) {
-                    alert(`Rejection Error: ${error.message}`);
-                    button.disabled = false;
-                    button.textContent = 'Reject';
-                }
-            },
-            
-            // Helper to get raw signup data for approval
-            async fetchDataForApproval() {
-                const response = await fetch(`${RENDER_API_URL}/api/professionals/all`, {
-                    headers: { 'Authorization': `Bearer ${ADMIN_TOKEN}` }
-                });
-                const data = await response.json();
-                return data.signups || [];
-            },
-
-            // --- [NEW] FUNCTIONS FOR EDIT/DELETE WORKER ---
-            showEditModal(worker) {
-                // Pre-fill the form
-                document.getElementById('edit-worker-id').value = worker.id;
-                document.getElementById('edit-worker-name').value = worker.name;
-                document.getElementById('edit-worker-phone').value = worker.phone;
-                document.getElementById('edit-worker-service').value = worker.service;
-                document.getElementById('edit-worker-city').value = worker.city || '';
-                document.getElementById('edit-worker-pincode').value = worker.pincode || '';
-                document.getElementById('edit-worker-status').value = worker.status;
-                
-                // Show the modal
-                document.getElementById('edit-worker-modal').classList.remove('hidden');
-                document.getElementById('edit-worker-modal').classList.add('flex');
-            },
-
-            hideEditModal() {
-                document.getElementById('edit-worker-modal').classList.add('hidden');
-                document.getElementById('edit-worker-modal').classList.remove('flex');
-                document.getElementById('edit-worker-message').classList.add('hidden');
-            },
-
-            async handleUpdateWorker(event) {
-                event.preventDefault();
-                const messageDiv = document.getElementById('edit-worker-message');
-                messageDiv.classList.add('hidden');
-                
-                const workerId = document.getElementById('edit-worker-id').value;
-
-                // Get all data from the edit form
-                const workerData = {
-                    name: document.getElementById('edit-worker-name').value,
-                    phone: document.getElementById('edit-worker-phone').value,
-                    service: document.getElementById('edit-worker-service').value,
-                    city: document.getElementById('edit-worker-city').value,
-                    pincode: document.getElementById('edit-worker-pincode').value,
-                    status: document.getElementById('edit-worker-status').value,
-                };
-
-                try {
-                    const response = await fetch(`${RENDER_API_URL}/api/professionals/signup/${workerId}`, {
-                        method: 'PUT',
-                        headers: { 
-                            "Content-Type": "application/json",
-                            'Authorization': `Bearer ${ADMIN_TOKEN}`
-                        },
-                        body: JSON.stringify(workerData)
-                    });
-
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.message || 'Failed to update');
-
-                    // Success! Show message, hide modal, refresh data
-                    messageDiv.textContent = 'Worker updated successfully!';
-                    messageDiv.style.color = 'green';
-                    messageDiv.classList.remove('hidden');
-
-                    setTimeout(() => {
-                        this.hideEditModal();
-                        this.fetchData();
-                    }, 1500);
-
-                } catch (error) {
-                    messageDiv.textContent = `Error: ${error.message}`;
-                    messageDiv.style.color = 'red';
-                    messageDiv.classList.remove('hidden');
-                }
-            },
-
-            async handleDeleteWorker(workerId, workerName) {
-                if (!confirm(`Are you sure you want to delete ${workerName}? This action cannot be undone.`)) {
-                    return;
-                }
-
-                try {
-                    const response = await fetch(`${RENDER_API_URL}/api/professionals/signup/${workerId}`, {
-                        method: 'DELETE',
-                        headers: { 
-                            'Authorization': `Bearer ${ADMIN_TOKEN}`
-                        }
-                    });
-
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.message || 'Failed to delete');
-
-                    alert('Worker deleted successfully.');
-                    this.fetchData(); // Refresh the list
-
-                } catch (error) {
-                    alert(`Error: ${error.message}`);
-                }
-            }
+        const payload = {
+            name: document.getElementById('worker-name').value.trim(),
+            phone: document.getElementById('worker-phone').value.trim(),
+            serviceIds: [document.getElementById('worker-service').value]
         };
 
-        document.addEventListener('DOMContentLoaded', () => admin.init());
-    </script>
+        try {
+            const res = await fetch(`${RENDER_API_URL}/api/professionals/signup`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error('Signup failed');
+            alert('Worker added (pending approval)');
+            this.elements.addWorkerForm.reset();
+            this.fetchData();
+        } catch (err) {
+            alert(err.message);
+        } finally {
+            this.elements.addWorkerBtn.disabled = false;
+            this.elements.addWorkerBtn.textContent = '+ Add Worker';
+        }
+    },
+
+    /* =====================================================
+       DELETE WORKER (TEMP UI ONLY)
+    ===================================================== */
+    handleDeleteWorker(id, name) {
+        alert(`Delete worker "${name}" from backend later.\nID: ${id}`);
+    }
+};
+
+/* =====================================================
+   VERY IMPORTANT FIX
+===================================================== */
+window.admin = admin;
+
+/* =====================================================
+   INIT
+===================================================== */
+document.addEventListener('DOMContentLoaded', () => admin.init());
+</script>
+
 </body>
 
 </html>
