@@ -467,25 +467,21 @@ const admin = {
 
   /* TAB SWITCH */
   showTab(tab) {
-    [
-      this.elements.chatTab,
-      this.elements.callTab,
-      this.elements.workerTab,
-      this.elements.signupTab
-    ].forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.table-wrapper, .section-wrapper')
+    .forEach(s => s.style.display = 'none');
 
-    [
-      this.elements.chatTable,
-      this.elements.callTable,
-      this.elements.workerSection,
-      this.elements.signupTable
-    ].forEach(s => s.style.display = 'none');
+  if (tab === 'workers') {
+    this.elements.workerTab.classList.add('active');
+    this.elements.workerSection.style.display = 'block';
+    this.fetchData();
+  }
 
-    if (tab === 'workers') {
-      this.elements.workerTab.classList.add('active');
-      this.elements.workerSection.style.display = 'block';
-    }
-  },
+  if (tab === 'pending') {
+    document.getElementById('table-pending').style.display = 'block';
+    this.fetchPending();   // 🔥 THIS WAS MISSING
+  }
+},
 
   /* FETCH WORKERS */
   async fetchData() {
