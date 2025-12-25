@@ -677,7 +677,7 @@ const app = {
             if (!res.ok) throw new Error(res.status);
 
             const json = await res.json();
-            const workers = Array.isArray(json.workers) ? json.workers : [];
+            const workers = Array.isArray(json.professionals) ? json.professionals : [];
 
             const grouped = {};
             workers.forEach(w => {
@@ -783,6 +783,7 @@ document.addEventListener('DOMContentLoaded', () => app.init());
     </body>
 
 </html>
+
 
 
 
