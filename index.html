@@ -608,50 +608,42 @@
     </div>
 
     <script>
-/* ===============================
-   CONFIG
-================================ */
 const API_BASE_URL = 'https://citysetu-api.onrender.com';
 
-/* ===============================
-   APP
-================================ */
 const app = {
     workerData: {},
     isWorkerDataLoading: false,
+
     renderServicesGrid() {
-    if (this.isWorkerDataLoading) {
-        return `<p class="col-span-3 text-gray-500">Loading services...</p>`;
-    }
+        if (this.isWorkerDataLoading) {
+            return `<p class="col-span-3 text-gray-500">Loading services...</p>`;
+        }
 
-    const services = Object.keys(this.workerData);
+        const services = Object.keys(this.workerData);
 
-    if (!services.length) {
-        return `
-            <div class="col-span-3 text-gray-500">
-                No professionals available yet.<br>
-                Be the first to join CitySetu 🚀
+        if (!services.length) {
+            return `
+                <div class="col-span-3 text-gray-500">
+                    No professionals available yet.<br>
+                    Be the first to join CitySetu 🚀
+                </div>
+            `;
+        }
+
+        return services.map(service => `
+            <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
+                 onclick="app.navigateTo('service', '${service}')">
+                <h3 class="text-xl font-bold mb-2">${service}</h3>
+                <p class="text-sm text-gray-600">
+                    ${this.workerData[service].length} experts available
+                </p>
             </div>
-        `;
-    }
-
-    return services.map(service => `
-        <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
-             onclick="app.navigateTo('service', '${service}')">
-            <h3 class="text-xl font-bold mb-2">${service}</h3>
-            <p class="text-sm text-gray-600">
-                ${this.workerData[service].length} experts available
-            </p>
-        </div>
-    `).join('');
-}
-
+        `).join('');
+    },
 
     elements: {
         root: document.getElementById('app-root'),
         header: document.getElementById('main-header'),
-        modal: document.getElementById('call-modal'),
-        modalContent: document.getElementById('call-modal-content'),
         mobileMenu: document.getElementById('mobile-menu'),
         mobileMenuButton: document.getElementById('mobile-menu-button'),
         signupForm: document.getElementById('worker-signup-form')
@@ -672,17 +664,11 @@ const app = {
             );
         }
 
-        // Load workers silently
         this.loadWorkerData();
-
-        // Initial render
         this.router();
         this.chat.init();
     },
 
-    /* ===============================
-       WORKERS DATA
-    ================================ */
     async loadWorkerData() {
         this.isWorkerDataLoading = true;
 
@@ -694,27 +680,14 @@ const app = {
             const workers = Array.isArray(json.workers) ? json.workers : [];
 
             const grouped = {};
-
             workers.forEach(w => {
                 if (!w.service) return;
-                const key = w.service.trim();
-                if (!grouped[key]) grouped[key] = [];
-                grouped[key].push({
-                    id: w.id,
-                    name: w.name,
-                    phone: w.phone,
-                    service: w.service,
-                    city: w.city,
-                    status: w.status,
-                    experience: 'N/A',
-                    location: w.city || 'N/A',
-                    rating: 0
-                });
+                if (!grouped[w.service]) grouped[w.service] = [];
+                grouped[w.service].push(w);
             });
 
             this.workerData = grouped;
             console.log('✅ Workers loaded:', grouped);
-
         } catch (err) {
             console.error('❌ Worker load failed:', err);
             this.workerData = {};
@@ -724,9 +697,6 @@ const app = {
         this.router();
     },
 
-    /* ===============================
-       ROUTER
-    ================================ */
     router() {
         const hash = window.location.hash.replace('#', '') || 'home';
         const [page, param] = hash.split('/');
@@ -746,9 +716,6 @@ const app = {
         }
     },
 
-    /* ===============================
-       UI
-    ================================ */
     toggleMobileMenu() {
         this.elements.mobileMenu.classList.toggle('-translate-x-full');
     },
@@ -761,108 +728,45 @@ const app = {
     },
 
     renderHomePage() {
-    this.elements.root.innerHTML = `
-        <!-- HERO -->
-        <section class="hero-gradient text-white py-24 text-center fade-in-section">
-            <h1 class="text-4xl md:text-6xl font-bold">
-                Your City, Your Services, One Setu
-            </h1>
-            <p class="mt-4 text-blue-200">
-                Verified experts in Ahmedabad
-            </p>
-        </section>
+        this.elements.root.innerHTML = `
+            <section class="hero-gradient text-white py-24 text-center fade-in-section">
+                <h1 class="text-4xl md:text-6xl font-bold">
+                    Your City, Your Services, One Setu
+                </h1>
+                <p class="mt-4 text-blue-200">Verified experts in Ahmedabad</p>
+            </section>
 
-        <!-- SERVICES LIST -->
-        <section id="services" class="py-16 bg-white fade-in-section">
-            <div class="container mx-auto px-6 text-center">
-                <h2 class="text-3xl font-bold mb-10" style="color: var(--brand-navy);">
-                    Popular Services
-                </h2>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    ${this.renderServicesGrid()}
+            <section id="services" class="py-16 bg-white fade-in-section">
+                <div class="container mx-auto px-6 text-center">
+                    <h2 class="text-3xl font-bold mb-10">Popular Services</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        ${this.renderServicesGrid()}
+                    </div>
                 </div>
-            </div>
-        </section>
-
-        <!-- HOW IT WORKS -->
-        <section id="how-it-works" class="py-16 bg-gray-100 fade-in-section">
-            <div class="container mx-auto px-6 text-center">
-                <h2 class="text-3xl font-bold mb-10" style="color: var(--brand-navy);">
-                    How CitySetu Works
-                </h2>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="p-6 bg-white rounded shadow">📱 Choose Service</div>
-                    <div class="p-6 bg-white rounded shadow">🔍 Get Matched</div>
-                    <div class="p-6 bg-white rounded shadow">✅ Get Work Done</div>
-                </div>
-            </div>
-        </section>
-    `;
-
-    // IMPORTANT: trigger animations after render
-    this.setupScrollAnimations();
-}
+            </section>
+        `;
+        this.setupScrollAnimations();
+    },
 
     renderServicePage(service) {
         const workers = this.workerData[service] || [];
-
-        const html = workers.length
-            ? workers.map(w => `
-                <div class="card bg-white p-6 rounded shadow">
-                    <h3 class="font-bold">👨‍🔧 ${w.name}</h3>
-                    <p>${w.location}</p>
-                </div>
-            `).join('')
-            : `<p class="text-center text-gray-500">No workers available</p>`;
-
         this.elements.root.innerHTML = `
             <section class="py-12 text-center bg-blue-100">
-                <h2 class="text-3xl font-bold"> ${service} Experts </h2>
-            </section>
-            <section class="py-12 grid grid-cols-1 md:grid-cols-3 gap-6 px-6">
-                ${html}
+                <h2 class="text-3xl font-bold">${service} Experts</h2>
             </section>
         `;
     },
 
-    /* ===============================
-       SIGNUP
-    ================================ */
     handleWorkerSignup(e) {
         e.preventDefault();
         alert('Signup API wired correctly ✅');
     },
-setupScrollAnimations() {
-    const sections = document.querySelectorAll('.fade-in-section');
 
-    const observer = new IntersectionObserver(
-        (entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-                    observer.unobserve(entry.target);
-                }
-            });
-        },
-        { threshold: 0.15 }
-    );
+    setupScrollAnimations() {
+        document.querySelectorAll('.fade-in-section')
+            .forEach(el => el.classList.add('is-visible'));
+    },
 
-    sections.forEach(section => {
-        // If already visible, show instantly
-        const rect = section.getBoundingClientRect();
-        if (rect.top < window.innerHeight) {
-            section.classList.add('is-visible');
-        } else {
-            observer.observe(section);
-        }
-    });
-}
-
-    /* ===============================
-       CHAT (UNCHANGED CORE)
-    ================================ */
     chat: {
         init() {
             document.getElementById('chat-bubble')
@@ -876,10 +780,10 @@ setupScrollAnimations() {
 
 document.addEventListener('DOMContentLoaded', () => app.init());
 </script>
-
     </body>
 
 </html>
+
 
 
 
