@@ -1,223 +1,653 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CitySetu - Admin Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CitySetu - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-navy: #1B2A49;
+            --brand-orange: #FF7B00;
+        }
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f7f6;
+        }
 
-  <style>
-    body { font-family: 'Poppins', sans-serif; background:#f4f7f6 }
-    .tab-btn { padding:1rem 1.5rem; font-weight:600; color:#6b7280; border-bottom:3px solid transparent }
-    .tab-btn.active { color:#1B2A49; border-bottom-color:#FF7B00 }
-    .table-wrapper,.section-wrapper { display:none }
-    .btn-approve { background:#16a34a; color:#fff; padding:.3rem .6rem; border-radius:6px }
-  </style>
+        .tab-btn {
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            color: #6b7280;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--brand-navy);
+            border-bottom-color: var(--brand-orange);
+        }
+
+        .table-wrapper,
+        .section-wrapper {
+            display: none;
+        }
+
+        .table-wrapper.active,
+        .section-wrapper.active {
+            display: block;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background-color: #fffbeb;
+            color: #d97706;
+        }
+
+        /* This matches the 'Pending Review' status from the signups table */
+        .status-Pending,
+        .status-Pending-Review {
+            background-color: #fffbeb;
+            color: #d97706;
+        }
+
+        .status-confirmed,
+        .status-Completed {
+            background-color: #f0fdf4;
+            color: #16a34a;
+        }
+
+        .status-rejected,
+        .status-Cancelled {
+            background-color: #fef2f2;
+            color: #dc2626;
+        }
+
+        /* Action Buttons */
+        .btn-action {
+            padding: 0.3rem 0.6rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-approve {
+            background-color: #16a34a;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background-color: #15803d;
+        }
+
+        .btn-reject {
+            background-color: #dc2626;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background-color: #b91c1c;
+        }
+
+        /* Table Style */
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background-color: #ffffff;
+        }
+
+        tbody td,
+        thead th {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        /* Ensure left align */
+        .form-input {
+            margin-top: 0.25rem;
+            display: block;
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            box-shadow: sm;
+            padding: 0.5rem;
+        }
+
+        .form-input:focus {
+            border-color: var(--brand-navy);
+            box-shadow: 0 0 0 2px rgba(27, 42, 73, 0.3);
+            outline: none;
+        }
+    </style>
 </head>
 
-<body>
+<body class="bg-gray-100">
 
-<header class="bg-white shadow-md">
-  <div class="container mx-auto px-6 py-4 flex justify-between">
-    <h1 class="text-3xl font-bold text-[#1B2A49]">CitySetu Admin</h1>
-    <button id="refresh-btn" class="bg-blue-600 text-white px-4 py-2 rounded">🔄 Refresh</button>
-  </div>
-</header>
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-3xl font-bold" style="color: var(--brand-navy);">
+                CitySetu <span class="font-light">Admin Dashboard</span>
+            </h1>
+            <button onclick="admin.fetchData()" id="refresh-btn"
+                class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-all">
+                🔄 Refresh Data
+            </button>
+        </div>
+    </header>
 
-<main class="container mx-auto px-6 py-8">
+    <main class="container mx-auto px-6 py-8">
+        <div class="bg-white rounded-lg shadow-sm">
+            <nav class="flex border-b border-gray-200">
+                <button id="tab-chats" class="tab-btn active" onclick="admin.showTab('chats')">
+                    Chat Bookings (<span id="chat-count">0</span>)
+                </button>
+                <button id="tab-calls" class="tab-btn" onclick="admin.showTab('calls')">
+                    Call Logs (<span id="call-count">0</span>)
+                </button>
+                <button id="tab-workers" class="tab-btn" onclick="admin.showTab('workers')">
+                    Manage Workers (<span id="worker-count">0</span>)
+                </button>
+                <button id="tab-signups" class="tab-btn" onclick="admin.showTab('signups')">
+                    Worker Signups (<span id="signup-count">0</span>)
+                </button>
+                <button class="tab-btn" onclick="admin.showTab('pending')">
+  Pending Approvals
+</button>
 
-<!-- TABS -->
-<div class="bg-white rounded shadow">
-  <nav class="flex border-b">
-    <button id="tab-workers" class="tab-btn active" onclick="admin.showTab('workers')">Manage Workers</button>
-    <button class="tab-btn" onclick="admin.showTab('pending')">Pending Approvals</button>
-  </nav>
-</div>
+            </nav>
+        </div>
 
-<!-- MANAGE WORKERS -->
-<div id="section-workers" class="section-wrapper mt-6 bg-white rounded shadow p-6">
+        <div id="table-chats" class="table-wrapper active mt-6 bg-white rounded-lg shadow-md overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Timestamp</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Booking ID</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Phone</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Service</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Assigned Worker</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="chats-table-body" class="divide-y divide-gray-200">
+                    <tr>
+                        <td colspan="8" class="p-6 text-center text-gray-500" id="chats-loading">Loading data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-  <h2 class="text-xl font-semibold mb-4">Add Worker</h2>
+        <div id="table-calls" class="table-wrapper mt-6 bg-white rounded-lg shadow-md overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Timestamp
+                        </th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Worker
+                            Name</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Customer Phone
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="calls-table-body" class="divide-y divide-gray-200">
+                    <tr>
+                        <td colspan="3" class="p-6 text-center text-gray-500" id="calls-loading">Loading data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-  <form id="add-worker-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <input id="worker-name" class="border p-2" placeholder="Name" required />
-    <input id="worker-phone" class="border p-2" placeholder="Phone" required />
-
-    <select id="worker-service" class="border p-2" required>
-      <option value="">Select Service</option>
-    </select>
-
-    <div class="md:col-span-3 text-right">
-      <button class="bg-green-600 text-white px-4 py-2 rounded">Add Worker</button>
-    </div>
-  </form>
-
-  <h2 class="text-xl font-semibold mt-8 mb-4">Approved Workers</h2>
-
-  <table class="w-full border">
-    <thead class="bg-gray-100">
+        <div id="table-signups" class="table-wrapper mt-6 bg-white rounded-lg shadow-md overflow-hidden">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Timestamp</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Phone</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Service</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">City</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Address</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="p-6 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="signups-table-body" class="divide-y divide-gray-200">
+                    <tr>
+                        <td colspan="8" class="p-6 text-center text-gray-500" id="signups-loading">Loading data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="table-pending" class="table-wrapper mt-6 bg-white rounded-lg shadow">
+  <table class="w-full">
+    <thead>
       <tr>
-        <th class="p-2">Name</th>
-        <th class="p-2">Phone</th>
-        <th class="p-2">Service</th>
-      </tr>
-    </thead>
-    <tbody id="workers-table-body">
-      <tr><td colspan="3" class="text-center p-4">Loading...</td></tr>
-    </tbody>
-  </table>
-
-</div>
-
-<!-- PENDING APPROVALS -->
-<div id="table-pending" class="table-wrapper mt-6 bg-white rounded shadow p-6">
-  <h2 class="text-xl font-semibold mb-4">Pending Approvals</h2>
-
-  <table class="w-full border">
-    <thead class="bg-gray-100">
-      <tr>
-        <th class="p-2">Name</th>
-        <th class="p-2">Phone</th>
-        <th class="p-2">Service</th>
-        <th class="p-2">Action</th>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Service</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody id="pending-table-body">
-      <tr><td colspan="4" class="text-center p-4">Loading...</td></tr>
+      <tr>
+        <td colspan="4" class="text-center p-4">Loading...</td>
+      </tr>
     </tbody>
   </table>
 </div>
 
-</main>
 
-<script>
-const API = 'https://citysetu-api.onrender.com';
+        <div id="section-workers" class="section-wrapper mt-6 space-y-6">
+
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <h2 class="text-xl font-semibold mb-4" style="color: var(--brand-navy);">Add New Worker</h2>
+                
+                <form id="add-worker-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="worker-name" class="block text-sm font-medium text-gray-700">Name*</label>
+                        <input type="text" id="worker-name" required class="form-input">
+                    </div>
+                    <div>
+                        <label for="worker-service" class="block text-sm font-medium text-gray-700">Service*</label>
+                        <select id="worker-service" class="form-input" required>
+                            <option value="" disabled selected>Select a Service</option>
+                            <option value="0d3c2c2e-9f9a-4b4a-8d41-111111111111">❄️ AC Repair</option>
+<option value="1e4a3f55-aaaa-4bbb-8ccc-222222222222">💻 Laptop Repair</option>
+<option value="2b5e6d77-bbbb-4ccc-8ddd-333333333333">💡 Electrician</option>
+<option value="3c6f7e88-cccc-4ddd-8eee-444444444444">💧 Plumber</option>
+
+                        </select>
+                    </div>
+                    <div>
+                        <label for="worker-phone" class="block text-sm font-medium text-gray-700">Phone (Required)*</label>
+                        <input type="tel" id="worker-phone" required placeholder="e.g., 9876543210" class="form-input">
+                    </div>
+                    <div>
+                        <label for="worker-city" class="block text-sm font-medium text-gray-700">City</label>
+                        <input type="text" id="worker-city" placeholder="e.g., Ahmedabad" class="form-input">
+                    </div>
+                    <div>
+                        <label for="worker-pincode" class="block text-sm font-medium text-gray-700">Pincode</label>
+                        <input type="text" id="worker-pincode" placeholder="e.g., 380061"
+                            class="form-input">
+                    </div>
+                    <div>
+                        <label for="worker-status" class="block text-sm font-medium text-gray-700">Status</label>
+                        <select id="worker-status" class="form-input">
+                            <option value="available" selected>Available</option>
+                            <option value="busy">Busy</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-3 text-right">
+                        <button type="submit" id="add-worker-btn"
+                            class="bg-green-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                            + Add Worker
+                        </button>
+                    </div>
+                </form>
+                <div id="worker-form-message" class="mt-4 text-sm font-medium hidden"></div>
+            </div>
+
+
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <h2 class="text-xl font-semibold p-6 border-b" style="color: var(--brand-navy);">Existing Workers</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-max">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    ID</th>
+                                <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Name</th>
+                                <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Phone</th>
+                                <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Service</th>
+                                <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    City</th> 
+                                <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    Status</th>
+                                <th class="p-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider action-header">
+                                    Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="workers-table-body" class="divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="7" class="p-6 text-center text-gray-500" id="workers-loading">Loading
+                                    workers...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="edit-worker-modal" class="fixed inset-0 z-50 items-center justify-center hidden" style="background-color: rgba(0,0,0,0.6);">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg m-8">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h3 class="text-xl font-semibold" style="color: var(--brand-navy);">Edit Worker Details</h3>
+                <button onclick="admin.hideEditModal()" class="text-gray-500 text-3xl">&times;</button>
+            </div>
+            <form id="edit-worker-form" class="p-6">
+                <input type="hidden" id="edit-worker-id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="edit-worker-name" class="block text-sm font-medium text-gray-700">Name*</label>
+                        <input type="text" id="edit-worker-name" required class="form-input">
+                    </div>
+                    <div>
+                        <label for="edit-worker-phone" class="block text-sm font-medium text-gray-700">Phone*</label>
+                        <input type="tel" id="edit-worker-phone" required class="form-input">
+                    </div>
+                    <div>
+                        <label for="edit-worker-service" class="block text-sm font-medium text-gray-700">Service*</label>
+                        <select id="edit-worker-service" class="form-input" required>
+                            <option value="AC Repair">❄️ AC Repair</option>
+                            <option value="Laptop Repair">💻 Laptop Repair</option>
+                            <option value="Electrician">💡 Electrician</option>
+                            <option value="Home Repair">🔨 Home Repair</option>
+                            <option value="Cleaning">🧹 Home Cleaning</option>
+                            <option value="Plumber">💧 Plumber</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="edit-worker-city" class="block text-sm font-medium text-gray-700">City</label>
+                        <input type="text" id="edit-worker-city" class="form-input">
+                    </div>
+                    <div>
+                        <label for="edit-worker-pincode" class="block text-sm font-medium text-gray-700">Pincode</label>
+                        <input type="text" id="edit-worker-pincode" class="form-input">
+                    </div>
+                    <div>
+                        <label for="edit-worker-status" class="block text-sm font-medium text-gray-700">Status</label>
+                        <select id="edit-worker-status" class="form-input">
+                            <option value="available">Available</option>
+                            <option value="busy">Busy</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="edit-worker-message" class="mt-4 text-sm font-medium text-center hidden"></div>
+    
+                <div class="flex justify-end pt-6 border-t mt-6">
+                    <button type="button" onclick="admin.hideEditModal()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-semibold mr-2 hover:bg-gray-300">Cancel</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+   <script>
+/* =====================================================
+   CONFIG
+===================================================== */
+const RENDER_API_URL = 'https://citysetu-api.onrender.com';
 const ADMIN_TOKEN = sessionStorage.getItem('citysetu_admin_token');
 
 if (!ADMIN_TOKEN) {
-  alert('Login again');
-  location.href = 'admin-login.html';
+  alert('Admin token not found. Please login again.');
+  window.location.href = 'admin-login.html';
 }
 
-/* LOAD SERVICES */
+/* =====================================================
+   LOAD SERVICES (FRONTEND ONLY)
+===================================================== */
 async function loadServices() {
-  const res = await fetch(`${API}/api/services`);
-  const data = await res.json();
   const select = document.getElementById('worker-service');
+  select.innerHTML = `<option value="">Select Service</option>`;
 
-  data.services.forEach(s => {
-    const opt = document.createElement('option');
-    opt.value = s.id;
-    opt.textContent = s.name;
-    select.appendChild(opt);
-  });
+  try {
+    const res = await fetch(`${RENDER_API_URL}/api/services`);
+    const data = await res.json();
+
+    data.services.forEach(service => {
+      const option = document.createElement('option');
+      option.value = service.id;        // INTEGER
+      option.textContent = service.name;
+      select.appendChild(option);
+    });
+  } catch (err) {
+    console.error('Failed to load services', err);
+  }
 }
 
-/* ADMIN */
+/* =====================================================
+   ADMIN OBJECT (THIS WAS MISSING ❌)
+===================================================== */
 const admin = {
+  elements: {
+    chatTab: document.getElementById('tab-chats'),
+    callTab: document.getElementById('tab-calls'),
+    workerTab: document.getElementById('tab-workers'),
+    signupTab: document.getElementById('tab-signups'),
 
+    chatTable: document.getElementById('table-chats'),
+    callTable: document.getElementById('table-calls'),
+    workerSection: document.getElementById('section-workers'),
+    signupTable: document.getElementById('table-signups'),
+
+    workerTableBody: document.getElementById('workers-table-body'),
+    workerCount: document.getElementById('worker-count'),
+
+    addWorkerForm: document.getElementById('add-worker-form'),
+    refreshBtn: document.getElementById('refresh-btn')
+  },
+
+  /* INIT */
+  init() {
+    this.elements.addWorkerForm.addEventListener(
+      'submit',
+      this.handleAddWorker.bind(this)
+    );
+
+    this.showTab('workers');
+    this.fetchData();
+  },
+
+  /* TAB SWITCH */
   showTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.table-wrapper,.section-wrapper').forEach(s=>s.style.display='none');
+    [
+      this.elements.chatTab,
+      this.elements.callTab,
+      this.elements.workerTab,
+      this.elements.signupTab
+    ].forEach(t => t.classList.remove('active'));
+
+    [
+      this.elements.chatTable,
+      this.elements.callTable,
+      this.elements.workerSection,
+      this.elements.signupTable
+    ].forEach(s => s.style.display = 'none');
 
     if (tab === 'workers') {
-      document.getElementById('tab-workers').classList.add('active');
-      document.getElementById('section-workers').style.display='block';
-      this.fetchWorkers();
-    }
-
-    if (tab === 'pending') {
-      document.querySelector("button[onclick=\"admin.showTab('pending')\"]").classList.add('active');
-      document.getElementById('table-pending').style.display='block';
-      this.fetchPending();
+      this.elements.workerTab.classList.add('active');
+      this.elements.workerSection.style.display = 'block';
     }
   },
 
-  async fetchWorkers() {
-    const res = await fetch(`${API}/api/professionals/all`);
-    const data = await res.json();
-    const tbody = document.getElementById('workers-table-body');
-    tbody.innerHTML = '';
+  /* FETCH WORKERS */
+  async fetchData() {
+    this.elements.refreshBtn.disabled = true;
+    this.elements.refreshBtn.textContent = 'Refreshing...';
 
-    if (!data.workers.length) {
-      tbody.innerHTML = `<tr><td colspan="3" class="p-4 text-center">No workers</td></tr>`;
-      return;
+    try {
+      const res = await fetch(`${RENDER_API_URL}/api/professionals/all`);
+      const data = await res.json();
+      this.renderWorkerTable(data.professionals || []);
+    } catch (err) {
+      alert('Error loading professionals');
+    } finally {
+      this.elements.refreshBtn.disabled = false;
+      this.elements.refreshBtn.textContent = '🔄 Refresh Data';
     }
-
-    data.workers.forEach(w => {
-      tbody.innerHTML += `
-        <tr>
-          <td class="p-2">${w.name}</td>
-          <td class="p-2">${w.phone}</td>
-          <td class="p-2">${w.service}</td>
-        </tr>`;
-    });
   },
-
-  async fetchPending() {
-    const res = await fetch(`${API}/api/admin/pending`, {
-      headers:{ Authorization:`Bearer ${ADMIN_TOKEN}` }
+    async fetchPending() {
+  try {
+    const res = await fetch(`${RENDER_API_URL}/api/admin/pending`, {
+      headers: {
+        Authorization: `Bearer ${ADMIN_TOKEN}`
+      }
     });
+
     const data = await res.json();
     const tbody = document.getElementById('pending-table-body');
     tbody.innerHTML = '';
 
     if (!data.pending.length) {
-      tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center">No pending approvals</td></tr>`;
+      tbody.innerHTML = `
+        <tr><td colspan="4" class="text-center p-4">No pending approvals</td></tr>
+      `;
       return;
     }
 
     data.pending.forEach(p => {
       tbody.innerHTML += `
         <tr>
-          <td class="p-2">${p.name}</td>
-          <td class="p-2">${p.phone}</td>
-          <td class="p-2">${p.service}</td>
-          <td class="p-2">
-            <button class="btn-approve" onclick="admin.approve('${p.id}')">Approve</button>
+          <td>${p.name}</td>
+          <td>${p.phone}</td>
+          <td>${p.service}</td>
+          <td>
+            <button class="btn-approve"
+              onclick="admin.approveWorker('${p.id}')">
+              Approve
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    console.error(err);
+  }
+},
+    async approveWorker(id) {
+  if (!confirm('Approve this worker?')) return;
+
+  try {
+    const res = await fetch(`${RENDER_API_URL}/api/admin/approve/${id}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${ADMIN_TOKEN}`
+      }
+    });
+
+    if (!res.ok) throw new Error('Approval failed');
+
+    alert('Worker approved ✅');
+    this.fetchPending();
+    this.fetchData(); // refresh approved list
+  } catch (err) {
+    alert(err.message);
+  }
+    },
+
+  /* RENDER WORKERS */
+  renderWorkerTable(workers) {
+    this.elements.workerTableBody.innerHTML = '';
+    this.elements.workerCount.textContent = workers.length;
+
+    if (!workers.length) {
+      this.elements.workerTableBody.innerHTML = `
+        <tr>
+          <td colspan="7" class="p-6 text-center text-gray-500">
+            No workers added yet.
           </td>
         </tr>`;
+      return;
+    }
+
+    workers.forEach(worker => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="text-xs font-mono">${worker.id}</td>
+        <td>${worker.name}</td>
+        <td>${worker.phone}</td>
+        <td>${worker.services?.[0]?.name || 'N/A'}</td>
+        <td>${worker.city || 'N/A'}</td>
+        <td>${worker.status || 'pending'}</td>
+        <td>
+          <button class="btn-action btn-reject"
+            onclick="admin.handleDeleteWorker('${worker.id}', '${worker.name}')">
+            Delete
+          </button>
+        </td>
+      `;
+      this.elements.workerTableBody.appendChild(row);
     });
   },
 
-  async approve(id) {
-    await fetch(`${API}/api/admin/approve/${id}`, {
-      method:'PUT',
-      headers:{ Authorization:`Bearer ${ADMIN_TOKEN}` }
-    });
-    alert('Approved');
-    this.fetchPending();
-    this.fetchWorkers();
+  /* ADD WORKER */
+  async handleAddWorker(event) {
+    event.preventDefault();
+
+    const name = document.getElementById('worker-name').value.trim();
+    const phone = document.getElementById('worker-phone').value.trim();
+    const serviceId = document.getElementById('worker-service').value;
+
+    if (!name || !phone || !serviceId) {
+      alert('Name, Phone and Service are required');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${RENDER_API_URL}/api/professionals/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          phone,
+          serviceIds: [Number(serviceId)]
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Signup failed');
+
+      alert('Worker added successfully (Pending approval)');
+      this.elements.addWorkerForm.reset();
+      this.fetchData();
+    } catch (err) {
+      alert(err.message);
+    }
   },
 
-  async addWorker(e) {
-    e.preventDefault();
-    const name = worker-name.value;
-    const phone = worker-phone.value;
-    const serviceId = worker-service.value;
-
-    await fetch(`${API}/api/professionals/signup`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ name, phone, serviceIds:[Number(serviceId)] })
-    });
-
-    alert('Submitted for approval');
-    e.target.reset();
-  },
-
-  init() {
-    document.getElementById('add-worker-form').addEventListener('submit', this.addWorker);
-    loadServices();
-    this.showTab('workers');
+  handleDeleteWorker(id, name) {
+    alert(`Delete worker "${name}" later.\nID: ${id}`);
   }
 };
 
+/* =====================================================
+   GLOBAL ACCESS + INIT
+===================================================== */
 window.admin = admin;
-document.addEventListener('DOMContentLoaded', ()=>admin.init());
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadServices();
+  admin.init();
+});
 </script>
 
 </body>
+
 </html>
