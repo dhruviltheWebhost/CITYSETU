@@ -494,11 +494,11 @@
 
                 try {
                     // Fetch all data from the new admin endpoint
-                    const response = await fetch(`${RENDER_API_URL}/api/admin/data`, {
-                        headers: {
-                            'Authorization': `Bearer ${ADMIN_TOKEN}`
-                        }
-                    });
+                   const response = await fetch(`${RENDER_API_URL}/api/professionals/all`);
+const data = await response.json();
+
+this.renderWorkerTable(data.professionals || []);
+
                     
                     if (!response.ok) throw new Error(`Network error: ${response.status} ${response.statusText}`);
                     
@@ -677,14 +677,18 @@
                 }
 
                 try {
-                    const response = await fetch(`${RENDER_API_URL}/api/workers`, {
-                        method: 'POST',
-                        headers: { 
-                            "Content-Type": "application/json",
-                            'Authorization': `Bearer ${ADMIN_TOKEN}`
-                        },
-                        body: JSON.stringify(workerData)
-                    });
+                    const response = await fetch(`${RENDER_API_URL}/api/professionals/signup`, {
+  method: 'POST',
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    name: workerData.name,
+    phone: workerData.phone,
+    serviceIds: [workerData.service] // TEMP: string OK for now
+  })
+});
+
                     
                     const result = await response.json();
 
@@ -780,8 +784,8 @@
                 };
                 
                 try {
-                    // 3. Post to /api/workers
-                    const addWorkerResponse = await fetch(`${RENDER_API_URL}/api/workers`, {
+                    // 3. Post to /api/professionals/signup
+                    const addWorkerResponse = await fetch(`${RENDER_API_URL}/api/professionals/signup`, {
                         method: 'POST',
                         headers: { 
                             "Content-Type": "application/json",
@@ -857,7 +861,7 @@
             
             // Helper to get raw signup data for approval
             async fetchDataForApproval() {
-                const response = await fetch(`${RENDER_API_URL}/api/admin/data`, {
+                const response = await fetch(`${RENDER_API_URL}/api/professionals/all`, {
                     headers: { 'Authorization': `Bearer ${ADMIN_TOKEN}` }
                 });
                 const data = await response.json();
@@ -904,7 +908,7 @@
                 };
 
                 try {
-                    const response = await fetch(`${RENDER_API_URL}/api/workers/${workerId}`, {
+                    const response = await fetch(`${RENDER_API_URL}/api/professionals/signup/${workerId}`, {
                         method: 'PUT',
                         headers: { 
                             "Content-Type": "application/json",
@@ -939,7 +943,7 @@
                 }
 
                 try {
-                    const response = await fetch(`${RENDER_API_URL}/api/workers/${workerId}`, {
+                    const response = await fetch(`${RENDER_API_URL}/api/professionals/signup/${workerId}`, {
                         method: 'DELETE',
                         headers: { 
                             'Authorization': `Bearer ${ADMIN_TOKEN}`
