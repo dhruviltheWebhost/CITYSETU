@@ -377,7 +377,7 @@
         </div>
     </div>
 
-    <script>
+   <script>
 /* =====================================================
    CONFIG
 ===================================================== */
@@ -385,180 +385,186 @@ const RENDER_API_URL = 'https://citysetu-api.onrender.com';
 const ADMIN_TOKEN = sessionStorage.getItem('citysetu_admin_token');
 
 if (!ADMIN_TOKEN) {
-    alert('Admin token not found. Please login again.');
-    window.location.href = 'admin-login.html';
+  alert('Admin token not found. Please login again.');
+  window.location.href = 'admin-login.html';
 }
 
 /* =====================================================
    ADMIN OBJECT
 ===================================================== */
 const admin = {
-    elements: {
-        chatTab: document.getElementById('tab-chats'),
-        callTab: document.getElementById('tab-calls'),
-        workerTab: document.getElementById('tab-workers'),
-        signupTab: document.getElementById('tab-signups'),
+  elements: {
+    chatTab: document.getElementById('tab-chats'),
+    callTab: document.getElementById('tab-calls'),
+    workerTab: document.getElementById('tab-workers'),
+    signupTab: document.getElementById('tab-signups'),
 
-        chatTable: document.getElementById('table-chats'),
-        callTable: document.getElementById('table-calls'),
-        workerSection: document.getElementById('section-workers'),
-        signupTable: document.getElementById('table-signups'),
+    chatTable: document.getElementById('table-chats'),
+    callTable: document.getElementById('table-calls'),
+    workerSection: document.getElementById('section-workers'),
+    signupTable: document.getElementById('table-signups'),
 
-        workerTableBody: document.getElementById('workers-table-body'),
-        workerCount: document.getElementById('worker-count'),
+    workerTableBody: document.getElementById('workers-table-body'),
+    workerCount: document.getElementById('worker-count'),
 
-        addWorkerForm: document.getElementById('add-worker-form'),
-        addWorkerBtn: document.getElementById('add-worker-btn'),
-        workerFormMessage: document.getElementById('worker-form-message'),
+    addWorkerForm: document.getElementById('add-worker-form'),
+    addWorkerBtn: document.getElementById('add-worker-btn'),
+    workerFormMessage: document.getElementById('worker-form-message'),
 
-        refreshBtn: document.getElementById('refresh-btn')
-    },
+    refreshBtn: document.getElementById('refresh-btn')
+  },
 
-    init() {
-        this.elements.addWorkerForm.addEventListener(
-            'submit',
-            this.handleAddWorker.bind(this)
-        );
+  /* =====================================================
+     INIT
+  ===================================================== */
+  init() {
+    this.elements.addWorkerForm.addEventListener(
+      'submit',
+      this.handleAddWorker.bind(this)
+    );
 
-        this.showTab('workers');
-        this.fetchData();
-    },
-
-    /* =====================================================
-       TAB SWITCHING
-    ===================================================== */
-    showTab(tab) {
-        [
-            this.elements.chatTab,
-            this.elements.callTab,
-            this.elements.workerTab,
-            this.elements.signupTab
-        ].forEach(t => t.classList.remove('active'));
-
-        [
-            this.elements.chatTable,
-            this.elements.callTable,
-            this.elements.workerSection,
-            this.elements.signupTable
-        ].forEach(s => s.style.display = 'none');
-
-        if (tab === 'workers') {
-            this.elements.workerTab.classList.add('active');
-            this.elements.workerSection.style.display = 'block';
-        }
-    },
-
-    /* =====================================================
-       FETCH PROFESSIONALS (FIXED)
-    ===================================================== */
-    async fetchData() {
-        this.elements.refreshBtn.disabled = true;
-        this.elements.refreshBtn.textContent = 'Refreshing...';
-
-        try {
-            const response = await fetch(`${RENDER_API_URL}/api/professionals/all`);
-            if (!response.ok) throw new Error('Failed to fetch professionals');
-
-            const result = await response.json();
-            this.renderWorkerTable(result.professionals || []);
-        } catch (err) {
-            console.error(err);
-            alert('Error loading professionals');
-        } finally {
-            this.elements.refreshBtn.disabled = false;
-            this.elements.refreshBtn.textContent = '🔄 Refresh Data';
-        }
-    },
-
-    /* =====================================================
-       RENDER WORKERS
-    ===================================================== */
-    renderWorkerTable(workers) {
-        this.elements.workerTableBody.innerHTML = '';
-        this.elements.workerCount.textContent = workers.length;
-
-        if (!workers.length) {
-            this.elements.workerTableBody.innerHTML =
-                `<tr><td colspan="7" class="p-6 text-center text-gray-500">
-                    No workers added yet.
-                 </td></tr>`;
-            return;
-        }
-
-        workers.forEach(worker => {
-            const row = document.createElement('tr');
-            const workerJson = JSON.stringify(worker).replace(/'/g, "\\'");
-
-            row.innerHTML = `
-                <td class="text-xs font-mono">${worker.id}</td>
-                <td>${worker.name}</td>
-                <td>${worker.phone}</td>
-                <td>${worker.service}</td>
-                <td>${worker.city || 'N/A'}</td>
-                <td>${worker.status || 'active'}</td>
-                <td>
-                    <button class="btn-action btn-reject"
-                        onclick="admin.handleDeleteWorker('${worker.id}', '${worker.name}')">
-                        Delete
-                    </button>
-                </td>
-            `;
-            this.elements.workerTableBody.appendChild(row);
-        });
-    },
-
-    /* =====================================================
-       ADD WORKER (USES SIGNUP API)
-    ===================================================== */
-    async handleAddWorker(event) {
-  event.preventDefault();
-
-  const workerData = {
-    name: document.getElementById('worker-name').value.trim(),
-    phone: document.getElementById('worker-phone').value.trim(),
-    serviceId: document.getElementById('worker-service').value
-  };
-
-  if (!workerData.name || !workerData.phone || !workerData.serviceId) {
-    alert('Name, Phone, and Service are required');
-    return;
-  }
-
-  try {
-    const response = await fetch(`${RENDER_API_URL}/api/professionals/signup`, {
-      method: 'POST',
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: workerData.name,
-        phone: workerData.phone,
-        serviceIds: [workerData.serviceId] // ✅ UUID
-      })
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.message || 'Signup failed');
-    }
-
-    alert('Worker added successfully (Pending approval)');
+    this.showTab('workers');
     this.fetchData();
+  },
 
-  } catch (err) {
-    alert(err.message);
-  }
-}
+  /* =====================================================
+     TAB SWITCHING
+  ===================================================== */
+  showTab(tab) {
+    [
+      this.elements.chatTab,
+      this.elements.callTab,
+      this.elements.workerTab,
+      this.elements.signupTab
+    ].forEach(t => t.classList.remove('active'));
 
-    /* =====================================================
-       DELETE WORKER (TEMP UI ONLY)
-    ===================================================== */
-    handleDeleteWorker(id, name) {
-        alert(`Delete worker "${name}" from backend later.\nID: ${id}`);
+    [
+      this.elements.chatTable,
+      this.elements.callTable,
+      this.elements.workerSection,
+      this.elements.signupTable
+    ].forEach(s => s.style.display = 'none');
+
+    if (tab === 'workers') {
+      this.elements.workerTab.classList.add('active');
+      this.elements.workerSection.style.display = 'block';
     }
+  },
+
+  /* =====================================================
+     FETCH PROFESSIONALS (FIXED)
+  ===================================================== */
+  async fetchData() {
+    this.elements.refreshBtn.disabled = true;
+    this.elements.refreshBtn.textContent = 'Refreshing...';
+
+    try {
+      const response = await fetch(`${RENDER_API_URL}/api/professionals/all`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const result = await response.json();
+      this.renderWorkerTable(result.professionals || []);
+    } catch (err) {
+      console.error(err);
+      alert('Error loading professionals');
+    } finally {
+      this.elements.refreshBtn.disabled = false;
+      this.elements.refreshBtn.textContent = '🔄 Refresh Data';
+    }
+  },
+
+  /* =====================================================
+     RENDER WORKERS
+  ===================================================== */
+  renderWorkerTable(workers) {
+    this.elements.workerTableBody.innerHTML = '';
+    this.elements.workerCount.textContent = workers.length;
+
+    if (!workers.length) {
+      this.elements.workerTableBody.innerHTML = `
+        <tr>
+          <td colspan="7" class="p-6 text-center text-gray-500">
+            No workers added yet.
+          </td>
+        </tr>`;
+      return;
+    }
+
+    workers.forEach(worker => {
+      const row = document.createElement('tr');
+
+      row.innerHTML = `
+        <td class="text-xs font-mono">${worker.id}</td>
+        <td>${worker.name}</td>
+        <td>${worker.phone}</td>
+        <td>${worker.services?.[0]?.name || 'N/A'}</td>
+        <td>${worker.city || 'N/A'}</td>
+        <td>${worker.status || 'pending'}</td>
+        <td>
+          <button class="btn-action btn-reject"
+            onclick="admin.handleDeleteWorker('${worker.id}', '${worker.name}')">
+            Delete
+          </button>
+        </td>
+      `;
+
+      this.elements.workerTableBody.appendChild(row);
+    });
+  },
+
+  /* =====================================================
+     ADD WORKER (SIGNUP API – FIXED)
+  ===================================================== */
+  async handleAddWorker(event) {
+    event.preventDefault();
+
+    const name = document.getElementById('worker-name').value.trim();
+    const phone = document.getElementById('worker-phone').value.trim();
+    const serviceId = document.getElementById('worker-service').value;
+
+    if (!name || !phone || !serviceId) {
+      alert('Name, Phone and Service are required');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${RENDER_API_URL}/api/professionals/signup`, {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          phone,
+          serviceIds: [serviceId]   // ✅ UUID array (FIX)
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Signup failed');
+      }
+
+      alert('Worker added successfully (Pending approval)');
+      this.elements.addWorkerForm.reset();
+      this.fetchData();
+
+    } catch (err) {
+      alert(err.message);
+    }
+  },
+
+  /* =====================================================
+     DELETE WORKER (UI ONLY)
+  ===================================================== */
+  handleDeleteWorker(id, name) {
+    alert(`Delete worker "${name}" later from backend.\nID: ${id}`);
+  }
 };
 
 /* =====================================================
-   VERY IMPORTANT FIX
+   VERY IMPORTANT: GLOBAL ACCESS
 ===================================================== */
 window.admin = admin;
 
@@ -567,6 +573,7 @@ window.admin = admin;
 ===================================================== */
 document.addEventListener('DOMContentLoaded', () => admin.init());
 </script>
+
 
 </body>
 
