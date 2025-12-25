@@ -478,6 +478,7 @@ const admin = {
   /* =====================================================
      RENDER WORKERS
   ===================================================== */
+
   renderWorkerTable(workers) {
     this.elements.workerTableBody.innerHTML = '';
     this.elements.workerCount.textContent = workers.length;
@@ -531,14 +532,14 @@ const admin = {
 
     try {
       const response = await fetch(`${RENDER_API_URL}/api/professionals/signup`, {
-        method: 'POST',
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          phone,
-          serviceIds: [serviceId]   // ✅ UUID array (FIX)
-        })
-      });
+  method: 'POST',
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    name,
+    phone,
+    serviceIds: [Number(serviceId)] // 🔥 IMPORTANT
+  })
+});
 
       const result = await response.json();
 
@@ -561,7 +562,18 @@ const admin = {
   handleDeleteWorker(id, name) {
     alert(`Delete worker "${name}" later from backend.\nID: ${id}`);
   }
-};
+},
+    app.get('/api/services', async (req, res) => {
+  const result = await pool.query(
+    "SELECT id, name, category FROM services ORDER BY category, name"
+  );
+  res.json({ services: result.rows });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadServices();
+  admin.init();
+});
 
 /* =====================================================
    VERY IMPORTANT: GLOBAL ACCESS
