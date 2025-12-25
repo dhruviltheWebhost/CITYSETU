@@ -390,7 +390,7 @@ if (!ADMIN_TOKEN) {
 }
 
 /* =====================================================
-   ADMIN OBJECT
+   LOAD SERVICES (FRONTEND ONLY)
 ===================================================== */
 async function loadServices() {
   const select = document.getElementById('worker-service');
@@ -402,7 +402,7 @@ async function loadServices() {
 
     data.services.forEach(service => {
       const option = document.createElement('option');
-      option.value = service.id; // INTEGER
+      option.value = service.id;        // INTEGER
       option.textContent = service.name;
       select.appendChild(option);
     });
@@ -411,9 +411,29 @@ async function loadServices() {
   }
 }
 
-  /* =====================================================
-     INIT
-  ===================================================== */
+/* =====================================================
+   ADMIN OBJECT (THIS WAS MISSING ❌)
+===================================================== */
+const admin = {
+  elements: {
+    chatTab: document.getElementById('tab-chats'),
+    callTab: document.getElementById('tab-calls'),
+    workerTab: document.getElementById('tab-workers'),
+    signupTab: document.getElementById('tab-signups'),
+
+    chatTable: document.getElementById('table-chats'),
+    callTable: document.getElementById('table-calls'),
+    workerSection: document.getElementById('section-workers'),
+    signupTable: document.getElementById('table-signups'),
+
+    workerTableBody: document.getElementById('workers-table-body'),
+    workerCount: document.getElementById('worker-count'),
+
+    addWorkerForm: document.getElementById('add-worker-form'),
+    refreshBtn: document.getElementById('refresh-btn')
+  },
+
+  /* INIT */
   init() {
     this.elements.addWorkerForm.addEventListener(
       'submit',
@@ -424,9 +444,7 @@ async function loadServices() {
     this.fetchData();
   },
 
-  /* =====================================================
-     TAB SWITCHING
-  ===================================================== */
+  /* TAB SWITCH */
   showTab(tab) {
     [
       this.elements.chatTab,
@@ -448,23 +466,16 @@ async function loadServices() {
     }
   },
 
-  /* =====================================================
-     FETCH PROFESSIONALS (FIXED)
-  ===================================================== */
+  /* FETCH WORKERS */
   async fetchData() {
     this.elements.refreshBtn.disabled = true;
     this.elements.refreshBtn.textContent = 'Refreshing...';
 
     try {
-      const response = await fetch(`${RENDER_API_URL}/api/professionals/all`);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const result = await response.json();
-      this.renderWorkerTable(result.professionals || []);
+      const res = await fetch(`${RENDER_API_URL}/api/professionals/all`);
+      const data = await res.json();
+      this.renderWorkerTable(data.professionals || []);
     } catch (err) {
-      console.error(err);
       alert('Error loading professionals');
     } finally {
       this.elements.refreshBtn.disabled = false;
@@ -472,10 +483,7 @@ async function loadServices() {
     }
   },
 
-  /* =====================================================
-     RENDER WORKERS
-  ===================================================== */
-
+  /* RENDER WORKERS */
   renderWorkerTable(workers) {
     this.elements.workerTableBody.innerHTML = '';
     this.elements.workerCount.textContent = workers.length;
@@ -492,7 +500,6 @@ async function loadServices() {
 
     workers.forEach(worker => {
       const row = document.createElement('tr');
-
       row.innerHTML = `
         <td class="text-xs font-mono">${worker.id}</td>
         <td>${worker.name}</td>
@@ -507,14 +514,11 @@ async function loadServices() {
           </button>
         </td>
       `;
-
       this.elements.workerTableBody.appendChild(row);
     });
   },
 
-  /* =====================================================
-     ADD WORKER (SIGNUP API – FIXED)
-  ===================================================== */
+  /* ADD WORKER */
   async handleAddWorker(event) {
     event.preventDefault();
 
@@ -528,41 +532,34 @@ async function loadServices() {
     }
 
     try {
-      const response = await fetch(`${RENDER_API_URL}/api/professionals/signup`, {
-  method: 'POST',
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    name,
-    phone,
-    serviceIds: [Number(serviceId)] // 🔥 IMPORTANT
-  })
-});
+      const res = await fetch(`${RENDER_API_URL}/api/professionals/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          phone,
+          serviceIds: [Number(serviceId)]
+        })
+      });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.message || 'Signup failed');
-      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Signup failed');
 
       alert('Worker added successfully (Pending approval)');
       this.elements.addWorkerForm.reset();
       this.fetchData();
-
     } catch (err) {
       alert(err.message);
     }
   },
 
-  /* =====================================================
-     DELETE WORKER (UI ONLY)
-  ===================================================== */
   handleDeleteWorker(id, name) {
-    alert(`Delete worker "${name}" later from backend.\nID: ${id}`);
+    alert(`Delete worker "${name}" later.\nID: ${id}`);
   }
 };
 
 /* =====================================================
-   VERY IMPORTANT: GLOBAL ACCESS
+   GLOBAL ACCESS + INIT
 ===================================================== */
 window.admin = admin;
 
@@ -570,11 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadServices();
   admin.init();
 });
-============================
-   INIT
-===================================================== */
 </script>
-
 
 </body>
 
