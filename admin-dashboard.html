@@ -165,6 +165,10 @@
                 <button id="tab-signups" class="tab-btn" onclick="admin.showTab('signups')">
                     Worker Signups (<span id="signup-count">0</span>)
                 </button>
+                <button class="tab-btn" onclick="admin.showTab('pending')">
+  Pending Approvals
+</button>
+
             </nav>
         </div>
 
@@ -231,6 +235,23 @@
                 </tbody>
             </table>
         </div>
+        <div id="table-pending" class="table-wrapper mt-6 bg-white rounded-lg shadow">
+  <table class="w-full">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Service</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="pending-table-body">
+      <tr>
+        <td colspan="4" class="text-center p-4">Loading...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 
         <div id="section-workers" class="section-wrapper mt-6 space-y-6">
@@ -482,6 +503,64 @@ const admin = {
       this.elements.refreshBtn.textContent = '🔄 Refresh Data';
     }
   },
+    async fetchPending() {
+  try {
+    const res = await fetch(`${RENDER_API_URL}/api/admin/pending`, {
+      headers: {
+        Authorization: `Bearer ${ADMIN_TOKEN}`
+      }
+    });
+
+    const data = await res.json();
+    const tbody = document.getElementById('pending-table-body');
+    tbody.innerHTML = '';
+
+    if (!data.pending.length) {
+      tbody.innerHTML = `
+        <tr><td colspan="4" class="text-center p-4">No pending approvals</td></tr>
+      `;
+      return;
+    }
+
+    data.pending.forEach(p => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${p.name}</td>
+          <td>${p.phone}</td>
+          <td>${p.service}</td>
+          <td>
+            <button class="btn-approve"
+              onclick="admin.approveWorker('${p.id}')">
+              Approve
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    console.error(err);
+  }
+},
+    async approveWorker(id) {
+  if (!confirm('Approve this worker?')) return;
+
+  try {
+    const res = await fetch(`${RENDER_API_URL}/api/admin/approve/${id}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${ADMIN_TOKEN}`
+      }
+    });
+
+    if (!res.ok) throw new Error('Approval failed');
+
+    alert('Worker approved ✅');
+    this.fetchPending();
+    this.fetchData(); // refresh approved list
+  } catch (err) {
+    alert(err.message);
+  }
+    },
 
   /* RENDER WORKERS */
   renderWorkerTable(workers) {
