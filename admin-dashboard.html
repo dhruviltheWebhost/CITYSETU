@@ -247,12 +247,11 @@
                         <label for="worker-service" class="block text-sm font-medium text-gray-700">Service*</label>
                         <select id="worker-service" class="form-input" required>
                             <option value="" disabled selected>Select a Service</option>
-                            <option value="AC Repair">❄️ AC Repair</option>
-                            <option value="Laptop Repair">💻 Laptop Repair</option>
-                            <option value="Electrician">💡 Electrician</option>
-                            <option value="Home Repair">🔨 Home Repair</option>
-                            <option value="Cleaning">🧹 Home Cleaning</option>
-                            <option value="Plumber">💧 Plumber</option>
+                            <option value="0d3c2c2e-9f9a-4b4a-8d41-111111111111">❄️ AC Repair</option>
+<option value="1e4a3f55-aaaa-4bbb-8ccc-222222222222">💻 Laptop Repair</option>
+<option value="2b5e6d77-bbbb-4ccc-8ddd-333333333333">💡 Electrician</option>
+<option value="3c6f7e88-cccc-4ddd-8eee-444444444444">💧 Plumber</option>
+
                         </select>
                     </div>
                     <div>
@@ -511,35 +510,44 @@ const admin = {
     /* =====================================================
        ADD WORKER (USES SIGNUP API)
     ===================================================== */
-    async handleAddWorker(e) {
-        e.preventDefault();
-        this.elements.addWorkerBtn.disabled = true;
-        this.elements.addWorkerBtn.textContent = 'Adding...';
+    async handleAddWorker(event) {
+  event.preventDefault();
 
-        const payload = {
-            name: document.getElementById('worker-name').value.trim(),
-            phone: document.getElementById('worker-phone').value.trim(),
-            serviceIds: [document.getElementById('worker-service').value]
-        };
+  const workerData = {
+    name: document.getElementById('worker-name').value.trim(),
+    phone: document.getElementById('worker-phone').value.trim(),
+    serviceId: document.getElementById('worker-service').value
+  };
 
-        try {
-            const res = await fetch(`${RENDER_API_URL}/api/professionals/signup`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+  if (!workerData.name || !workerData.phone || !workerData.serviceId) {
+    alert('Name, Phone, and Service are required');
+    return;
+  }
 
-            if (!res.ok) throw new Error('Signup failed');
-            alert('Worker added (pending approval)');
-            this.elements.addWorkerForm.reset();
-            this.fetchData();
-        } catch (err) {
-            alert(err.message);
-        } finally {
-            this.elements.addWorkerBtn.disabled = false;
-            this.elements.addWorkerBtn.textContent = '+ Add Worker';
-        }
-    },
+  try {
+    const response = await fetch(`${RENDER_API_URL}/api/professionals/signup`, {
+      method: 'POST',
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: workerData.name,
+        phone: workerData.phone,
+        serviceIds: [workerData.serviceId] // ✅ UUID
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Signup failed');
+    }
+
+    alert('Worker added successfully (Pending approval)');
+    this.fetchData();
+
+  } catch (err) {
+    alert(err.message);
+  }
+}
 
     /* =====================================================
        DELETE WORKER (TEMP UI ONLY)
