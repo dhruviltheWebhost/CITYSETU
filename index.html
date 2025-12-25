@@ -607,13 +607,16 @@
         </div>
     </div>
 
-    <script>
+   <script>
 const API_BASE_URL = 'https://citysetu-api.onrender.com';
 
 const app = {
     workerData: {},
     isWorkerDataLoading: false,
 
+    /* =========================
+       SERVICES GRID
+    ========================= */
     renderServicesGrid() {
         if (this.isWorkerDataLoading) {
             return `<p class="col-span-3 text-gray-500">Loading services...</p>`;
@@ -628,18 +631,22 @@ const app = {
                     Be the first to join CitySetu 🚀
                 </div>
             `;
-    
-           return services.map(serviceObj => `
-    <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
-         onclick="app.navigateTo('service', '${serviceObj.name}')">
-        <h3 class="text-xl font-bold mb-2">${serviceObj.name}</h3>
-        <p class="text-sm text-gray-600">
-            ${serviceObj.workers.length} experts available
-        </p>
-    </div>
-`).join('');
+        }
 
+        return services.map(serviceObj => `
+            <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
+                 onclick="app.navigateTo('service', '${serviceObj.name}')">
+                <h3 class="text-xl font-bold mb-2">${serviceObj.name}</h3>
+                <p class="text-sm text-gray-600">
+                    ${serviceObj.workers.length} experts available
+                </p>
+            </div>
+        `).join('');
+    },
 
+    /* =========================
+       ELEMENT REFERENCES
+    ========================= */
     elements: {
         root: document.getElementById('app-root'),
         header: document.getElementById('main-header'),
@@ -648,6 +655,9 @@ const app = {
         signupForm: document.getElementById('worker-signup-form')
     },
 
+    /* =========================
+       INIT
+    ========================= */
     async init() {
         this.elements.mobileMenuButton?.addEventListener('click', () =>
             this.toggleMobileMenu()
@@ -663,11 +673,14 @@ const app = {
             );
         }
 
-        this.loadWorkerData();
+        await this.loadWorkerData();
         this.router();
         this.chat.init();
     },
 
+    /* =========================
+       LOAD WORKERS
+    ========================= */
     async loadWorkerData() {
         this.isWorkerDataLoading = true;
 
@@ -679,19 +692,18 @@ const app = {
             const workers = Array.isArray(json.professionals) ? json.professionals : [];
 
             const grouped = {};
-           workers.forEach(w => {
-    if (!w.service_id || !w.service) return;
+            workers.forEach(w => {
+                if (!w.service_id || !w.service) return;
 
-    if (!grouped[w.service_id]) {
-        grouped[w.service_id] = {
-            name: w.service,
-            workers: []
-        };
-    }
+                if (!grouped[w.service_id]) {
+                    grouped[w.service_id] = {
+                        name: w.service,
+                        workers: []
+                    };
+                }
 
-    grouped[w.service_id].workers.push(w);
-});
-
+                grouped[w.service_id].workers.push(w);
+            });
 
             this.workerData = grouped;
             console.log('✅ Workers loaded:', grouped);
@@ -701,9 +713,11 @@ const app = {
         }
 
         this.isWorkerDataLoading = false;
-        this.router();
     },
 
+    /* =========================
+       ROUTER
+    ========================= */
     router() {
         const hash = window.location.hash.replace('#', '') || 'home';
         const [page, param] = hash.split('/');
@@ -734,6 +748,9 @@ const app = {
             this.elements.header.classList.remove('header-scrolled');
     },
 
+    /* =========================
+       PAGES
+    ========================= */
     renderHomePage() {
         this.elements.root.innerHTML = `
             <section class="hero-gradient text-white py-24 text-center fade-in-section">
@@ -756,14 +773,17 @@ const app = {
     },
 
     renderServicePage(service) {
-       const serviceEntry = Object.values(this.workerData)
-    .find(s => s.name === service);
+        const serviceEntry = Object.values(this.workerData)
+            .find(s => s.name === service);
 
-const workers = serviceEntry ? serviceEntry.workers : [];
+        const workers = serviceEntry ? serviceEntry.workers : [];
 
         this.elements.root.innerHTML = `
             <section class="py-12 text-center bg-blue-100">
                 <h2 class="text-3xl font-bold">${service} Experts</h2>
+                <p class="mt-2 text-gray-600">
+                    ${workers.length} expert(s) available
+                </p>
             </section>
         `;
     },
@@ -778,22 +798,30 @@ const workers = serviceEntry ? serviceEntry.workers : [];
             .forEach(el => el.classList.add('is-visible'));
     },
 
+    /* =========================
+       CHAT
+    ========================= */
     chat: {
         init() {
             document.getElementById('chat-bubble')
                 ?.addEventListener('click', () => this.open());
         },
         open() {
-            document.getElementById('chat-window').style.visibility = 'visible';
+            const win = document.getElementById('chat-window');
+            win.style.visibility = 'visible';
+            win.style.opacity = '1';
+            win.style.transform = 'translateY(0) scale(1)';
         }
     }
 };
 
 document.addEventListener('DOMContentLoaded', () => app.init());
 </script>
+
     </body>
 
 </html>
+
 
 
 
