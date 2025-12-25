@@ -611,214 +611,214 @@
 const API_BASE_URL = 'https://citysetu-api.onrender.com';
 
 const app = {
-    workerData: {},
-    isWorkerDataLoading: false,
+  workerData: {},
+  isWorkerDataLoading: false,
 
-    /* =========================
-       SERVICES GRID
-    ========================= */
-    renderServicesGrid() {
+  /* =========================
+     SERVICES GRID
+  ========================= */
+  renderServicesGrid() {
     if (this.isWorkerDataLoading) {
-        return `<p class="col-span-3 text-gray-500">Loading services...</p>`;
+      return `<p class="col-span-3 text-gray-500">Loading services...</p>`;
     }
 
     const services = Object.values(this.workerData);
 
     if (!services.length) {
-        return `
-            <div class="col-span-3 text-gray-500">
-                No professionals available yet.<br>
-                Be the first to join CitySetu 🚀
-            </div>
-        `;
+      return `
+        <div class="col-span-3 text-gray-500">
+          No professionals available yet.<br>
+          Be the first to join CitySetu 🚀
+        </div>
+      `;
     }
 
-    return services.map(serviceObj => `
-        <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
-             onclick="app.navigateTo('service', '${serviceObj.name}')">
-            <h3 class="text-xl font-bold mb-2">${serviceObj.name}</h3>
-            <p class="text-sm text-gray-600">
-                ${serviceObj.workers.length} experts available
-            </p>
-        </div>
+    return services.map(service => `
+      <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
+           onclick="app.navigateTo('service', '${service.name}')">
+        <h3 class="text-xl font-bold mb-2">${service.name}</h3>
+        <p class="text-sm text-gray-600">
+          ${service.workers.length} expert(s) available
+        </p>
+      </div>
     `).join('');
-}
+  },
 
-    /* =========================
-       ELEMENT REFERENCES
-    ========================= */
-    elements: {
-        root: document.getElementById('app-root'),
-        header: document.getElementById('main-header'),
-        mobileMenu: document.getElementById('mobile-menu'),
-        mobileMenuButton: document.getElementById('mobile-menu-button'),
-        signupForm: document.getElementById('worker-signup-form')
-    },
+  /* =========================
+     ELEMENT REFERENCES
+  ========================= */
+  elements: {
+    root: document.getElementById('app-root'),
+    header: document.getElementById('main-header'),
+    mobileMenu: document.getElementById('mobile-menu'),
+    mobileMenuButton: document.getElementById('mobile-menu-button'),
+    signupForm: document.getElementById('worker-signup-form')
+  },
 
-    /* =========================
-       INIT
-    ========================= */
-    async init() {
-        this.elements.mobileMenuButton?.addEventListener('click', () =>
-            this.toggleMobileMenu()
-        );
+  /* =========================
+     INIT
+  ========================= */
+  async init() {
+    this.elements.mobileMenuButton?.addEventListener(
+      'click',
+      () => this.toggleMobileMenu()
+    );
 
-        window.addEventListener('hashchange', () => this.router());
-        window.addEventListener('scroll', () => this.handleScroll());
+    window.addEventListener('hashchange', () => this.router());
+    window.addEventListener('scroll', () => this.handleScroll());
 
-        if (this.elements.signupForm) {
-            this.elements.signupForm.addEventListener(
-                'submit',
-                (e) => this.handleWorkerSignup(e)
-            );
-        }
+    if (this.elements.signupForm) {
+      this.elements.signupForm.addEventListener(
+        'submit',
+        (e) => this.handleWorkerSignup(e)
+      );
+    }
 
-        await this.loadWorkerData();
-        this.router();
-        this.chat.init();
-    },
+    await this.loadWorkerData();
+    this.router();
+    this.chat.init();
+  },
 
-    /* =========================
-       LOAD WORKERS
-    ========================= */
-    async loadWorkerData() {
-        this.isWorkerDataLoading = true;
+  /* =========================
+     LOAD WORKERS
+  ========================= */
+  async loadWorkerData() {
+    this.isWorkerDataLoading = true;
 
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/professionals/all`);
-            if (!res.ok) throw new Error(res.status);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/professionals/all`);
+      const json = await res.json();
 
-            const json = await res.json();
-            const workers = Array.isArray(json.professionals) ? json.professionals : [];
-            const grouped = {};
+      const workers = Array.isArray(json.professionals)
+        ? json.professionals
+        : [];
 
-workers.forEach(w => {
-    if (!w.services || !w.services.length) return;
+      const grouped = {};
 
-    const serviceName = w.services[0].name;
+      workers.forEach(w => {
+        if (!w.approved) return;
+        if (!w.services || !w.services.length) return;
 
-    if (!grouped[serviceName]) {
-        grouped[serviceName] = {
+        const serviceName = w.services[0].name;
+
+        if (!grouped[serviceName]) {
+          grouped[serviceName] = {
             name: serviceName,
             workers: []
-        };
+          };
+        }
+
+        grouped[serviceName].workers.push(w);
+      });
+
+      this.workerData = grouped;
+      console.log('✅ Workers loaded:', grouped);
+
+    } catch (err) {
+      console.error('❌ Worker load failed:', err);
+      this.workerData = {};
     }
 
-    grouped[serviceName].workers.push(w);
-});
+    this.isWorkerDataLoading = false;
+  },
 
+  /* =========================
+     ROUTER
+  ========================= */
+  router() {
+    const hash = window.location.hash.replace('#', '') || 'home';
+    const [page, param] = hash.split('/');
 
-                grouped[w.service_id].workers.push(w);
-            });
-
-            this.workerData = grouped;
-            console.log('✅ Workers loaded:', grouped);
-        } catch (err) {
-            console.error('❌ Worker load failed:', err);
-            this.workerData = {};
-        }
-
-        this.isWorkerDataLoading = false;
-    },
-
-    /* =========================
-       ROUTER
-    ========================= */
-    router() {
-        const hash = window.location.hash.replace('#', '') || 'home';
-        const [page, param] = hash.split('/');
-
-        if (page === 'service' && param) {
-            this.renderServicePage(decodeURIComponent(param));
-        } else {
-            this.renderHomePage();
-        }
-    },
-
-    navigateTo(page, param = '') {
-        if (page === 'service') {
-            window.location.hash = `service/${encodeURIComponent(param)}`;
-        } else {
-            window.location.hash = page;
-        }
-    },
-
-    toggleMobileMenu() {
-        this.elements.mobileMenu.classList.toggle('-translate-x-full');
-    },
-
-    handleScroll() {
-        if (window.scrollY > 20)
-            this.elements.header.classList.add('header-scrolled');
-        else
-            this.elements.header.classList.remove('header-scrolled');
-    },
-
-    /* =========================
-       PAGES
-    ========================= */
-    renderHomePage() {
-        this.elements.root.innerHTML = `
-            <section class="hero-gradient text-white py-24 text-center fade-in-section">
-                <h1 class="text-4xl md:text-6xl font-bold">
-                    Your City, Your Services, One Setu
-                </h1>
-                <p class="mt-4 text-blue-200">Verified experts in Ahmedabad</p>
-            </section>
-
-            <section id="services" class="py-16 bg-white fade-in-section">
-                <div class="container mx-auto px-6 text-center">
-                    <h2 class="text-3xl font-bold mb-10">Popular Services</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        ${this.renderServicesGrid()}
-                    </div>
-                </div>
-            </section>
-        `;
-        this.setupScrollAnimations();
-    },
-
-    renderServicePage(service) {
-        const serviceEntry = Object.values(this.workerData)
-            .find(s => s.name === service);
-
-        const workers = serviceEntry ? serviceEntry.workers : [];
-
-        this.elements.root.innerHTML = `
-            <section class="py-12 text-center bg-blue-100">
-                <h2 class="text-3xl font-bold">${service} Experts</h2>
-                <p class="mt-2 text-gray-600">
-                    ${workers.length} expert(s) available
-                </p>
-            </section>
-        `;
-    },
-
-    handleWorkerSignup(e) {
-        e.preventDefault();
-        alert('Signup API wired correctly ✅');
-    },
-
-    setupScrollAnimations() {
-        document.querySelectorAll('.fade-in-section')
-            .forEach(el => el.classList.add('is-visible'));
-    },
-
-    /* =========================
-       CHAT
-    ========================= */
-    chat: {
-        init() {
-            document.getElementById('chat-bubble')
-                ?.addEventListener('click', () => this.open());
-        },
-        open() {
-            const win = document.getElementById('chat-window');
-            win.style.visibility = 'visible';
-            win.style.opacity = '1';
-            win.style.transform = 'translateY(0) scale(1)';
-        }
+    if (page === 'service' && param) {
+      this.renderServicePage(decodeURIComponent(param));
+    } else {
+      this.renderHomePage();
     }
+  },
+
+  navigateTo(page, param = '') {
+    if (page === 'service') {
+      window.location.hash = `service/${encodeURIComponent(param)}`;
+    } else {
+      window.location.hash = page;
+    }
+  },
+
+  toggleMobileMenu() {
+    this.elements.mobileMenu.classList.toggle('-translate-x-full');
+  },
+
+  handleScroll() {
+    if (window.scrollY > 20)
+      this.elements.header.classList.add('header-scrolled');
+    else
+      this.elements.header.classList.remove('header-scrolled');
+  },
+
+  /* =========================
+     PAGES
+  ========================= */
+  renderHomePage() {
+    this.elements.root.innerHTML = `
+      <section class="hero-gradient text-white py-24 text-center fade-in-section">
+        <h1 class="text-4xl md:text-6xl font-bold">
+          Your City, Your Services, One Setu
+        </h1>
+        <p class="mt-4 text-blue-200">Verified experts in Ahmedabad</p>
+      </section>
+
+      <section id="services" class="py-16 bg-white fade-in-section">
+        <div class="container mx-auto px-6 text-center">
+          <h2 class="text-3xl font-bold mb-10">Popular Services</h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            ${this.renderServicesGrid()}
+          </div>
+        </div>
+      </section>
+    `;
+
+    this.setupScrollAnimations();
+  },
+
+  renderServicePage(service) {
+    const entry = this.workerData[service];
+    const workers = entry ? entry.workers : [];
+
+    this.elements.root.innerHTML = `
+      <section class="py-12 text-center bg-blue-100">
+        <h2 class="text-3xl font-bold">${service} Experts</h2>
+        <p class="mt-2 text-gray-600">
+          ${workers.length} expert(s) available
+        </p>
+      </section>
+    `;
+  },
+
+  handleWorkerSignup(e) {
+    e.preventDefault();
+    alert('Signup API wired correctly ✅');
+  },
+
+  setupScrollAnimations() {
+    document.querySelectorAll('.fade-in-section')
+      .forEach(el => el.classList.add('is-visible'));
+  },
+
+  /* =========================
+     CHAT
+  ========================= */
+  chat: {
+    init() {
+      document.getElementById('chat-bubble')
+        ?.addEventListener('click', () => this.open());
+    },
+    open() {
+      const win = document.getElementById('chat-window');
+      win.style.visibility = 'visible';
+      win.style.opacity = '1';
+      win.style.transform = 'translateY(0) scale(1)';
+    }
+  }
 };
 
 document.addEventListener('DOMContentLoaded', () => app.init());
@@ -827,17 +827,4 @@ document.addEventListener('DOMContentLoaded', () => app.init());
     </body>
 
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
 
