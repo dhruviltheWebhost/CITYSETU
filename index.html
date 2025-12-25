@@ -619,7 +619,7 @@ const app = {
             return `<p class="col-span-3 text-gray-500">Loading services...</p>`;
         }
 
-        const services = Object.keys(this.workerData);
+        const services = Object.values(this.workerData);
 
         if (!services.length) {
             return `
@@ -628,18 +628,17 @@ const app = {
                     Be the first to join CitySetu 🚀
                 </div>
             `;
-        }
+    
+           return services.map(serviceObj => `
+    <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
+         onclick="app.navigateTo('service', '${serviceObj.name}')">
+        <h3 class="text-xl font-bold mb-2">${serviceObj.name}</h3>
+        <p class="text-sm text-gray-600">
+            ${serviceObj.workers.length} experts available
+        </p>
+    </div>
+`).join('');
 
-        return services.map(service => `
-            <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
-                 onclick="app.navigateTo('service', '${service}')">
-                <h3 class="text-xl font-bold mb-2">${service}</h3>
-                <p class="text-sm text-gray-600">
-                    ${this.workerData[service].length} experts available
-                </p>
-            </div>
-        `).join('');
-    },
 
     elements: {
         root: document.getElementById('app-root'),
@@ -680,11 +679,19 @@ const app = {
             const workers = Array.isArray(json.professionals) ? json.professionals : [];
 
             const grouped = {};
-            workers.forEach(w => {
-                if (!w.service) return;
-                if (!grouped[w.service]) grouped[w.service] = [];
-                grouped[w.service].push(w);
-            });
+           workers.forEach(w => {
+    if (!w.service_id || !w.service) return;
+
+    if (!grouped[w.service_id]) {
+        grouped[w.service_id] = {
+            name: w.service,
+            workers: []
+        };
+    }
+
+    grouped[w.service_id].workers.push(w);
+});
+
 
             this.workerData = grouped;
             console.log('✅ Workers loaded:', grouped);
@@ -749,7 +756,11 @@ const app = {
     },
 
     renderServicePage(service) {
-        const workers = this.workerData[service] || [];
+       const serviceEntry = Object.values(this.workerData)
+    .find(s => s.name === service);
+
+const workers = serviceEntry ? serviceEntry.workers : [];
+
         this.elements.root.innerHTML = `
             <section class="py-12 text-center bg-blue-100">
                 <h2 class="text-3xl font-bold">${service} Experts</h2>
@@ -783,6 +794,7 @@ document.addEventListener('DOMContentLoaded', () => app.init());
     </body>
 
 </html>
+
 
 
 
