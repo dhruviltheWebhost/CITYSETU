@@ -392,27 +392,24 @@ if (!ADMIN_TOKEN) {
 /* =====================================================
    ADMIN OBJECT
 ===================================================== */
-const admin = {
-  elements: {
-    chatTab: document.getElementById('tab-chats'),
-    callTab: document.getElementById('tab-calls'),
-    workerTab: document.getElementById('tab-workers'),
-    signupTab: document.getElementById('tab-signups'),
+async function loadServices() {
+  const select = document.getElementById('worker-service');
+  select.innerHTML = `<option value="">Select Service</option>`;
 
-    chatTable: document.getElementById('table-chats'),
-    callTable: document.getElementById('table-calls'),
-    workerSection: document.getElementById('section-workers'),
-    signupTable: document.getElementById('table-signups'),
+  try {
+    const res = await fetch(`${RENDER_API_URL}/api/services`);
+    const data = await res.json();
 
-    workerTableBody: document.getElementById('workers-table-body'),
-    workerCount: document.getElementById('worker-count'),
-
-    addWorkerForm: document.getElementById('add-worker-form'),
-    addWorkerBtn: document.getElementById('add-worker-btn'),
-    workerFormMessage: document.getElementById('worker-form-message'),
-
-    refreshBtn: document.getElementById('refresh-btn')
-  },
+    data.services.forEach(service => {
+      const option = document.createElement('option');
+      option.value = service.id; // INTEGER
+      option.textContent = service.name;
+      select.appendChild(option);
+    });
+  } catch (err) {
+    console.error('Failed to load services', err);
+  }
+}
 
   /* =====================================================
      INIT
@@ -562,28 +559,20 @@ const admin = {
   handleDeleteWorker(id, name) {
     alert(`Delete worker "${name}" later from backend.\nID: ${id}`);
   }
-},
-    app.get('/api/services', async (req, res) => {
-  const result = await pool.query(
-    "SELECT id, name, category FROM services ORDER BY category, name"
-  );
-  res.json({ services: result.rows });
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  loadServices();
-  admin.init();
-});
+};
 
 /* =====================================================
    VERY IMPORTANT: GLOBAL ACCESS
 ===================================================== */
 window.admin = admin;
 
-/* =====================================================
+document.addEventListener('DOMContentLoaded', () => {
+  loadServices();
+  admin.init();
+});
+============================
    INIT
 ===================================================== */
-document.addEventListener('DOMContentLoaded', () => admin.init());
 </script>
 
 
