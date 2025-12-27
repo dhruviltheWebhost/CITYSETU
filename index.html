@@ -615,100 +615,44 @@ const app = {
   isWorkerDataLoading: false,
 
   /* =========================
-     SERVICES GRID
-  ========================= */
-  renderServicesGrid() {
-    if (this.isWorkerDataLoading) {
-      return `<p class="col-span-3 text-gray-500">Loading services...</p>`;
-    }
-
-    const services = Object.values(this.workerData);
-
-    if (!services.length) {
-      return `
-        <div class="col-span-3 text-gray-500">
-          No professionals available yet.<br>
-          Be the first to join CitySetu 🚀
-        </div>
-      `;
-    }
-
-    return services.map(service => `
-      <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
-           onclick="app.navigateTo('service', '${service.name}')">
-        <h3 class="text-xl font-bold mb-2">${service.name}</h3>
-        <p class="text-sm text-gray-600">
-          ${service.workers.length} expert(s) available
-        </p>
-      </div>
-    `).join('');
-  },
-
-  /* =========================
-     ELEMENT REFERENCES
-  ========================= */
-  elements: {
-    root: document.getElementById('app-root'),
-    header: document.getElementById('main-header'),
-    mobileMenu: document.getElementById('mobile-menu'),
-    mobileMenuButton: document.getElementById('mobile-menu-button'),
-    signupForm: document.getElementById('worker-signup-form')
-  },
-
-  /* =========================
      INIT
   ========================= */
   async init() {
-    this.elements.mobileMenuButton?.addEventListener(
-      'click',
-      () => this.toggleMobileMenu()
-    );
-
     window.addEventListener('hashchange', () => this.router());
     window.addEventListener('scroll', () => this.handleScroll());
 
-    if (this.elements.signupForm) {
-      this.elements.signupForm.addEventListener(
-        'submit',
-        (e) => this.handleWorkerSignup(e)
-      );
-    }
-
     await this.loadWorkerData();
     this.router();
-    this.chat.init();
   },
 
   /* =========================
-     LOAD WORKERS
+     LOAD WORKERS (FIXED)
   ========================= */
   async loadWorkerData() {
     this.isWorkerDataLoading = true;
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/professionals/all`);
+      if (!res.ok) throw new Error('API failed');
+
       const json = await res.json();
 
-      const workers = Array.isArray(json.professionals)
-        ? json.professionals
-        : [];
+      // ✅ BACKEND RETURNS "workers"
+      const workers = Array.isArray(json.workers) ? json.workers : [];
 
       const grouped = {};
 
       workers.forEach(w => {
-        if (!w.approved) return;
-        if (!w.services || !w.services.length) return;
+        if (!w.service) return;
 
-        const serviceName = w.services[0].name;
-
-        if (!grouped[serviceName]) {
-          grouped[serviceName] = {
-            name: serviceName,
+        if (!grouped[w.service]) {
+          grouped[w.service] = {
+            name: w.service,
             workers: []
           };
         }
 
-        grouped[serviceName].workers.push(w);
+        grouped[w.service].workers.push(w);
       });
 
       this.workerData = grouped;
@@ -744,49 +688,58 @@ const app = {
     }
   },
 
-  toggleMobileMenu() {
-    this.elements.mobileMenu.classList.toggle('-translate-x-full');
-  },
-
-  handleScroll() {
-    if (window.scrollY > 20)
-      this.elements.header.classList.add('header-scrolled');
-    else
-      this.elements.header.classList.remove('header-scrolled');
-  },
-
   /* =========================
-     PAGES
+     HOME PAGE
   ========================= */
   renderHomePage() {
-    this.elements.root.innerHTML = `
-      <section class="hero-gradient text-white py-24 text-center fade-in-section">
+    const services = Object.values(this.workerData);
+
+    const servicesHTML = services.length
+      ? services.map(s => `
+        <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
+             onclick="app.navigateTo('service','${s.name}')">
+          <h3 class="text-xl font-bold mb-2">${s.name}</h3>
+          <p class="text-sm text-gray-600">
+            ${s.workers.length} experts available
+          </p>
+        </div>
+      `).join('')
+      : `
+        <div class="col-span-3 text-gray-500">
+          No professionals available yet.<br>
+          Be the first to join CitySetu 🚀
+        </div>
+      `;
+
+    document.getElementById('app-root').innerHTML = `
+      <section class="hero-gradient text-white py-24 text-center">
         <h1 class="text-4xl md:text-6xl font-bold">
           Your City, Your Services, One Setu
         </h1>
         <p class="mt-4 text-blue-200">Verified experts in Ahmedabad</p>
       </section>
 
-      <section id="services" class="py-16 bg-white fade-in-section">
+      <section id="services" class="py-16 bg-white">
         <div class="container mx-auto px-6 text-center">
           <h2 class="text-3xl font-bold mb-10">Popular Services</h2>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            ${this.renderServicesGrid()}
+            ${servicesHTML}
           </div>
         </div>
       </section>
     `;
-
-    this.setupScrollAnimations();
   },
 
-  renderServicePage(service) {
-    const entry = this.workerData[service];
-    const workers = entry ? entry.workers : [];
+  /* =========================
+     SERVICE PAGE
+  ========================= */
+  renderServicePage(serviceName) {
+    const service = this.workerData[serviceName];
+    const workers = service ? service.workers : [];
 
-    this.elements.root.innerHTML = `
+    document.getElementById('app-root').innerHTML = `
       <section class="py-12 text-center bg-blue-100">
-        <h2 class="text-3xl font-bold">${service} Experts</h2>
+        <h2 class="text-3xl font-bold">${serviceName} Experts</h2>
         <p class="mt-2 text-gray-600">
           ${workers.length} expert(s) available
         </p>
@@ -794,30 +747,12 @@ const app = {
     `;
   },
 
-  handleWorkerSignup(e) {
-    e.preventDefault();
-    alert('Signup API wired correctly ✅');
-  },
-
-  setupScrollAnimations() {
-    document.querySelectorAll('.fade-in-section')
-      .forEach(el => el.classList.add('is-visible'));
-  },
-
-  /* =========================
-     CHAT
-  ========================= */
-  chat: {
-    init() {
-      document.getElementById('chat-bubble')
-        ?.addEventListener('click', () => this.open());
-    },
-    open() {
-      const win = document.getElementById('chat-window');
-      win.style.visibility = 'visible';
-      win.style.opacity = '1';
-      win.style.transform = 'translateY(0) scale(1)';
-    }
+  handleScroll() {
+    const header = document.getElementById('main-header');
+    if (!header) return;
+    window.scrollY > 20
+      ? header.classList.add('header-scrolled')
+      : header.classList.remove('header-scrolled');
   }
 };
 
@@ -827,5 +762,6 @@ document.addEventListener('DOMContentLoaded', () => app.init());
     </body>
 
 </html>
+
 
 
