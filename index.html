@@ -813,8 +813,16 @@ const app = {
      CHAT
   ========================= */
   openChat() {
-    alert('Chat system active (backend Q&A will respond)');
-  }
+  const chatWindow = document.getElementById('chat-window');
+  chatWindow.style.visibility = 'visible';
+  chatWindow.style.opacity = '1';
+  chatWindow.style.transform = 'translateY(0) scale(1)';
+
+  document.getElementById('chat-messages').innerHTML = '';
+  document.getElementById('chat-options-area').innerHTML = '';
+
+  this.addBotMessage("👋 Hi! How can I help you today?");
+  this.loadChatQuestions();
 };
 
 document.addEventListener('DOMContentLoaded', () => app.init());
@@ -824,6 +832,7 @@ document.addEventListener('DOMContentLoaded', () => app.init());
     </body>
 
 </html>
+
 
 
 
