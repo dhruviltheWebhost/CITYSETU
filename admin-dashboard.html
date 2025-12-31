@@ -127,13 +127,80 @@ if(!TOKEN){alert('Login required');location='admin-login.html'}
 
 const admin={
 
-showTab(tab){
-document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-document.querySelector(`[onclick="admin.showTab('${tab}')"]`).classList.add('active');
-document.getElementById(tab).classList.add('active');
-if(tab==='pending')this.loadPending();
-if(tab==='chatqa')this.loadQA();
+showTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.table-wrapper, .section-wrapper')
+    .forEach(s => s.style.display = 'none');
+
+  if (tab === 'workers') {
+    document.getElementById('tab-workers').classList.add('active');
+    document.getElementById('section-workers').style.display = 'block';
+    this.fetchData();
+  }
+
+  if (tab === 'pending') {
+    document.querySelector('[onclick="admin.showTab(\'pending\')"]').classList.add('active');
+    document.getElementById('table-pending').style.display = 'block';
+    this.fetchPending();
+  }
+
+  if (tab === 'chatqa') {
+    document.querySelector('[onclick="admin.showTab(\'chatqa\')"]').classList.add('active');
+    document.getElementById('section-chatqa').style.display = 'block';
+    this.fetchChatQA();
+  }
+},
+  async fetchChatQA() {
+  const tbody = document.getElementById('chatqa-table');
+  tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+
+  try {
+    const res = await fetch(`${RENDER_API_URL}/api/chat/questions`);
+    const data = await res.json();
+    tbody.innerHTML = '';
+
+    data.questions.forEach(q => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${q.question}</td>
+          <td>${q.answer || '-'}</td>
+          <td>
+            <span class="${q.active ? 'text-green-600' : 'text-red-600'}">
+              ${q.active ? 'Enabled' : 'Disabled'}
+            </span>
+          </td>
+          <td>
+            <button
+              class="${q.active ? 'btn-reject' : 'btn-approve'}"
+              onclick="admin.toggleChatQA(${q.id}, ${q.active})">
+              ${q.active ? 'Disable' : 'Enable'}
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="4">Failed to load</td></tr>`;
+  }
+},
+  async toggleChatQA(id, isActive) {
+  try {
+    await fetch(`${RENDER_API_URL}/api/admin/chat/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${ADMIN_TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        active: !isActive
+      })
+    });
+
+    this.fetchChatQA();
+  } catch (err) {
+    alert('Failed to update Q&A');
+  }
 },
 
 async loadWorkers(){
@@ -251,9 +318,45 @@ refreshBtn.onclick=()=>admin.loadWorkers();
 addWorkerForm.onsubmit=e=>admin.addWorker(e);
 qaForm.onsubmit=e=>admin.addQA(e);
 
-document.addEventListener('DOMContentLoaded',()=>{
-admin.loadWorkers();
-admin.loadServices();
+document.addEventListener('DOMContentLoaded', () => {
+  loadServices();
+  admin.init();
+
+  // ✅ CHAT Q&A FORM SUBMIT HANDLER (ADD HERE)
+  const chatQAForm = document.getElementById('chatqa-form');
+
+  if (chatQAForm) {
+    chatQAForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const question = document.getElementById('qa-question').value.trim();
+      const answer = document.getElementById('qa-answer').value.trim();
+
+      if (!question || !answer) {
+        alert('Question & Answer required');
+        return;
+      }
+
+      try {
+        await fetch(`${RENDER_API_URL}/api/admin/chat/questions`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${ADMIN_TOKEN}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ question, answer })
+        });
+
+        document.getElementById('qa-question').value = '';
+        document.getElementById('qa-answer').value = '';
+
+        admin.fetchChatQA(); // refresh table
+      } catch (err) {
+        alert('Failed to add Q&A');
+        console.error(err);
+      }
+    });
+  }
 });
 </script>
 
