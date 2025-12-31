@@ -168,6 +168,9 @@
                 <button class="tab-btn" onclick="admin.showTab('pending')">
   Pending Approvals
 </button>
+<button class="tab-btn" onclick="admin.showTab('chatqa')">
+  Chat Q&A
+</button>
 
             </nav>
         </div>
@@ -387,6 +390,28 @@
                         </select>
                     </div>
                 </div>
+                <div id="section-chatqa" class="section-wrapper mt-6 bg-white p-6 rounded-lg shadow">
+  <h2 class="text-xl font-semibold mb-4">Manage Chat Q&A</h2>
+
+  <form id="chatqa-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <input id="qa-question" class="form-input" placeholder="Question">
+    <input id="qa-answer" class="form-input" placeholder="Answer">
+    <button class="bg-green-600 text-white px-4 py-2 rounded">Add Q&A</button>
+  </form>
+
+  <table class="w-full mt-6">
+    <thead>
+      <tr>
+        <th>Question</th>
+        <th>Answer</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="chatqa-table"></tbody>
+  </table>
+</div>
+
                 
                 <div id="edit-worker-message" class="mt-4 text-sm font-medium text-center hidden"></div>
     
@@ -607,6 +632,52 @@ const admin = {
       alert(err.message);
     }
   }
+},
+    async fetchChatQA() {
+  const res = await fetch(`${RENDER_API_URL}/api/chat/questions`);
+  const data = await res.json();
+  const tbody = document.getElementById('chatqa-table');
+  tbody.innerHTML = '';
+
+  data.questions.forEach(q => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${q.question}</td>
+        <td>${q.answer || '-'}</td>
+        <td>${q.active ? 'Active' : 'Disabled'}</td>
+        <td>
+          <button onclick="admin.disableChatQA(${q.id})" class="btn-reject">
+            Disable
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+},
+
+async addChatQA(e) {
+  e.preventDefault();
+  const question = document.getElementById('qa-question').value;
+  const answer = document.getElementById('qa-answer').value;
+
+  await fetch(`${RENDER_API_URL}/api/admin/chat/questions`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${ADMIN_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ question, answer })
+  });
+
+  this.fetchChatQA();
+},
+
+async disableChatQA(id) {
+  await fetch(`${RENDER_API_URL}/api/admin/chat/question/${id}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${ADMIN_TOKEN}` }
+  });
+  this.fetchChatQA();
 };
 
 /* ================= INIT ================= */
