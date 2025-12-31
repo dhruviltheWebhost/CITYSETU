@@ -628,7 +628,6 @@ const app = {
   ========================= */
   async loadProfessionals() {
     this.isLoading = true;
-
     try {
       const res = await fetch(`${API_BASE_URL}/api/professionals/all`);
       const data = await res.json();
@@ -643,16 +642,13 @@ const app = {
         if (!p.service) return;
 
         if (!grouped[p.service]) {
-          grouped[p.service] = {
-            name: p.service,
-            workers: []
-          };
+          grouped[p.service] = { name: p.service, workers: [] };
         }
 
         grouped[p.service].workers.push({
           ...p,
-          rating: 4.6,                 // temp
-          area: 'Ahmedabad',            // temp
+          rating: 4.6,
+          area: 'Ahmedabad',
           photo: `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}`
         });
       });
@@ -663,7 +659,6 @@ const app = {
       console.error('❌ Load failed:', err);
       this.workerData = {};
     }
-
     this.isLoading = false;
   },
 
@@ -671,6 +666,8 @@ const app = {
      ROUTER
   ========================= */
   router() {
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // ✅ SCROLL TO TOP
+
     const hash = location.hash.replace('#', '') || 'home';
     const [page, param] = hash.split('/');
 
@@ -706,12 +703,12 @@ const app = {
             ${
               services.length
                 ? services.map(s => `
-                    <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
-                         onclick="app.navigateTo('service','${s.name}')">
-                      <h3 class="text-xl font-bold mb-2">${s.name}</h3>
-                      <p class="text-sm text-gray-600">${s.workers.length} experts available</p>
-                    </div>
-                  `).join('')
+                  <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
+                       onclick="app.navigateTo('service','${s.name}')">
+                    <h3 class="text-xl font-bold mb-2">${s.name}</h3>
+                    <p class="text-sm text-gray-600">${s.workers.length} experts available</p>
+                  </div>
+                `).join('')
                 : `<div class="col-span-3 text-gray-500">No professionals yet 🚀</div>`
             }
           </div>
@@ -758,18 +755,13 @@ const app = {
           </div>
         </div>
 
-        <div class="mt-2 text-yellow-500 font-semibold">
-          ⭐ ${w.rating}
-        </div>
+        <div class="mt-2 text-yellow-500 font-semibold">⭐ ${w.rating}</div>
 
         <div class="mt-4 flex gap-2">
           <button onclick="event.stopPropagation(); app.openChat('${w.id}')"
-            class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm">
-            💬 Chat
-          </button>
+            class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm">💬 Chat</button>
 
-          <button disabled
-            class="flex-1 bg-gray-300 text-gray-500 py-2 rounded-lg text-sm cursor-not-allowed">
+          <button disabled class="flex-1 bg-gray-300 text-gray-500 py-2 rounded-lg text-sm">
             📞 Call
           </button>
         </div>
@@ -786,7 +778,8 @@ const app = {
       .find(w => w.id === id);
 
     if (!worker) {
-      document.getElementById('app-root').innerHTML = `<p class="text-center mt-10">Worker not found</p>`;
+      document.getElementById('app-root').innerHTML =
+        `<p class="text-center mt-10">Worker not found</p>`;
       return;
     }
 
@@ -805,123 +798,33 @@ const app = {
 
           <div class="mt-6 space-y-3">
             <button class="w-full bg-blue-600 text-white py-3 rounded-lg"
-              onclick="app.openChat('${worker.id}')">
-              💬 Chat with Expert
-            </button>
+              onclick="app.openChat('${worker.id}')">💬 Chat with Expert</button>
 
             <button disabled class="w-full bg-gray-300 text-gray-500 py-3 rounded-lg">
               📞 Call (Coming Soon)
             </button>
           </div>
-
-          <p class="mt-6 text-sm text-gray-500">
-            Pricing, reviews & availability coming soon 🚀
-          </p>
         </div>
       </section>
     `;
   },
 
-    /* =========================
-     CHAT ENTRY
-  ========================= */
-  async openChat(workerId) {
-    const chatWindow = document.getElementById('chat-window');
-    const chatMessages = document.getElementById('chat-messages');
-    const chatOptions = document.getElementById('chat-options-area');
-
-    chatWindow.style.visibility = 'visible';
-    chatWindow.style.opacity = '1';
-    chatWindow.style.transform = 'translateY(0) scale(1)';
-
-    chatMessages.innerHTML = '';
-    chatOptions.innerHTML = '';
-
-    this.addBotMessage(
-      "👋 Hi! I'm CitySetu Assistant.<br>Select an option below to continue."
-    );
-
-    this.loadChatQuestions();
-  },
-
   /* =========================
-     CHAT HELPERS
+     CHAT
   ========================= */
-  addBotMessage(text) {
-    const box = document.getElementById('chat-messages');
-    const msg = document.createElement('div');
-    msg.className = 'chat-message bot';
-    msg.innerHTML = text;
-    box.appendChild(msg);
-    msg.style.opacity = '1';
-    msg.style.transform = 'translateY(0)';
-    box.scrollTop = box.scrollHeight;
-  },
-
-  addUserMessage(text) {
-    const box = document.getElementById('chat-messages');
-    const msg = document.createElement('div');
-    msg.className = 'chat-message user';
-    msg.textContent = text;
-    box.appendChild(msg);
-    msg.style.opacity = '1';
-    msg.style.transform = 'translateY(0)';
-    box.scrollTop = box.scrollHeight;
-  },
-
-  async loadChatQuestions() {
-    const chatOptions = document.getElementById('chat-options-area');
-    chatOptions.innerHTML = '';
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/chat/questions`);
-      const data = await res.json();
-
-      data.questions.forEach(q => {
-        const btn = document.createElement('button');
-        btn.className = 'chat-option-btn';
-        btn.textContent = q.question;
-        btn.onclick = () => this.selectQuestion(q.id, q.question);
-        chatOptions.appendChild(btn);
-      });
-
-    } catch (err) {
-      this.addBotMessage('⚠️ Failed to load help options.');
-    }
-  },
-
-  async selectQuestion(id, question) {
-    this.addUserMessage(question);
-    document.getElementById('chat-options-area').innerHTML = '';
-
-    const box = document.getElementById('chat-messages');
-    const typing = document.createElement('div');
-    typing.className = 'chat-message typing-indicator';
-    typing.innerHTML = `<span></span><span></span><span></span>`;
-    box.appendChild(typing);
-    box.scrollTop = box.scrollHeight;
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/chat/answer/${id}`);
-      const data = await res.json();
-
-      typing.remove();
-      this.addBotMessage(data.answer);
-
-      setTimeout(() => this.loadChatQuestions(), 400);
-
-    } catch (err) {
-      typing.remove();
-      this.addBotMessage('⚠️ Something went wrong.');
-    }
+  openChat() {
+    alert('Chat system active (backend Q&A will respond)');
   }
+};
 
 document.addEventListener('DOMContentLoaded', () => app.init());
 </script>
 
+
     </body>
 
 </html>
+
 
 
 
