@@ -612,7 +612,6 @@ const API_BASE_URL = 'https://citysetu-api.onrender.com';
 
 const app = {
   workerData: {},
-  isLoading: false,
 
   /* =========================
      INIT
@@ -627,18 +626,12 @@ const app = {
      LOAD PROFESSIONALS
   ========================= */
   async loadProfessionals() {
-    this.isLoading = true;
     try {
       const res = await fetch(`${API_BASE_URL}/api/professionals/all`);
       const data = await res.json();
 
-      const professionals = Array.isArray(data.professionals)
-        ? data.professionals
-        : [];
-
       const grouped = {};
-
-      professionals.forEach(p => {
+      (data.professionals || []).forEach(p => {
         if (!p.service) return;
 
         if (!grouped[p.service]) {
@@ -655,18 +648,16 @@ const app = {
 
       this.workerData = grouped;
       console.log('✅ Workers loaded:', grouped);
-    } catch (err) {
-      console.error('❌ Load failed:', err);
-      this.workerData = {};
+    } catch (e) {
+      console.error('❌ Failed loading professionals', e);
     }
-    this.isLoading = false;
   },
 
   /* =========================
      ROUTER
   ========================= */
   router() {
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // ✅ SCROLL TO TOP
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const hash = location.hash.replace('#', '') || 'home';
     const [page, param] = hash.split('/');
@@ -692,24 +683,24 @@ const app = {
 
     document.getElementById('app-root').innerHTML = `
       <section class="hero-gradient text-white py-24 text-center">
-        <h1 class="text-4xl md:text-6xl font-bold">Your City, Your Services, One Setu</h1>
-        <p class="mt-4 text-blue-200">Verified experts in Ahmedabad</p>
+        <h1 class="text-5xl font-bold">Your City, Your Services</h1>
+        <p class="mt-4">Verified experts in Ahmedabad</p>
       </section>
 
-      <section class="py-16 bg-white">
+      <section class="py-16">
         <div class="container mx-auto px-6 text-center">
           <h2 class="text-3xl font-bold mb-10">Popular Services</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="grid md:grid-cols-3 gap-6">
             ${
               services.length
                 ? services.map(s => `
-                  <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
+                  <div class="card p-6 cursor-pointer"
                        onclick="app.navigateTo('service','${s.name}')">
-                    <h3 class="text-xl font-bold mb-2">${s.name}</h3>
-                    <p class="text-sm text-gray-600">${s.workers.length} experts available</p>
+                    <h3 class="text-xl font-bold">${s.name}</h3>
+                    <p>${s.workers.length} experts available</p>
                   </div>
                 `).join('')
-                : `<div class="col-span-3 text-gray-500">No professionals yet 🚀</div>`
+                : `<p>No professionals yet</p>`
             }
           </div>
         </div>
@@ -721,16 +712,15 @@ const app = {
      SERVICE PAGE
   ========================= */
   renderServicePage(serviceName) {
-    const service = this.workerData[serviceName];
-    const workers = service ? service.workers : [];
+    const workers = this.workerData[serviceName]?.workers || [];
 
     document.getElementById('app-root').innerHTML = `
-      <section class="py-12 bg-blue-100 text-center">
+      <section class="py-12 text-center bg-blue-100">
         <h2 class="text-3xl font-bold">${serviceName} Experts</h2>
-        <p class="mt-2 text-gray-600">${workers.length} expert(s) available</p>
+        <p>${workers.length} expert(s) available</p>
       </section>
 
-      <section class="py-10 bg-white">
+      <section class="py-10">
         <div class="container mx-auto px-6 grid md:grid-cols-3 gap-6">
           ${workers.map(w => this.workerCard(w)).join('')}
         </div>
@@ -738,125 +728,79 @@ const app = {
     `;
   },
 
-  /* =========================
-     WORKER CARD
-  ========================= */
   workerCard(w) {
     return `
-      <div class="card bg-gray-50 p-5 rounded-xl cursor-pointer"
-           onclick="app.navigateTo('worker','${w.id}')">
+      <div class="card p-5 cursor-pointer">
+        <h4 class="font-bold">${w.name}</h4>
+        <p>${w.service}</p>
+        <p>⭐ ${w.rating}</p>
 
-        <div class="flex items-center gap-4">
-          <img src="${w.photo}" class="w-14 h-14 rounded-full"/>
-          <div>
-            <h4 class="font-semibold">${w.name}</h4>
-            <p class="text-sm text-gray-600">${w.service}</p>
-            <p class="text-xs text-gray-500">${w.area}</p>
-          </div>
-        </div>
-
-        <div class="mt-2 text-yellow-500 font-semibold">⭐ ${w.rating}</div>
-
-        <div class="mt-4 flex gap-2">
-          <button onclick="event.stopPropagation(); app.openChat('${w.id}')"
-            class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm">💬 Chat</button>
-
-          <button disabled class="flex-1 bg-gray-300 text-gray-500 py-2 rounded-lg text-sm">
-            📞 Call
-          </button>
-        </div>
+        <button class="mt-3 bg-blue-600 text-white px-4 py-2 rounded"
+          onclick="app.openChat()">💬 Chat</button>
       </div>
     `;
   },
 
-  /* =========================
-     WORKER DETAIL
-  ========================= */
-  renderWorkerDetail(id) {
-    const worker = Object.values(this.workerData)
-      .flatMap(s => s.workers)
-      .find(w => w.id === id);
-
-    if (!worker) {
-      document.getElementById('app-root').innerHTML =
-        `<p class="text-center mt-10">Worker not found</p>`;
-      return;
-    }
-
-    document.getElementById('app-root').innerHTML = `
-      <section class="py-16 bg-gray-100">
-        <div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow">
-          <div class="flex gap-4 items-center">
-            <img src="${worker.photo}" class="w-20 h-20 rounded-full"/>
-            <div>
-              <h2 class="text-2xl font-bold">${worker.name}</h2>
-              <p>${worker.service}</p>
-              <p class="text-sm text-gray-500">${worker.area}</p>
-              <p class="text-yellow-500">⭐ ${worker.rating}</p>
-            </div>
-          </div>
-
-          <div class="mt-6 space-y-3">
-            <button class="w-full bg-blue-600 text-white py-3 rounded-lg"
-              onclick="app.openChat('${worker.id}')">💬 Chat with Expert</button>
-
-            <button disabled class="w-full bg-gray-300 text-gray-500 py-3 rounded-lg">
-              📞 Call (Coming Soon)
-            </button>
-          </div>
-        </div>
-      </section>
-    `;
-  },
-
-    addBotMessage(text) {
-  const box = document.getElementById('chat-messages');
-  const msg = document.createElement('div');
-  msg.className = 'chat-message bot';
-  msg.innerHTML = text;
-  box.appendChild(msg);
-  box.scrollTop = box.scrollHeight;
-},
-
-addUserMessage(text) {
-  const box = document.getElementById('chat-messages');
-  const msg = document.createElement('div');
-  msg.className = 'chat-message user';
-  msg.textContent = text;
-  box.appendChild(msg);
-  box.scrollTop = box.scrollHeight;
-},
+  renderWorkerDetail() {},
 
   /* =========================
      CHAT
   ========================= */
-    openChat() {
-        const chatWindow = document.getElementById('chat-window');
+  openChat() {
+    const win = document.getElementById('chat-window');
+    win.style.visibility = 'visible';
+    win.style.opacity = '1';
+    win.style.transform = 'translateY(0) scale(1)';
 
-        chatWindow.style.visibility = 'visible';
-        chatWindow.style.opacity = '1';
-        chatWindow.style.transform = 'translateY(0) scale(1)';
+    document.getElementById('chat-messages').innerHTML = '';
+    document.getElementById('chat-options-area').innerHTML = '';
 
-        document.getElementById('chat-messages').innerHTML = '';
-        document.getElementById('chat-options-area').innerHTML = '';
+    app.addBotMessage("👋 Hi! Choose an option below:");
+    app.loadChatQuestions();
+  },
 
-  // ✅ IMPORTANT: use app., not this.
-        app.addBotMessage("👋 Hi! How can I help you today?");
-        app.loadChatQuestions();
-    },
+  addBotMessage(text) {
+    const box = document.getElementById('chat-messages');
+    box.innerHTML += `<div class="chat-message bot">${text}</div>`;
+    box.scrollTop = box.scrollHeight;
+  },
 
+  /* =========================
+     CHAT QUESTIONS (TEMP STATIC)
+  ========================= */
+  loadChatQuestions() {
+    const area = document.getElementById('chat-options-area');
+    area.innerHTML = '';
 
+    const questions = [
+      "Book a service",
+      "Pricing info",
+      "Emergency service",
+      "Talk to admin"
+    ];
+
+    questions.forEach(q => {
+      const btn = document.createElement('button');
+      btn.className = 'chat-option-btn';
+      btn.textContent = q;
+      btn.onclick = () => app.addBotMessage(`You selected: ${q}`);
+      area.appendChild(btn);
+    });
+  }
 };
-document.getElementById('chat-bubble').addEventListener('click', () => {
-  app.openChat();
+
+document.addEventListener('DOMContentLoaded', () => {
+  app.init();
+  document.getElementById('chat-bubble')
+    .addEventListener('click', () => app.openChat());
 });
-document.addEventListener('DOMContentLoaded', () => app.init());
 </script>
 
 
     </body>
 
 </html>
+
 
 
 
