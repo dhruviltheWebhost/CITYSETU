@@ -607,7 +607,7 @@
         </div>
     </div>
 
-  <script>
+ <script>
 const API_BASE_URL = 'https://citysetu-api.onrender.com';
 
 const app = {
@@ -664,8 +664,6 @@ const app = {
 
     if (page === 'service' && param) {
       this.renderServicePage(decodeURIComponent(param));
-    } else if (page === 'worker' && param) {
-      this.renderWorkerDetail(param);
     } else {
       this.renderHomePage();
     }
@@ -730,7 +728,7 @@ const app = {
 
   workerCard(w) {
     return `
-      <div class="card p-5 cursor-pointer">
+      <div class="card p-5">
         <h4 class="font-bold">${w.name}</h4>
         <p>${w.service}</p>
         <p>⭐ ${w.rating}</p>
@@ -740,8 +738,6 @@ const app = {
       </div>
     `;
   },
-
-  renderWorkerDetail() {},
 
   /* =========================
      CHAT
@@ -765,51 +761,53 @@ const app = {
     box.scrollTop = box.scrollHeight;
   },
 
+  addUserMessage(text) {
+    const box = document.getElementById('chat-messages');
+    box.innerHTML += `<div class="chat-message user">${text}</div>`;
+    box.scrollTop = box.scrollHeight;
+  },
+
   /* =========================
-     CHAT QUESTIONS (TEMP STATIC)
+     CHAT QUESTIONS
   ========================= */
   async loadChatQuestions() {
-  const area = document.getElementById('chat-options-area');
-  if (!area) return;
+    const area = document.getElementById('chat-options-area');
+    if (!area) return;
 
-  area.innerHTML = '';
+    area.innerHTML = '';
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/chat/questions`);
-    const data = await res.json();
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/chat/questions`);
+      const data = await res.json();
 
-    data.questions.forEach(q => {
-      const btn = document.createElement('button');
-      btn.className = 'chat-option-btn';
-      btn.textContent = q.question;
-      btn.onclick = () => app.selectChatQuestion(q.id, q.question);
-      area.appendChild(btn);
-    });
-  } catch (err) {
-    console.error(err);
-    app.addBotMessage('⚠️ Failed to load questions');
+      data.questions.forEach(q => {
+        const btn = document.createElement('button');
+        btn.className = 'chat-option-btn';
+        btn.textContent = q.question;
+        btn.onclick = () => app.selectChatQuestion(q.id, q.question);
+        area.appendChild(btn);
+      });
+    } catch (err) {
+      console.error(err);
+      app.addBotMessage('⚠️ Failed to load questions');
+    }
+  },
+
+  async selectChatQuestion(id, question) {
+    app.addUserMessage(question);
+    document.getElementById('chat-options-area').innerHTML = '';
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/chat/answer/${id}`);
+      const data = await res.json();
+
+      app.addBotMessage(data.answer);
+      setTimeout(() => app.loadChatQuestions(), 500);
+    } catch (err) {
+      console.error(err);
+      app.addBotMessage('⚠️ Something went wrong');
+    }
   }
-}
-    async selectChatQuestion(id, question) {
-  app.addUserMessage(question);
-  document.getElementById('chat-options-area').innerHTML = '';
-
-  app.addBotMessage('Typing...');
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/chat/answer/${id}`);
-    const data = await res.json();
-
-    app.addBotMessage(data.answer);
-
-    setTimeout(() => app.loadChatQuestions(), 500);
-  } catch (err) {
-    console.error(err);
-    app.addBotMessage('⚠️ Something went wrong');
-  }
-}
-
-
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -820,9 +818,11 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
+
     </body>
 
 </html>
+
 
 
 
