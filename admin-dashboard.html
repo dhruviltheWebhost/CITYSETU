@@ -121,244 +121,164 @@ Add Q&A
 </main>
 
 <script>
-const API='https://citysetu-api.onrender.com';
-const TOKEN=sessionStorage.getItem('citysetu_admin_token');
-if(!TOKEN){alert('Login required');location='admin-login.html'}
+const API = 'https://citysetu-api.onrender.com';
+const TOKEN = sessionStorage.getItem('citysetu_admin_token');
 
-const admin={
+if (!TOKEN) {
+  alert('Login required');
+  location = 'admin-login.html';
+}
 
-showTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.table-wrapper, .section-wrapper')
-    .forEach(s => s.style.display = 'none');
+const admin = {
 
-  if (tab === 'workers') {
-    document.getElementById('tab-workers').classList.add('active');
-    document.getElementById('section-workers').style.display = 'block';
-    this.fetchData();
-  }
+  /* ================= TAB SWITCH ================= */
+  showTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
 
-  if (tab === 'pending') {
-    document.querySelector('[onclick="admin.showTab(\'pending\')"]').classList.add('active');
-    document.getElementById('table-pending').style.display = 'block';
-    this.fetchPending();
-  }
+    document.querySelector(`[onclick="admin.showTab('${tab}')"]`).classList.add('active');
+    document.getElementById(tab).classList.add('active');
 
-  if (tab === 'chatqa') {
-    document.querySelector('[onclick="admin.showTab(\'chatqa\')"]').classList.add('active');
-    document.getElementById('section-chatqa').style.display = 'block';
-    this.fetchChatQA();
-  }
-},
-  async fetchChatQA() {
-  const tbody = document.getElementById('chatqa-table');
-  tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+    if (tab === 'workers') this.loadWorkers();
+    if (tab === 'pending') this.loadPending();
+    if (tab === 'chatqa') this.loadQA();
+  },
 
-  try {
-    const res = await fetch(`${RENDER_API_URL}/api/chat/questions`);
+  /* ================= WORKERS ================= */
+  async loadWorkers() {
+    const res = await fetch(`${API}/api/professionals/all`);
     const data = await res.json();
+    const tbody = document.getElementById('workersBody');
+    tbody.innerHTML = '';
+
+    data.professionals.forEach(w => {
+      tbody.innerHTML += `
+        <tr>
+          <td class="p-2">${w.name}</td>
+          <td class="p-2">${w.phone}</td>
+          <td class="p-2">${w.service}</td>
+        </tr>`;
+    });
+  },
+
+  async loadPending() {
+    const res = await fetch(`${API}/api/admin/pending`, {
+      headers: { Authorization: `Bearer ${TOKEN}` }
+    });
+    const data = await res.json();
+    const tbody = document.getElementById('pendingBody');
+    tbody.innerHTML = '';
+
+    data.pending.forEach(p => {
+      tbody.innerHTML += `
+        <tr>
+          <td class="p-2">${p.name}</td>
+          <td class="p-2">${p.phone}</td>
+          <td class="p-2">${p.service}</td>
+          <td class="p-2">
+            <button class="btn-approve" onclick="admin.approve('${p.id}')">Approve</button>
+          </td>
+        </tr>`;
+    });
+  },
+
+  async approve(id) {
+    await fetch(`${API}/api/admin/approve/${id}`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${TOKEN}` }
+    });
+    this.loadPending();
+    this.loadWorkers();
+  },
+
+  /* ================= SERVICES ================= */
+  async loadServices() {
+    const res = await fetch(`${API}/api/services`);
+    const data = await res.json();
+    const sel = document.getElementById('wService');
+    sel.innerHTML = '';
+    data.services.forEach(s => {
+      sel.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+    });
+  },
+
+  async addWorker(e) {
+    e.preventDefault();
+    await fetch(`${API}/api/professionals/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: wName.value,
+        phone: wPhone.value,
+        serviceIds: [wService.value]
+      })
+    });
+    e.target.reset();
+    this.loadWorkers();
+  },
+
+  /* ================= CHAT Q&A ================= */
+  async loadQA() {
+    const res = await fetch(`${API}/api/chat/questions`);
+    const data = await res.json();
+    const tbody = document.getElementById('qaBody');
     tbody.innerHTML = '';
 
     data.questions.forEach(q => {
       tbody.innerHTML += `
         <tr>
-          <td>${q.question}</td>
-          <td>${q.answer || '-'}</td>
-          <td>
-            <span class="${q.active ? 'text-green-600' : 'text-red-600'}">
-              ${q.active ? 'Enabled' : 'Disabled'}
-            </span>
-          </td>
-          <td>
-            <button
-              class="${q.active ? 'btn-reject' : 'btn-approve'}"
-              onclick="admin.toggleChatQA(${q.id}, ${q.active})">
+          <td class="p-2">${q.question}</td>
+          <td class="p-2">${q.answer || '-'}</td>
+          <td class="p-2">${q.active ? 'Enabled' : 'Disabled'}</td>
+          <td class="p-2">
+            <button class="${q.active ? 'btn-reject' : 'btn-approve'}"
+              onclick="admin.toggleQA(${q.id}, ${q.active})">
               ${q.active ? 'Disable' : 'Enable'}
             </button>
           </td>
-        </tr>
-      `;
+        </tr>`;
     });
+  },
 
-  } catch (err) {
-    tbody.innerHTML = `<tr><td colspan="4">Failed to load</td></tr>`;
-  }
-},
-  async toggleChatQA(id, isActive) {
-  try {
-    await fetch(`${RENDER_API_URL}/api/admin/chat/${id}`, {
+  async toggleQA(id, active) {
+    await fetch(`${API}/api/admin/chat/${id}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${ADMIN_TOKEN}`,
+        Authorization: `Bearer ${TOKEN}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ active: !active })
+    });
+    this.loadQA();
+  },
+
+  async addQA(e) {
+    e.preventDefault();
+    await fetch(`${API}/api/admin/chat/questions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${TOKEN}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        active: !isActive
+        question: qaQuestion.value,
+        answer: qaAnswer.value
       })
     });
-
-    this.fetchChatQA();
-  } catch (err) {
-    alert('Failed to update Q&A');
+    e.target.reset();
+    this.loadQA();
   }
-},
-
-async loadWorkers(){
-const res=await fetch(`${API}/api/professionals/all`);
-const data=await res.json();
-const tbody=document.getElementById('workersBody');
-tbody.innerHTML='';
-data.professionals.forEach(w=>{
-tbody.innerHTML+=`<tr>
-<td class="p-2">${w.name}</td>
-<td class="p-2">${w.phone}</td>
-<td class="p-2">${w.service}</td>
-</tr>`;
-});
-},
-
-async loadPending(){
-const res=await fetch(`${API}/api/admin/pending`,{
-headers:{Authorization:`Bearer ${TOKEN}`}
-});
-const data=await res.json();
-const tbody=document.getElementById('pendingBody');
-tbody.innerHTML='';
-data.pending.forEach(p=>{
-tbody.innerHTML+=`<tr>
-<td class="p-2">${p.name}</td>
-<td class="p-2">${p.phone}</td>
-<td class="p-2">${p.service}</td>
-<td class="p-2">
-<button class="btn-approve" onclick="admin.approve('${p.id}')">Approve</button>
-</td>
-</tr>`;
-});
-},
-
-async approve(id){
-await fetch(`${API}/api/admin/approve/${id}`,{
-method:'PUT',
-headers:{Authorization:`Bearer ${TOKEN}`}
-});
-this.loadPending();
-this.loadWorkers();
-},
-
-async loadServices(){
-const res=await fetch(`${API}/api/services`);
-const data=await res.json();
-const sel=document.getElementById('wService');
-sel.innerHTML='';
-data.services.forEach(s=>{
-sel.innerHTML+=`<option value="${s.id}">${s.name}</option>`;
-});
-},
-
-async addWorker(e){
-e.preventDefault();
-await fetch(`${API}/api/professionals/signup`,{
-method:'POST',
-headers:{'Content-Type':'application/json'},
-body:JSON.stringify({
-name:wName.value,
-phone:wPhone.value,
-serviceIds:[wService.value]
-})
-});
-e.target.reset();
-this.loadWorkers();
-},
-
-async loadQA(){
-const res=await fetch(`${API}/api/chat/questions`);
-const data=await res.json();
-const tbody=document.getElementById('qaBody');
-tbody.innerHTML='';
-data.questions.forEach(q=>{
-tbody.innerHTML+=`<tr>
-<td class="p-2">${q.question}</td>
-<td class="p-2">${q.answer}</td>
-<td class="p-2">${q.active?'Active':'Disabled'}</td>
-<td class="p-2">
-<button class="btn-reject" onclick="admin.disableQA(${q.id})">Disable</button>
-</td>
-</tr>`;
-});
-},
-
-async addQA(e){
-e.preventDefault();
-await fetch(`${API}/api/admin/chat/questions`,{
-method:'POST',
-headers:{
-Authorization:`Bearer ${TOKEN}`,
-'Content-Type':'application/json'
-},
-body:JSON.stringify({
-question:qaQuestion.value,
-answer:qaAnswer.value
-})
-});
-e.target.reset();
-this.loadQA();
-},
-
-async disableQA(id){
-await fetch(`${API}/api/admin/chat/question/${id}`,{
-method:'DELETE',
-headers:{Authorization:`Bearer ${TOKEN}`}
-});
-this.loadQA();
-}
-
 };
 
-refreshBtn.onclick=()=>admin.loadWorkers();
-addWorkerForm.onsubmit=e=>admin.addWorker(e);
-qaForm.onsubmit=e=>admin.addQA(e);
-
+/* ================= INIT ================= */
 document.addEventListener('DOMContentLoaded', () => {
-  loadServices();
-  admin.init();
+  admin.loadServices();
+  admin.loadWorkers();
 
-  // ✅ CHAT Q&A FORM SUBMIT HANDLER (ADD HERE)
-  const chatQAForm = document.getElementById('chatqa-form');
-
-  if (chatQAForm) {
-    chatQAForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const question = document.getElementById('qa-question').value.trim();
-      const answer = document.getElementById('qa-answer').value.trim();
-
-      if (!question || !answer) {
-        alert('Question & Answer required');
-        return;
-      }
-
-      try {
-        await fetch(`${RENDER_API_URL}/api/admin/chat/questions`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${ADMIN_TOKEN}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ question, answer })
-        });
-
-        document.getElementById('qa-question').value = '';
-        document.getElementById('qa-answer').value = '';
-
-        admin.fetchChatQA(); // refresh table
-      } catch (err) {
-        alert('Failed to add Q&A');
-        console.error(err);
-      }
-    });
-  }
+  addWorkerForm.onsubmit = e => admin.addWorker(e);
+  qaForm.onsubmit = e => admin.addQA(e);
+  refreshBtn.onclick = () => admin.loadWorkers();
 });
 </script>
-
 </body>
 </html>
