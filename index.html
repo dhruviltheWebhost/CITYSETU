@@ -607,7 +607,7 @@
         </div>
     </div>
 
-   <script>
+  <script>
 const API_BASE_URL = 'https://citysetu-api.onrender.com';
 
 const app = {
@@ -624,16 +624,15 @@ const app = {
   },
 
   /* =========================
-     LOAD FROM BACKEND (FIXED)
+     LOAD PROFESSIONALS
   ========================= */
   async loadProfessionals() {
     this.isLoading = true;
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/professionals/all`);
-      if (!res.ok) throw new Error('API error');
-
       const data = await res.json();
+
       const professionals = Array.isArray(data.professionals)
         ? data.professionals
         : [];
@@ -650,12 +649,16 @@ const app = {
           };
         }
 
-        grouped[p.service].workers.push(p);
+        grouped[p.service].workers.push({
+          ...p,
+          rating: 4.6,                 // temp
+          area: 'Ahmedabad',            // temp
+          photo: `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}`
+        });
       });
 
       this.workerData = grouped;
-      console.log('✅ Frontend grouped workers:', grouped);
-
+      console.log('✅ Workers loaded:', grouped);
     } catch (err) {
       console.error('❌ Load failed:', err);
       this.workerData = {};
@@ -673,30 +676,26 @@ const app = {
 
     if (page === 'service' && param) {
       this.renderServicePage(decodeURIComponent(param));
+    } else if (page === 'worker' && param) {
+      this.renderWorkerDetail(param);
     } else {
       this.renderHomePage();
     }
   },
 
   navigateTo(page, param = '') {
-    if (page === 'service') {
-      location.hash = `service/${encodeURIComponent(param)}`;
-    } else {
-      location.hash = page;
-    }
+    location.hash = param ? `${page}/${encodeURIComponent(param)}` : page;
   },
 
   /* =========================
-     HOME PAGE
+     HOME
   ========================= */
   renderHomePage() {
     const services = Object.values(this.workerData);
 
-    let html = `
+    document.getElementById('app-root').innerHTML = `
       <section class="hero-gradient text-white py-24 text-center">
-        <h1 class="text-4xl md:text-6xl font-bold">
-          Your City, Your Services, One Setu
-        </h1>
+        <h1 class="text-4xl md:text-6xl font-bold">Your City, Your Services, One Setu</h1>
         <p class="mt-4 text-blue-200">Verified experts in Ahmedabad</p>
       </section>
 
@@ -704,36 +703,21 @@ const app = {
         <div class="container mx-auto px-6 text-center">
           <h2 class="text-3xl font-bold mb-10">Popular Services</h2>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    `;
-
-    if (!services.length) {
-      html += `
-        <div class="col-span-3 text-gray-500">
-          No professionals available yet.<br>
-          Be the first to join CitySetu 🚀
-        </div>
-      `;
-    } else {
-      services.forEach(service => {
-        html += `
-          <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
-               onclick="app.navigateTo('service','${service.name}')">
-            <h3 class="text-xl font-bold mb-2">${service.name}</h3>
-            <p class="text-sm text-gray-600">
-              ${service.workers.length} expert(s) available
-            </p>
-          </div>
-        `;
-      });
-    }
-
-    html += `
+            ${
+              services.length
+                ? services.map(s => `
+                    <div class="card bg-gray-50 p-6 rounded-lg cursor-pointer"
+                         onclick="app.navigateTo('service','${s.name}')">
+                      <h3 class="text-xl font-bold mb-2">${s.name}</h3>
+                      <p class="text-sm text-gray-600">${s.workers.length} experts available</p>
+                    </div>
+                  `).join('')
+                : `<div class="col-span-3 text-gray-500">No professionals yet 🚀</div>`
+            }
           </div>
         </div>
       </section>
     `;
-
-    document.getElementById('app-root').innerHTML = html;
   },
 
   /* =========================
@@ -743,7 +727,7 @@ const app = {
     const service = this.workerData[serviceName];
     const workers = service ? service.workers : [];
 
-    let html = `
+    document.getElementById('app-root').innerHTML = `
       <section class="py-12 bg-blue-100 text-center">
         <h2 class="text-3xl font-bold">${serviceName} Experts</h2>
         <p class="mt-2 text-gray-600">${workers.length} expert(s) available</p>
@@ -751,24 +735,98 @@ const app = {
 
       <section class="py-10 bg-white">
         <div class="container mx-auto px-6 grid md:grid-cols-3 gap-6">
-    `;
-
-    workers.forEach(w => {
-      html += `
-        <div class="card bg-gray-50 p-6 rounded-lg">
-          <h3 class="font-bold text-lg">${w.name}</h3>
-          <p class="text-sm text-gray-600">📞 ${w.phone}</p>
-          <span class="verified-badge text-green-600 font-semibold">✔ Verified</span>
-        </div>
-      `;
-    });
-
-    html += `
+          ${workers.map(w => this.workerCard(w)).join('')}
         </div>
       </section>
     `;
+  },
 
-    document.getElementById('app-root').innerHTML = html;
+  /* =========================
+     WORKER CARD
+  ========================= */
+  workerCard(w) {
+    return `
+      <div class="card bg-gray-50 p-5 rounded-xl cursor-pointer"
+           onclick="app.navigateTo('worker','${w.id}')">
+
+        <div class="flex items-center gap-4">
+          <img src="${w.photo}" class="w-14 h-14 rounded-full"/>
+          <div>
+            <h4 class="font-semibold">${w.name}</h4>
+            <p class="text-sm text-gray-600">${w.service}</p>
+            <p class="text-xs text-gray-500">${w.area}</p>
+          </div>
+        </div>
+
+        <div class="mt-2 text-yellow-500 font-semibold">
+          ⭐ ${w.rating}
+        </div>
+
+        <div class="mt-4 flex gap-2">
+          <button onclick="event.stopPropagation(); app.openChat('${w.id}')"
+            class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm">
+            💬 Chat
+          </button>
+
+          <button disabled
+            class="flex-1 bg-gray-300 text-gray-500 py-2 rounded-lg text-sm cursor-not-allowed">
+            📞 Call
+          </button>
+        </div>
+      </div>
+    `;
+  },
+
+  /* =========================
+     WORKER DETAIL
+  ========================= */
+  renderWorkerDetail(id) {
+    const worker = Object.values(this.workerData)
+      .flatMap(s => s.workers)
+      .find(w => w.id === id);
+
+    if (!worker) {
+      document.getElementById('app-root').innerHTML = `<p class="text-center mt-10">Worker not found</p>`;
+      return;
+    }
+
+    document.getElementById('app-root').innerHTML = `
+      <section class="py-16 bg-gray-100">
+        <div class="max-w-xl mx-auto bg-white p-6 rounded-xl shadow">
+          <div class="flex gap-4 items-center">
+            <img src="${worker.photo}" class="w-20 h-20 rounded-full"/>
+            <div>
+              <h2 class="text-2xl font-bold">${worker.name}</h2>
+              <p>${worker.service}</p>
+              <p class="text-sm text-gray-500">${worker.area}</p>
+              <p class="text-yellow-500">⭐ ${worker.rating}</p>
+            </div>
+          </div>
+
+          <div class="mt-6 space-y-3">
+            <button class="w-full bg-blue-600 text-white py-3 rounded-lg"
+              onclick="app.openChat('${worker.id}')">
+              💬 Chat with Expert
+            </button>
+
+            <button disabled class="w-full bg-gray-300 text-gray-500 py-3 rounded-lg">
+              📞 Call (Coming Soon)
+            </button>
+          </div>
+
+          <p class="mt-6 text-sm text-gray-500">
+            Pricing, reviews & availability coming soon 🚀
+          </p>
+        </div>
+      </section>
+    `;
+  },
+
+  /* =========================
+     CHAT (UI ONLY)
+  ========================= */
+  openChat(id) {
+    alert('Chat UI will open here.\nWorker ID: ' + id);
   }
 };
 
@@ -778,6 +836,7 @@ document.addEventListener('DOMContentLoaded', () => app.init());
     </body>
 
 </html>
+
 
 
 
